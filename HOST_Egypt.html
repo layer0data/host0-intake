@@ -7,7 +7,7 @@
 <title>HOST Egypt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&family=Tajawal:wght@400;500;700;800&display=swap">
 <style>
 /* HOST Egypt: one page app. Top bar, a side menu on wide screens and a bottom menu on phones, cards in the middle. HOST blue from the logo; orange only for things that need attention. */
 :root{
@@ -79,6 +79,7 @@ main{padding:16px 14px 100px;display:grid;gap:14px;min-width:0}
 .item .sub{font-size:12.5px;color:var(--muted)}
 .av{width:36px;height:36px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;flex:0 0 auto}
 label.f{display:grid;gap:5px;font-size:13px;font-weight:600;min-width:0}
+label.row:has(> input[type=checkbox]){flex-wrap:nowrap;align-items:flex-start;gap:8px;text-align:start}label.row > input[type=checkbox]{flex:0 0 auto;margin-top:3px}
 input.in,select.in,textarea.in{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:9px 10px;width:100%;min-width:0}
 textarea.in{min-height:80px;resize:vertical}
 input.in:focus,select.in:focus,textarea.in:focus{outline:2px solid var(--accent);outline-offset:1px}
@@ -187,12 +188,70 @@ ul{margin:0;padding-inline-start:20px}
 @media print{.top,nav,.noprint{display:none!important}main{padding:0}.card{border:0}}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* ===== the bars that keep everyone honest about saving ===== */
+.obbar{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 62px);z-index:45;box-shadow:0 -4px 14px rgba(0,0,0,.18);display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:9px 14px;font-size:14px;font-weight:600}
+.obbar.warn{background:#B42318;color:#fff}@media (min-width:900px){.obbar{bottom:0}}body.has-ob main{padding-bottom:150px}.obbar.off{background:#FEF3C7;color:#7A4B00}
+.obheld{display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%}.obheld span{flex:1;min-width:160px;font-size:12px;opacity:.9}.obbar b{font-weight:800}.obbar span{flex:1;min-width:180px;font-weight:500}
+.obbar button{border:0;border-radius:8px;padding:6px 12px;font-weight:700;background:#fff;color:#B42318;cursor:pointer}
+.alertbox{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:70;max-width:560px;margin:0 auto;background:#B42318;color:#fff;border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.alertbox span{flex:1}.alertbox button{border:0;background:rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:2px 10px;font-size:16px;cursor:pointer}
+.helpline{border-inline-start:4px solid #B42318}
+/* ===== Theme "classic": the HOST0 v8.1 Academy Intelligence look (default) ===== */
+body.th-classic{--bg:#f1f4f9;--surface:#fff;--sunk:#eef2f7;--ink:#1e293b;--muted:#64748b;--line:#dfe4ec;--accent:#1a56a8;--accent-ink:#fff;--accent-soft:#eff6ff;--flame:#d97706;--flame-soft:#fef3c7;--ok:#0d9668;--ok-soft:#d1fae5;--warn:#b45309;--warn-soft:#fef3c7;
+  --l1:#e0ecfb;--l1i:#1e3a8a;--l2:#bfd7f6;--l2i:#1e3a8a;--l3:#5b8fd6;--l3i:#fff;--l4:#1a56a8;--l4i:#fff;
+  --display:'Tajawal',system-ui,sans-serif;--body:'Tajawal',system-ui,-apple-system,'Segoe UI',sans-serif;--arabic:'Tajawal','Geeza Pro',Tahoma,sans-serif;color-scheme:light;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+body.th-classic h1,body.th-classic h2,body.th-classic h3{font-weight:800;letter-spacing:-.3px}
+body.th-classic .top{background:linear-gradient(135deg,#0c1425,#162544);border-bottom:0;color:#fff}
+body.th-classic .top .ttl{color:#fff;font-weight:800}
+body.th-classic .top img{filter:brightness(0) invert(1);opacity:.95}
+body.th-classic .top .link{color:rgba(255,255,255,.85)}
+body.th-classic .top .saving{color:rgba(255,255,255,.7)}
+body.th-classic .top .lang{border-color:rgba(255,255,255,.25)}
+body.th-classic .top .lang button{background:transparent;color:rgba(255,255,255,.8)}
+body.th-classic .top .lang button[aria-pressed="true"]{background:#fff;color:#0c1425}
+body.th-classic .card{border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);animation:hfade .3s ease}
+body.th-classic .kpi{border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+body.th-classic .kpi b{font-weight:800}
+body.th-classic .btn{font-weight:700;border-radius:8px}
+body.th-classic .btn.wa{background:#0d9668}
+body.th-classic .av{border-radius:12px;background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;font-weight:800}
+body.th-classic .lvn{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff}
+body.th-classic nav.bottom{box-shadow:0 -2px 10px rgba(0,0,0,.06)}
+body.th-classic nav.bottom button[aria-current="page"],body.th-classic nav.side button[aria-current="page"]{color:#1a56a8;font-weight:800}
+body.th-classic nav.side button[aria-current="page"]{background:#eff6ff}
+body.th-classic .tabs button[aria-pressed="true"],body.th-classic .choice button[aria-pressed="true"],body.th-classic .evbtns button[aria-pressed="true"],body.th-classic .score button[aria-pressed="true"]{background:#1a56a8;border-color:#1a56a8}
+body.th-classic .chip[aria-pressed="true"]{background:#0c1425;border-color:#0c1425}
+body.th-classic .login img{height:64px}
+html.on-login{background:#070b16}
+body.th-classic.on-login{min-height:100vh;background:radial-gradient(700px 400px at 80% -5%,rgba(249,115,22,.22),transparent 60%),radial-gradient(700px 500px at 10% 105%,rgba(37,99,235,.18),transparent 55%),linear-gradient(180deg,#070b16,#0a1020 45%,#070b16) fixed;color:#e2e8f0}
+body.th-classic.on-login .login h1{color:#fff;font-size:30px;letter-spacing:-1px}
+body.th-classic.on-login .login .lang{border-color:rgba(255,255,255,.25)}
+body.th-classic.on-login .login .lang button{background:transparent;color:rgba(255,255,255,.8)}
+body.th-classic.on-login .login .lang button[aria-pressed="true"]{background:#fff;color:#0c1425}
+body.th-classic.on-login .login .tabs button{background:rgba(13,20,38,.7);border:1px solid rgba(148,163,184,.3);color:#cbd5e1;padding:12px 18px;border-radius:14px;font-weight:700}
+body.th-classic.on-login .login .tabs button[aria-pressed="true"]{background:linear-gradient(135deg,#ea580c,#f97316);border-color:transparent;color:#fff;box-shadow:0 8px 24px -10px rgba(249,115,22,.8)}
+body.th-classic.on-login .login .card{background:rgba(13,20,38,.85);border:1px solid rgba(148,163,184,.2);box-shadow:0 16px 40px -16px rgba(0,0,0,.6);color:#e2e8f0}
+body.th-classic.on-login .login .f{color:#cbd5e1}
+body.th-classic.on-login .login .muted{color:#94a3b8}
+body.th-classic.on-login .login .in{background:rgba(7,11,22,.8);color:#fff;border:1px solid rgba(148,163,184,.3)}
+body.th-classic.on-login .login .btn{background:linear-gradient(135deg,#ea580c,#f97316);border:0;color:#fff;box-shadow:0 8px 24px -10px rgba(249,115,22,.8)}
+body.th-classic.on-login .login .lgfoot{color:rgba(148,163,184,.5);text-align:center}
+body.th-classic .hero{background:linear-gradient(135deg,#0c1425,#1a365d);color:#fff;border:0}
+body.th-classic .hero .muted,body.th-classic .hero .small{color:rgba(255,255,255,.75)}
+@keyframes hfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){body.th-classic .card{animation:none}}
+/* Who we are */
+.team{display:grid;gap:10px}.person{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}.person:first-child{border-top:0}
+.person img{width:56px;height:56px;border-radius:14px;object-fit:cover;flex:0 0 auto}.person .av{width:56px;height:56px;font-size:18px}
+.person .rl{font-size:12.5px;font-weight:700;color:var(--accent)}
 </style>
 <script src="host-egypt-settings.js"></script>
 </head>
 <body>
 <div id="app"></div>
 <div id="modal"></div>
+<div id="obbar" class="obbar" hidden role="status" aria-live="polite"></div>
+<div id="alertbox" class="alertbox" hidden role="alert"></div>
 <div id="toast" hidden role="status"></div>
 <script>
 
@@ -237,6 +296,7 @@ const dayName = d => L(DAYS[d][0], DAYS[d][1]);
 /* ---------- dates ---------- */
 const pad = n => String(n).padStart(2, '0');
 const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const cairoToday = () => { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()) } catch (e) { return ymd(new Date()) } };
 const todayStr = () => (S.D && S.D.today) || ymd(new Date());
 const parseD = s => { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null };
 const LOC = () => isAr() ? 'ar-EG-u-nu-latn' : 'en-GB';
@@ -265,7 +325,7 @@ const canSeeLevels = () => !isParent();
 
 /* ---------- data helpers ---------- */
 const D = () => S.D || {};
-const SET = () => (S.D && S.D.settings) || {};
+const SET = () => (S.D && S.D.settings) || S.pub || {};
 const PR = () => (S.D && S.D.protocol) || { skills: [], character: [], categories: [], levels: {} };
 const players = () => D().players || [];
 const P = id => players().find(p => p.id === id);
@@ -317,48 +377,137 @@ function closedOn(dateStr) { return (SET().closed || []).find(c => c.date === da
 function upcoming(n, from) {
   const out = []; let d = from || todayStr(); const done = D().sessions || [];
   for (let i = 0; i < 200 && out.length < n; i++) {
-    slotsOn(d).forEach(sl => { const rec = done.find(s => s.date === d && (s.start || '') === sl.start); out.push({ date: d, start: sl.start, end: sl.end, rec, closed: closedOn(d) }) });
+    slotsOn(d).forEach(sl => { const rec = done.find(s => s.date === d && (s.start || '') === sl.start); out.push({ date: d, start: sl.start, end: sl.end, rec, closed: closedOn(d) || (rec && rec.status === 'cancelled' ? { date: d, reason: rec.notes || '' } : null) }) });
     d = addDays(d, 1);
   }
   return out;
 }
 
 /* ---------- api ---------- */
+/* A phone keeps every change until the academy's Google Sheet confirms it. Nothing is dropped on a weak signal:
+   unsent changes wait in an outbox stored on the phone, are retried automatically, and a red bar shows how many are waiting. */
+const DEV = store.get('dev') || (() => { const d = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); store.set('dev', d); return d })();
+function netErr() { const e = new Error(L('No connection right now. Your work is kept on this phone and will be sent automatically.', 'لا يوجد اتصال الآن. عملك محفوظ على هذا الموبايل وسيُرسل تلقائيًا.')); e.net = true; return e }
 async function api(a, body) {
   if (!ENDPOINT) throw new Error(L('The app is not connected to its Google Sheet yet (host-egypt-settings.js).', 'التطبيق غير متصل بجدول جوجل بعد (host-egypt-settings.js).'));
-  const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 45000);
+  const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 40000);
+  let j;
   try {
-    const r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ a, t: S.t }, body || {})), signal: ctl.signal });
-    const j = await r.json();
-    if (!j.ok && j.error === 'login') { logout(true); throw new Error(L('Please log in again.', 'سجّل الدخول مرة أخرى.')) }
-    if (!j.ok) throw new Error(j.error || 'error');
-    return j;
+    let r; try { r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ a, t: S.t, dev: DEV }, body || {})), signal: ctl.signal }) } catch (e) { throw netErr() }
+    if (!r.ok) throw netErr();
+    try { j = await r.json() } catch (e) { throw netErr() }
   } finally { clearTimeout(tm) }
+  if (!j.ok && j.error === 'login') { logout(true); const e = new Error(L('Please log in again. Anything not saved yet stays on this phone and is sent after you log in.', 'سجّل الدخول تاني. أي حاجة لسه ماتحفظتش فاضلة على الموبايل وهتتبعت بعد الدخول.')); e.login = true; throw e }
+  if (!j.ok && !j.refused) { const e = netErr(); e.server = String(j.message || j.error || 'error'); throw e }   // busy, or a Google hiccup: keep and retry
+  if (!j.ok) throw new Error(j.message || j.error || 'error');
+  setOnline(true);
+  return j;
 }
-async function load() { const j = await api('load'); S.D = j; S.me = j.me; return j }
-async function reload() { try { await load(); rerender() } catch (e) { toast('⚠ ' + e.message) } }
+/* the outbox */
+const OB = { list: [], t: null, busy: false, tries: 0, gen: 0, warned: false };
+try { OB.list = JSON.parse(store.get('outbox') || '[]') || [] } catch (e) { OB.list = [] }
+function obSave() { try { localStorage.setItem('hostegy-outbox', JSON.stringify(OB.list)) } catch (e) { try { localStorage.removeItem('hostegy-cache'); localStorage.setItem('hostegy-outbox', JSON.stringify(OB.list)); obBar(); return } catch (e2) { } alertBox(L('This phone’s storage is full, so unsent work could not be kept on it. Keep the app open until the red bar is gone.', 'مساحة الموبايل مليانة، فالشغل اللي لسه ماتبعتش ماتحفظش عليه. خلي التطبيق مفتوح لحد ما الشريط الأحمر يختفي.')) } obBar() }
+function obMine() { return S.me ? OB.list.filter(x => x.uid === S.me.id && !x.hold) : [] }
+function obHeld() { return S.me ? OB.list.filter(x => x.uid === S.me.id && x.hold) : [] }
+/* e: { key, a, sid?, item?, body?, kind?, rec?, local: [[kind, rec]] } — item entries of the same action and session travel together */
+function obPut(e) {
+  e.uid = S.me ? S.me.id : ''; e.stamp = Date.now() + Math.random(); e.at = new Date().toISOString(); OB.gen++;
+  const i = OB.list.findIndex(x => x.key === e.key && x.uid === e.uid); if (i >= 0) OB.list[i] = e; else OB.list.push(e);
+  (e.local || []).forEach(x => upsertLocal(x[0], x[1]));
+  obSave(); obKick(700);
+}
+function obKick(ms) { clearTimeout(OB.t); OB.t = setTimeout(obFlush, ms) }
+function applyPending() { if (!S.D) return; obMine().forEach(e => (e.local || []).forEach(x => upsertLocal(x[0], x[1]))) }
+async function obFlush() {
+  if (OB.busy || !S.t || !S.me) return; const mine = obMine(); if (!mine.length) return;
+  OB.busy = true; let failed = false, down = false, stop = false;
+  try {
+    const groups = {}; mine.forEach(e => { const g = e.item ? 'i|' + e.a + '|' + e.sid : e.rec ? 'r|' + e.kind : 'b|' + e.key; (groups[g] = groups[g] || []).push(e) });
+    for (const g of Object.values(groups)) {
+      const e0 = g[0]; const sent = g.map(x => [x.key, x.stamp]);
+      const body = e0.item ? Object.assign({ session_id: e0.sid, items: g.map(x => x.item) }, e0.extra || {}) : e0.rec ? { kind: e0.kind, recs: g.map(x => x.rec) } : e0.body;
+      const a = e0.rec ? 'bulk' : e0.a;
+      let j;
+      try { j = await api(a, body) }
+      catch (err) {
+        if (err.login) { stop = true; break }                                    // kept; sent after the next login
+        if (err.net) { failed = true; if (err.server) { OB.lastErr = err.server; g.forEach(x => { x.fails = (x.fails || 0) + 1; if (x.fails >= 8) { x.hold = true; x.err = err.server } }); continue } down = true; break }
+        OB.list = OB.list.filter(x => !sent.some(([k, st]) => x.key === k && x.stamp === st));   // the server refused it for a reason: show the reason, do not retry forever
+        alertBox(L('Not saved: ', 'لم يُحفظ: ') + err.message); continue;
+      }
+      OB.list = OB.list.filter(x => !sent.some(([k, st]) => x.key === k && x.stamp === st)); OB.gen++;
+      (j.recs || []).forEach(r => { if (r && r.id) upsertLocal(e0.rec ? e0.kind : (a === 'evrecord' || a === 'tap' || a === 'coachrate' || a === 'notebook' ? 'obs' : e0.kind || 'obs'), r) });
+      if (j.rec && e0.body && e0.body.rec) upsertLocal(e0.kind || 'sessions', j.rec);
+      if (a === 'tap') S.D.obs = (S.D.obs || []).filter(o => !(String(o.id).startsWith('lt_') && !obMine().some(e => e.a === 'tap' && (e.local || []).some(x => x[1].id === o.id))));
+      if (j.blocked && j.blocked.length) alertBox(L(`${j.blocked.length} rating(s) not saved: no family consent yet${a === 'evrecord' ? ', or a game skill outside a scrimmage' : ''}.`, `${j.blocked.length} تقييم لم يُحفظ: لا توجد موافقة العائلة بعد${a === 'evrecord' ? '، أو مهارة لعب خارج المباراة التدريبية' : ''}.`));
+    }
+  } finally {
+    OB.busy = false;
+    if (stop) { }
+    else if (failed) {
+      OB.tries++; if (down) setOnline(false); obKick(Math.min(30000, 2500 * OB.tries));
+    } else { OB.tries = 0; OB.warned = false; if (obMine().length) obKick(800) }
+    obSave();
+  }
+}
+window.addEventListener('online', () => { setOnline(true); obKick(300) });
+window.addEventListener('offline', () => setOnline(false));
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') obKick(300) });
+setInterval(() => { if (obMine().length) obKick(10) }, 20000);
+window.addEventListener('beforeunload', ev => { if (obMine().length) { ev.preventDefault(); ev.returnValue = '' } });
+function setOnline(v) { if (S.online === v) return; S.online = v; obBar() }
+function obBar() {
+  const el = document.getElementById('obbar'); if (!el) return; const n = obMine().length; setTimeout(() => document.body.classList.toggle('has-ob', !el.hidden), 0);
+  if (!S.me) { el.hidden = true; return }
+  const h = obHeld().length;
+  const held = h ? `<div class="obheld"><b>${L(`${h} could not be saved`, `${h} ماتحفظش`)}</b><span>${esc(obHeld()[0].err || '')}</span><button type="button" data-act="ob-retry">${L('Try again', 'حاول تاني')}</button><button type="button" data-act="ob-discard">${L('Discard', 'إلغاء')}</button></div>` : '';
+  if (n) { el.hidden = false; el.className = 'obbar warn'; el.innerHTML = `<b>⚠ ${L(`${n} not saved yet`, `${n} لم يُحفظ بعد`)}</b><span>${S.online === false ? L('No connection. Kept on this phone; sent automatically when the signal is back.', 'لا يوجد اتصال. محفوظ على هذا الموبايل ويُرسل تلقائيًا عند عودة الشبكة.') : L('Sending… keep the app open.', 'جارٍ الإرسال… اترك التطبيق مفتوحًا.')}</span><button type="button" data-act="ob-now">${L('Send now', 'أرسل الآن')}</button>${held}` }
+  else if (h) { el.hidden = false; el.className = 'obbar warn'; el.innerHTML = held }
+  else if (S.online === false || S.offlineCopy) { el.hidden = false; el.className = 'obbar off'; el.innerHTML = `<span>${L('No connection. Showing the last saved copy on this phone.', 'لا يوجد اتصال. يظهر آخر نسخة محفوظة على هذا الموبايل.')}</span>` }
+  else el.hidden = true;
+}
+/* last data, kept on the phone so the app opens with a weak signal */
+function cacheSave() { try { store.set('cache', JSON.stringify({ t: S.t, at: Date.now(), D: S.D })) } catch (e) { try { store.del('cache') } catch (e2) { } } }
+function cacheLoad() { try { const c = JSON.parse(store.get('cache') || 'null'); return c && c.t === S.t ? c : null } catch (e) { return null } }
+function applyLoad(j) { S.D = j; S.me = j.me; S.offlineCopy = false; applyPending(); cacheSave(); obBar(); obKick(200); return j }
+async function load() { return applyLoad(await api('load')) }
+async function reload() { try { await load(); rerender() } catch (e) { if (e.net) { setOnline(false); toast('⚠ ' + e.message) } else toast('⚠ ' + e.message) } }
+/* a quiet refresh every minute, so phones see each other's attendance and ratings; never while someone is typing or recording */
+setInterval(async () => {
+  if (!S.me || !S.t || document.visibilityState !== 'visible' || obMine().length || OB.busy) return;
+  const m = document.getElementById('modal'); if (m && !m.hidden) return;
+  const ae = document.activeElement; if (ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName)) return;
+  if (S.view === 'evaluate' || S.sub === 'eval' || S.view === 'settings' || S.kid || location.hash === '#register') return;
+  const g = OB.gen; try { const j = await api('load'); if (g !== OB.gen || OB.busy || obMine().length) return; applyLoad(j); rerender() } catch (e) { }
+}, 60000);
 function busy(n) { S.saving += n; const el = $('#saving'); if (el) el.textContent = S.saving > 0 ? L('Saving…', 'جارٍ الحفظ…') : '' }
+/* plain records: tried at once; on a weak signal they join the outbox instead of being lost */
 async function save(kind, rec, quiet) {
+  if (!rec.id) rec.id = newId(kind.slice(0, 2) + '_');
+  if (obMine().some(x => x.key === 'r|' + kind + '|' + rec.id)) { obPut({ key: 'r|' + kind + '|' + rec.id, kind, rec, local: [[kind, rec]] }); if (!quiet) toast('⏳ ' + L('Kept on this phone; it will be sent automatically.', 'محفوظ على هذا الموبايل وسيُرسل تلقائيًا.')); return rec }
   busy(1);
   try { const j = await api('save', { kind, rec }); upsertLocal(kind, j.rec); if (!quiet) toast('✓ ' + w('saved')); return j.rec }
-  catch (e) { toast('⚠ ' + e.message); throw e }
+  catch (e) { if (e.net) { obPut({ key: 'r|' + kind + '|' + rec.id, kind, rec, local: [[kind, rec]] }); if (!quiet) toast('⏳ ' + L('Kept on this phone; it will be sent automatically.', 'محفوظ على هذا الموبايل وسيُرسل تلقائيًا.')); return rec } toast('⚠ ' + e.message); throw e }
   finally { busy(-1) }
 }
 async function saveMany(kind, recs, quiet) {
   if (!recs.length) return [];
+  recs.forEach(r => { if (!r.id) r.id = newId(kind.slice(0, 2) + '_') });
   busy(1);
   try { const j = await api('bulk', { kind, recs }); (j.recs || []).forEach(r => upsertLocal(kind, r)); if (!quiet) toast('✓ ' + w('saved')); return j.recs }
-  catch (e) { toast('⚠ ' + e.message); throw e }
+  catch (e) { if (e.net) { recs.forEach(r => obPut({ key: 'r|' + kind + '|' + r.id, kind, rec: r, local: [[kind, r]] })); if (!quiet) toast('⏳ ' + L('Kept on this phone; it will be sent automatically.', 'محفوظ على هذا الموبايل وسيُرسل تلقائيًا.')); return recs } toast('⚠ ' + e.message); throw e }
   finally { busy(-1) }
 }
 async function act(a, body, quiet) {
   busy(1);
   try { const j = await api(a, body); if (!quiet) toast('✓ ' + w('saved')); return j }
-  catch (e) { toast('⚠ ' + e.message); throw e }
+  catch (e) { if (e.net) alertBox(e.message.replace(L('Your work is kept on this phone and will be sent automatically.', 'عملك محفوظ على هذا الموبايل وسيُرسل تلقائيًا.'), L('Please try again in a moment.', 'برجاء المحاولة بعد قليل.'))); else toast('⚠ ' + e.message); throw e }
   finally { busy(-1) }
 }
-async function remove(kind, id) { busy(1); try { await api('del', { kind, id }); S.D[kind] = (S.D[kind] || []).filter(x => x.id !== id); toast('✓') } catch (e) { toast('⚠ ' + e.message) } finally { busy(-1) } }
-async function saveSettings(s) { busy(1); try { const j = await api('settings', { settings: s }); S.D.settings = j.settings; toast('✓ ' + w('saved')) } catch (e) { toast('⚠ ' + e.message) } finally { busy(-1) } }
+async function remove(kind, id) { OB.list = OB.list.filter(x => !(x.kind === kind && x.rec && x.rec.id === id)); obSave(); busy(1); try { await api('del', { kind, id }); S.D[kind] = (S.D[kind] || []).filter(x => x.id !== id); toast('✓') } catch (e) { toast('⚠ ' + e.message) } finally { busy(-1) } }
+async function saveSettings(s) { busy(1); try { const j = await api('settings', { settings: s }); S.D.settings = j.settings; cacheSave(); toast('✓ ' + w('saved')) } catch (e) { alertBox('⚠ ' + e.message) } finally { busy(-1) } }
+/* an error that stays until it is read */
+function alertBox(m) { const el = document.getElementById('alertbox'); if (!el) { toast(m); return } el.innerHTML = `<span>${esc(m)}</span><button type="button" data-act="alert-close">✕</button>`; el.hidden = false }
 function upsertLocal(kind, rec) { if (!S.D[kind]) S.D[kind] = []; const i = S.D[kind].findIndex(x => x.id === rec.id); if (i >= 0) S.D[kind][i] = Object.assign({}, S.D[kind][i], rec); else S.D[kind].push(rec) }
 const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
@@ -369,7 +518,7 @@ async function logMsg(m) { try { await save('messages', Object.assign({ at: new 
 
 /* ---------- ui helpers ---------- */
 let toastT = null;
-function toast(m) { const el = $('#toast'); el.textContent = m; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, 3200) }
+function toast(m) { const el = $('#toast'); el.textContent = m; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, 4500) }
 function modal(html) { $('#modal').innerHTML = html ? `<div class="modal" data-act="modal-bg"><div class="sheet" role="dialog">${html}</div></div>` : '' }
 const opt = (arr, v, blank) => (blank ? `<option value="">${esc(blank)}</option>` : '') + arr.map(o => `<option value="${esc(o[0])}" ${String(v) === String(o[0]) ? 'selected' : ''}>${esc(L(o[1], o[2]))}</option>`).join('');
 const initials = n => { const p = String(n || '?').trim().split(/\s+/); return (p[0] || '?').slice(0, 1) + (p[1] ? p[1].slice(0, 1) : '') };
@@ -399,10 +548,14 @@ function navItems() {
   if (r === 'owner') out.push('settings');
   return out;
 }
+const NOTE_AR = { 'Check if playing': 'اسأل لو لسه بيلعب', 'Confirm the day before': 'أكّد قبلها بيوم', 'Ask about registering': 'اسأل عن التسجيل' };
+const noteTxt = n => { const k = String(n || ''); if (!isAr()) { const e = Object.keys(NOTE_AR).find(x => NOTE_AR[x] === k); return e || k } return NOTE_AR[k] || k };
+const theme = () => ((S.D && S.D.settings) || S.pub || {}).theme || store.get('theme') || 'classic';
 function render() {
-  document.body.classList.toggle('rtl', isAr()); document.documentElement.lang = S.lang; document.documentElement.dir = isAr() ? 'rtl' : 'ltr';
-  const app = $('#app');
-  if (location.hash === '#register') { app.innerHTML = registerPage(); return }
+  document.body.classList.toggle('rtl', isAr()); document.body.classList.toggle('th-classic', theme() !== 'clean'); try { store.set('theme', theme()) } catch (e) { } document.documentElement.lang = S.lang; document.documentElement.dir = isAr() ? 'rtl' : 'ltr';
+  const app = $('#app'); const onLogin = location.hash !== '#register' && (!S.me || !S.D);
+  document.body.classList.toggle('on-login', onLogin); document.documentElement.classList.toggle('on-login', onLogin);
+  if (location.hash === '#register') { if (!S.pub && !S.pubAsked) { S.pubAsked = true; api('pub').then(j => { S.pub = j.settings; if (j.today) S.pubToday = j.today; render() }).catch(() => { }) } app.innerHTML = registerPage(); return }
   if (!S.me || !S.D) { app.innerHTML = loginPage(); return }
   if (S.kid) { app.innerHTML = kidPage(); return }
   const items = navItems(); if (items.indexOf(S.view) < 0 && S.view !== 'settings') S.view = items[0];
@@ -431,25 +584,26 @@ function rerender() { const y = window.scrollY; render(); window.scrollTo(0, y) 
 
 /* ---------- login ---------- */
 function loginPage() {
-  const tab = S.loginAs || 'staff';
+  const tab = S.loginAs || (location.hash === '#team' || store.get('as') === 'staff' ? 'staff' : 'parent');
   return `<div class="login"><img src="${LOGO}" alt="HOST · House of Sports Talents">
    <div class="row sp"><h1>${L('HOST Egypt', 'HOST مصر')}</h1><div class="lang"><button type="button" data-act="lang" data-v="en" aria-pressed="${!isAr()}">EN</button><button type="button" data-act="lang" data-v="ar" aria-pressed="${isAr()}">عربي</button></div></div>
-   <div class="tabs"><button type="button" data-act="loginas" data-v="staff" aria-pressed="${tab === 'staff'}">${L('Academy team', 'فريق الأكاديمية')}</button><button type="button" data-act="loginas" data-v="parent" aria-pressed="${tab === 'parent'}">${L('Parent', 'ولي الأمر')}</button></div>
+   <div class="tabs"><button type="button" data-act="loginas" data-v="parent" aria-pressed="${tab === 'parent'}">${L('Parent', 'ولي الأمر')}</button><button type="button" data-act="loginas" data-v="staff" aria-pressed="${tab === 'staff'}">${L('Academy team', 'فريق الأكاديمية')}</button></div>
    <form class="card" id="loginForm">
     ${tab === 'parent' ? `<label class="f">${L('Your mobile number (the one you gave the academy)', 'رقم موبايلك (المسجّل لدى الأكاديمية)')}<input class="in" id="lgPhone" inputmode="tel" autocomplete="tel" required></label>` : `<p class="small muted">${L('Owner, admin, coach or HOST evaluator: your own PIN.', 'المالك أو الإدارة أو المدرب أو مقيّم HOST: رقمك السري.')}</p>`}
-    <label class="f">${L('PIN', 'الرقم السري')}<input class="in" id="lgPin" type="password" inputmode="numeric" autocomplete="current-password" required></label>
+    <label class="f">${L('PIN (4 digits)', 'الرقم السري (4 أرقام)')}<input class="in" id="lgPin" type="password" inputmode="numeric" autocomplete="current-password" required></label>
     <button class="btn" type="submit">${L('Log in', 'دخول')}</button><p class="small muted" id="lgMsg"></p></form>
    ${!ENDPOINT ? `<div class="notice attn">${L('This copy is not connected to its Google Sheet yet. See the setup steps, Part B.', 'هذه النسخة غير متصلة بجدول جوجل بعد. راجع خطوات الإعداد، الجزء B.')}</div>` : ''}
-   <p class="tiny muted">HOST · House of Sports Talents</p></div>`;
+   <p class="tiny muted lgfoot">HOST · House of Sports Talents</p></div>`;
 }
 async function doLogin(ev) {
   ev.preventDefault(); const msg = $('#lgMsg'); msg.textContent = L('Checking…', 'جارٍ التحقق…');
   try {
-    const j = await api('login', { who: S.loginAs === 'parent' ? 'parent' : 'staff', pin: $('#lgPin').value.trim(), phone: ($('#lgPhone') || {}).value || '' });
-    S.t = j.token; store.set('t', j.token); msg.textContent = L('Opening…', 'جارٍ الفتح…'); await load(); S.view = navItems()[0]; render();
-  } catch (e) { msg.textContent = /locked/.test(e.message) ? L('Too many wrong tries. Please wait 15 minutes, or ask the academy.', 'محاولات خاطئة كثيرة. برجاء الانتظار 15 دقيقة أو اسأل الأكاديمية.') : /nomatch|pin|phone/.test(e.message) ? L('The PIN or number does not match. Try again or ask the academy.', 'الرقم السري أو الرقم غير صحيح. حاول مرة أخرى أو اسأل الأكاديمية.') : e.message }
+    const as = S.loginAs || (location.hash === '#team' || store.get('as') === 'staff' ? 'staff' : 'parent');
+    const j = await api('login', { who: as, pin: $('#lgPin').value.trim(), phone: ($('#lgPhone') || {}).value || '' });
+    S.t = j.token; store.set('t', j.token); store.set('as', as); if (location.hash === '#team') history.replaceState(null, '', location.pathname); msg.textContent = L('Opening…', 'جارٍ الفتح…'); await load(); S.view = navItems()[0]; render();
+  } catch (e) { msg.textContent = /locked|too many/i.test(e.message) ? L('Too many wrong tries. Please wait 15 minutes, or ask the academy.', 'محاولات خاطئة كثيرة. برجاء الانتظار 15 دقيقة أو اسأل الأكاديمية.') : e.net ? e.message.split('.')[0] + '.' : /nomatch|pin|phone|match/.test(e.message) ? L('The PIN or number does not match. Try again or ask the academy.', 'الرقم السري أو الرقم غير صحيح. حاول مرة أخرى أو اسأل الأكاديمية.') : e.message }
 }
-function logout(silent) { const t = S.t; S.t = ''; store.del('t'); S.me = null; S.D = null; S.kid = null; if (!silent && t) api('logout', { t }).catch(() => { }); render() }
+function logout(silent) { const t = S.t; S.t = ''; store.del('t'); if (!silent) { try { store.del('cache') } catch (e) { } } S.me = null; S.D = null; S.kid = null; if (!silent && t) api('logout', { t }).catch(() => { }); render() }
 
 
 /* ================= shared bits ================= */
@@ -459,6 +613,13 @@ function bookedFor(date) { return leads().filter(l => l.stage === 'booked' && l.
 function recordedSes(sid) { return (D().evalplans || []).some(e => e.session_id === sid && (e.done || []).length) || (D().obs || []).some(o => o.session_id === sid && o.source === 'evaluator') }
 function changesThisMonth() { const mk = monthKey(todayStr()); let n = 0; Object.keys(D().states || {}).forEach(k => (D().states[k].hist || []).forEach(h => { if (!h.first && !h.down && monthKey(h.date) === mk) n++ })); return n }
 const noConsent = () => activeP().filter(p => p.consent_dev !== 'yes');
+const noConsentFam = () => { const k = {}; noConsent().forEach(p => k[waNum(p.parent_phone) || p.id] = 1); return Object.keys(k).length };
+/* a child who asked for help: the owners see the name at once, until one of them marks it handled */
+function helpCard() {
+  if (!isOwnerish()) return ''; const open = (D().helpreq || []).filter(h => h.status !== 'done'); if (!open.length) return '';
+  return `<div class="card attn helpline"><h2>${L('A child asked for help', 'طفل طلب المساعدة')}</h2><p class="small">${L('From the child’s own page after a session. Please call the family today, kindly and privately.', 'من صفحة الطفل بعد الحصة. برجاء الاتصال بالعائلة اليوم، بلطف وبشكل خاص.')}</p>
+   <div class="list">${open.map(h => { const p = P(h.player_id) || {}; return `<div class="item" style="cursor:default;flex-wrap:wrap"><div class="grow"><div class="nm">${esc(p.name || h.player_id)}</div><div class="sub">${fmtDS(String(h.at).slice(0, 10))} · ${esc(p.parent_name || '')} ${esc(p.parent_phone || '')}</div></div>${p.parent_phone ? `<a class="btn small wa" href="${waLink(p.parent_phone, '')}" target="_blank" rel="noopener">WhatsApp</a><a class="btn small ghost" href="tel:${esc(p.parent_phone)}">${L('Call', 'اتصال')}</a>` : ''}<button class="btn small" data-act="help-done" data-id="${h.id}">${L('Handled', 'تمت المتابعة')}</button></div>` }).join('')}</div></div>`;
+}
 
 /* ================= HOME (owner, co-owners, admin) ================= */
 function homeScreen() {
@@ -468,6 +629,7 @@ function homeScreen() {
   const mk = monthKey(todayStr()); const lm = leads().filter(l => monthKey(l.created) === mk);
   const brief = D().brief || []; const todo = homeTodo();
   return `<div class="row sp"><h1>${L('Good to see you', 'أهلًا بك')}${S.me.name ? (isAr() ? '، ' : ', ') + esc(S.me.name) : ''}</h1><span class="tiny muted">${fmtDL(todayStr())}</span></div>
+  ${helpCard()}
   ${n0 ? `<div class="card"><div class="row sp"><div class="grow"><span class="tag info">${w('next')}</span><h2 style="margin-top:6px">${esc(fmtDL(n0.date))}</h2><p class="muted">${fmtT(n0.start)} – ${fmtT(n0.end)} · ${esc(placeName())}</p></div>
     <button class="btn" data-act="open-session" data-date="${n0.date}" data-start="${n0.start}">${n0.rec ? w('open') : L('Open this session', 'افتح هذه الحصة')}</button></div>
     <p class="small muted">${L(`${act.length} active players expected`, `${act.length} لاعبًا نشطًا متوقعًا`)}${bookedFor(n0.date).length ? ' · ' + L(`${bookedFor(n0.date).length} free session(s) booked`, `${bookedFor(n0.date).length} حصة مجانية محجوزة`) : ''}</p></div>`
@@ -477,7 +639,7 @@ function homeScreen() {
     ${kv(L('Active players', 'لاعبون نشطون'), act.length)}
     ${kv(L('Attendance, last 4 sessions', 'الحضور، آخر 4 حصص'), pctTxt(att.t ? att.h / att.t : null))}
     ${kv(L('Confirmed level changes this month', 'تغيّرات مستوى مؤكدة هذا الشهر'), changesThisMonth())}
-    <div class="kpi ${noConsent().length ? 'attn' : ''}"><b>${noConsent().length}</b><span>${L('Families without consent', 'عائلات بلا موافقة')}</span></div>
+    <div class="kpi ${noConsent().length ? 'attn' : ''}"><b>${noConsentFam()}</b><span>${L('Families without consent', 'عائلات بلا موافقة')}</span></div>
     ${kv(L('New enquiries this month', 'استفسارات جديدة هذا الشهر'), lm.length)}
     ${isOwnerish() ? kv(L('Expected fees a month', 'الاشتراكات المتوقعة شهريًا') + ' (' + cur() + ')', num(act.reduce((a, p) => a + fee(p), 0))) : ''}
   </div>
@@ -490,10 +652,10 @@ function homeTodo() {
   const t = todayStr(); const out = []; const nx = upcoming(1)[0];
   if (nx && !nx.closed && addDays(nx.date, -1) <= t && nx.date >= t) out.push({ title: L('Remind families about ', 'ذكّر العائلات بحصة ') + fmtD(nx.date), sub: L('Day-before reminder; families can send a check-in in the app', 'تذكير قبل الحصة بيوم؛ يمكن للعائلات إرسال تحديث في التطبيق'), btn: `<button class="btn small" data-act="compose" data-tpl="reminder">${L('Prepare', 'جهّز')}</button>`, color: 'var(--accent)' });
   leads().filter(l => l.stage === 'form').forEach(l => out.push({ title: L('New registration: ', 'تسجيل جديد: ') + esc(l.child_name), sub: L('Book the free session', 'احجز الحصة المجانية') + ' · ' + esc(l.phone || ''), btn: `<button class="btn small" data-act="lead" data-id="${l.id}">${w('open')}</button>` }));
-  leads().filter(l => l.next_date && l.next_date <= t && ['registered', 'lost'].indexOf(l.stage) < 0).forEach(l => out.push({ title: L('Follow up: ', 'متابعة: ') + esc(l.child_name), sub: esc(l.next_note || lab(STAGES, l.stage)), btn: `<button class="btn small" data-act="lead" data-id="${l.id}">${w('open')}</button>` }));
+  leads().filter(l => l.next_date && l.next_date <= t && ['registered', 'lost'].indexOf(l.stage) < 0).forEach(l => out.push({ title: L('Follow up: ', 'متابعة: ') + esc(l.child_name), sub: esc(noteTxt(l.next_note) || lab(STAGES, l.stage)), btn: `<button class="btn small" data-act="lead" data-id="${l.id}">${w('open')}</button>` }));
   ((D().coverage || {}).unrecorded || []).slice(0, 3).forEach(x => out.push({ title: L('Not recorded by the evaluators: ', 'لم يسجّلها المقيّمان: ') + fmtD(x.date), sub: L('Attendance exists, evaluator records do not', 'الحضور مسجّل وتسجيل المقيّمين غير موجود'), btn: `<button class="btn small" data-act="session" data-id="${x.sid}">${w('open')}</button>` }));
   const drafts = (D().reports || []).filter(r => r.status === 'draft').length; if (drafts) out.push({ title: L(`${drafts} report(s) waiting for review`, `${drafts} تقرير بانتظار المراجعة`), sub: L('Read, approve, then issue to the family', 'اقرأ ووافق ثم أصدر للعائلة'), btn: `<button class="btn small" data-act="nav" data-v="reports">${w('open')}</button>`, color: 'var(--accent)' });
-  if (noConsent().length) out.push({ title: L(`${noConsent().length} famil(ies) without development consent`, `${noConsent().length} عائلة بلا موافقة على التطوير`), sub: L('Evaluators cannot record these children until the family agrees (in the app, or recorded by you)', 'لا يمكن للمقيّمين تسجيل هؤلاء الأطفال حتى توافق العائلة (في التطبيق أو بتسجيلك)'), btn: `<button class="btn small" data-act="consent-list">${w('open')}</button>` });
+  if (noConsent().length) out.push({ title: L(`${noConsentFam()} famil(ies) (${noConsent().length} children) without development consent`, `${noConsentFam()} عائلة (${noConsent().length} طفل) بلا موافقة على التطوير`), sub: L('Evaluators cannot record these children until the family agrees (in the app, or recorded by you)', 'لا يمكن للمقيّمين تسجيل هؤلاء الأطفال حتى توافق العائلة (في التطبيق أو بتسجيلك)'), btn: `<button class="btn small" data-act="consent-list">${w('open')}</button>` });
   const due = (D().payments || []).filter(x => x.status === 'due' && x.month < monthKey(t)); if (due.length && isAdminish()) out.push({ title: L(`${due.length} fee(s) overdue`, `${due.length} اشتراك متأخر`), btn: `<button class="btn small" data-act="nav" data-v="money">${w('open')}</button>` });
   activeP().filter(p => missedRecent(p.id)).forEach(p => out.push({ title: L('Missed the last 2 sessions: ', 'غاب آخر حصتين: ') + esc(p.name), sub: L('Send a “we missed you” message', 'أرسل رسالة «افتقدناك»'), btn: `<button class="btn small wa" data-act="compose" data-tpl="missed" data-pid="${p.id}">WhatsApp</button>` }));
   const wk = addDays(t, 7);
@@ -688,7 +850,7 @@ function sessionsScreen() {
   };
   return `<div class="row sp"><h1>${w('sessions')}</h1>${isCoach() || isAdminish() || isEval() ? `<button class="btn" data-act="past-new">+ ${L('Add a past session', 'إضافة حصة سابقة')}</button>` : ''}</div>
   <div class="card"><div class="row sp"><h2>${L('Coming up', 'القادمة')}</h2><span class="tag info">${se ? esc(L(se.name, se.name_ar)) + ' · ' + (se.slots || []).map(x => dayName(x.day) + ' ' + fmtT(x.start) + '–' + fmtT(x.end)).join(', ') : L('No season set', 'لا يوجد موسم')}</span></div>
-   <div class="list">${up.map(x => `<div class="item" ${x.closed ? '' : `data-act="open-session" data-date="${x.date}" data-start="${x.start}"`}><div class="grow"><div class="nm">${fmtDL(x.date)}</div><div class="sub">${fmtT(x.start)} – ${fmtT(x.end)} · ${esc(placeName())}${bookedFor(x.date).length ? ' · ' + L(bookedFor(x.date).length + ' free session(s)', bookedFor(x.date).length + ' حصة مجانية') : ''}</div></div>${x.closed ? `<span class="tag attn">${L('No session', 'لا حصة')}: ${esc(x.closed.reason || '')}</span>` : x.rec ? `<span class="tag ok">${L('Opened', 'مفتوحة')}</span>` : ''}</div>`).join('') || empty(L('Set the season days in Settings.', 'حدّد أيام الموسم من الإعدادات.'))}</div></div>
+   <div class="list">${up.map(x => `<div class="item" ${x.closed && !x.rec ? '' : x.rec ? `data-act="session" data-id="${x.rec.id}"` : `data-act="open-session" data-date="${x.date}" data-start="${x.start}"`}><div class="grow"><div class="nm">${fmtDL(x.date)}</div><div class="sub">${fmtT(x.start)} – ${fmtT(x.end)} · ${esc(placeName())}${bookedFor(x.date).length ? ' · ' + L(bookedFor(x.date).length + ' free session(s)', bookedFor(x.date).length + ' حصة مجانية') : ''}</div></div>${x.closed ? `<span class="tag attn">${L('No session', 'لا حصة')}: ${esc(x.closed.reason || '')}</span>` : x.rec ? `<span class="tag ok">${L('Opened', 'مفتوحة')}</span>` : ''}</div>`).join('') || empty(L('Set the season days in Settings.', 'حدّد أيام الموسم من الإعدادات.'))}</div></div>
   <div class="card"><h2>${L('Past sessions', 'الحصص السابقة')}</h2>
    <div class="list">${past.map(s => `<div class="item" data-act="session" data-id="${s.id}"><div class="grow"><div class="nm">${fmtDL(s.date)}</div><div class="sub">${[fmtT(s.start), s.kind && s.kind !== 'normal' ? esc(lab(SKIND, s.kind)) : '', s.coach ? '<bdi>' + esc(s.coach) + '</bdi>' : '', L(hereCount(s.id) + ' here', hereCount(s.id) + ' حاضر')].filter(Boolean).join(' · ')}</div></div>${tagFor(s)}</div>`).join('') || empty()}</div></div>`;
 }
@@ -765,7 +927,15 @@ function templateFor(cs, s) {
 function planBox(s) {
   const focus = catsOf(s); const T = PR().templates || [];
   const tpl = (s.template && T.find(t => t.id === s.template)) || templateFor(focus, s); const mins = sesMinutes(s);
-  const total = tpl ? tpl.blocks.reduce((a, b) => a + b.min, 0) : 0; const scale = total ? mins / total : 1;
+  const total = tpl ? tpl.blocks.reduce((a, b) => a + b.min, 0) : 0;
+  /* every plan starts with a warm-up, has water breaks and ends with a cool-down; the drills share what is left */
+  const waters = mins >= 100 ? 2 : mins >= 50 ? 1 : 0; const drillMin = Math.max(20, mins - 10 - 8 - 3 * waters); const scale = total ? drillMin / total : 1;
+  const WARM = { en: 'Warm-up', ar: 'إحماء', min: 10, fixed: 1, cue: { en: 'Light jogging, dynamic stretches and a ball-handling game everyone can join.', ar: 'جري خفيف، إطالات حركية، ولعبة بالكورة الكل يقدر يشارك فيها.' } };
+  const WATER = { en: 'Water break', ar: 'استراحة مياه', min: 3, fixed: 1, cue: { en: 'Everyone drinks. Check on anyone who looks tired or hot.', ar: 'الكل يشرب مياه. اطمّن على أي طفل باين عليه التعب أو الحر.' } };
+  const COOL = { en: 'Cool-down and talk', ar: 'تهدئة وكلمة أخيرة', min: 8, fixed: 1, cue: { en: 'Easy stretches. Name one thing each child did well today.', ar: 'إطالات خفيفة. قول لكل طفل حاجة واحدة عملها كويس النهارده.' } };
+  const blocks = tpl ? (() => { const d = tpl.blocks.slice(); const out = [WARM]; d.forEach((b, i) => { out.push(b); if (waters && (i === Math.floor(d.length / (waters + 1)) - 1 || (waters === 2 && i === Math.floor(2 * d.length / 3) - 1))) out.push(WATER) }); if (!out.some(b => b === WATER) && waters) out.splice(Math.ceil(out.length / 2), 0, WATER); out.push(COOL); return out })() : [];
+  const ages = sessionRoster(s).map(p => age(p.dob)).filter(a => a !== '');
+  const young = sessionRoster(s).filter(p => age(p.dob) !== '' && age(p.dob) < 10), older = sessionRoster(s).filter(p => age(p.dob) !== '' && age(p.dob) >= 10);
   const roster = sessionRoster(s); const recs = D().recs || [];
   const watch = [];
   roster.forEach(p => {
@@ -779,15 +949,16 @@ function planBox(s) {
   const voice = D().voice && typeof D().voice === 'object' ? D().voice[s.group_id || 'all'] || D().voice['all'] || D().voice[mainGroup()] : null;
   return `${isCoach() && s.date === todayStr() ? `<div class="row sp"><span class="small muted">${s.coach_in ? '✓ ' + L('Checked in ', 'سُجّل الوصول ') + new Date(s.coach_in).toLocaleTimeString(LOC(), { hour: 'numeric', minute: '2-digit' }) : L('At the court? Check in.', 'في الملعب؟ سجّل وصولك.')}</span>${s.coach_in ? '' : `<button class="btn small" data-act="coach-in" data-id="${s.id}">${L('I’m here', 'وصلت')}</button>`}</div>` : ''}
   <h3>${L('Focus today', 'تركيز اليوم')}: ${catsTxt(s)}</h3>
-  ${(D().plan || {}).baseline ? `<p class="small muted">${L('First cycle: the six Phase 1 areas, two per session. Each child’s starting levels are set after their 4th session; nothing is called progress before that.', 'الدورة الأولى: مجالات المرحلة الأولى الستة، اثنان في كل حصة. تُحدَّد مستويات البداية لكل طفل بعد حصته الرابعة؛ ولا شيء يُسمّى تقدّمًا قبل ذلك.')}</p>` : ''}
+  ${(D().plan || {}).baseline ? `<p class="small muted">${L('The first 4 sessions: we get to know each child, two areas per session. Nothing is called progress before that.', 'أول 4 حصص: بنتعرّف على كل طفل، مجالين في كل حصة. مفيش حاجة اسمها تقدّم قبل كده.')}</p>` : ''}
   ${tpl ? `<div class="plan"><div class="row sp"><b>${esc(L(tpl.en, tpl.ar))}</b><select class="in" style="max-width:240px" data-chg="tpl" data-sid="${s.id}">${T.map(t => `<option value="${t.id}" ${t.id === tpl.id ? 'selected' : ''}>${esc(L(t.en, t.ar))}</option>`).join('')}</select></div>
     <p class="small">${esc(LL(tpl.obj))} · <span class="muted">${esc(LL(tpl.guide))}</span></p>
-    <ol class="blocks">${tpl.blocks.map(b => `<li><div class="row sp"><b>${esc(L(b.en, b.ar))}</b><span class="tag">${Math.max(5, Math.round(b.min * scale / 5) * 5)} ${L('min', 'د')}</span></div><div class="small">${esc(LL(b.cue))}</div>${b.up && b.up.en ? `<div class="tiny muted">↑ ${esc(LL(b.up))} · ↓ ${esc(LL(b.down))}</div>` : ''}</li>`).join('')}</ol>
-    <p class="tiny muted">${L('Sources', 'المصادر')}: ${(tpl.src || []).map(k => { const x = (PR().sources || {})[k]; return x ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>` : k }).join(' · ')}. ${L('Wording is HOST’s.', 'الصياغة من HOST.')}</p></div>` : ''}
+    ${young.length && older.length ? `<p class="small"><b>${L('Two age groups today', 'مجموعتين سن النهارده')}:</b> ${L(`${young.length} under 10 and ${older.length} aged 10+. Run the drills in two stations: the younger group with lighter balls, shorter turns and more games; the older group with more pressure and decisions.`, `${young.length} أقل من 10 سنين و${older.length} من 10 سنين وأكبر. قسّم التمارين لمحطتين: الصغيرين بكور أخف ودور أقصر وألعاب أكتر، والكبار بضغط أكتر وقرارات أكتر.`)}</p>` : ''}
+    <ol class="blocks">${blocks.map(b => `<li${b.fixed ? ' style="list-style:none;margin-inline-start:-18px"' : ''}><div class="row sp"><b>${b.fixed ? (b === WATER ? '💧 ' : b === WARM ? '🔥 ' : '🧘 ') : ''}${esc(L(b.en, b.ar))}</b><span class="tag">${b.fixed ? b.min : Math.max(5, Math.round(b.min * scale / 5) * 5)} ${L('min', 'د')}</span></div><div class="small">${esc(LL(b.cue))}</div>${b.up && b.up.en ? `<div class="tiny muted">↑ ${esc(LL(b.up))} · ↓ ${esc(LL(b.down))}</div>` : ''}</li>`).join('')}</ol>
+    ${isOwnerish() ? `<p class="tiny muted">${L('Sources', 'المصادر')}: ${(tpl.src || []).map(k => { const x = (PR().sources || {})[k]; return x ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>` : k }).join(' · ')}</p>` : ''}</div>` : ''}
   ${focus.map(c => subsOf(c).filter(k => k.core && k.fix)).reduce((a, b) => a.concat(b), []).slice(0, 4).map(sk => `<p class="small"><b>${esc(skillName(sk.id))}</b> · ${L('watch for', 'راقب')}: ${esc(LL(sk.error))} → ${esc(LL(sk.fix))}</p>`).join('')}
   <h3>${L('Who needs what today', 'من يحتاج ماذا اليوم')}</h3>${watch.length ? `<ul class="small">${watch.map(x => `<li>${x}</li>`).join('')}</ul>` : empty(L('Nothing flagged.', 'لا شيء مُشار إليه.'))}
   ${voice ? `<p class="small muted">${voice.hidden ? L('Children’s voice: fewer than 5 answers, so nothing is shown.', 'صوت الأطفال: أقل من 5 إجابات، لذا لا يُعرض شيء.') : L(`Children’s voice (last 2 weeks, ${voice.n} answers): fun ${voice.fun.toFixed(1)}/3 · learned ${voice.learned.toFixed(1)}/3 · ${voice.help} asked for help.`, `صوت الأطفال (آخر أسبوعين، ${voice.n} إجابة): المتعة ${voice.fun.toFixed(1)}/3 · التعلّم ${voice.learned.toFixed(1)}/3 · ${voice.help} طلبوا مساعدة.`)}</p>` : ''}
-  ${waiting.length ? `<h3>${L('Proposals waiting for your decision', 'مقترحات تنتظر قرارك')}</h3><div class="list">${waiting.map(r => `<div class="item" style="cursor:default;align-items:flex-start;flex-wrap:wrap"><div class="grow"><div class="nm">${esc((P(r.player_id) || {}).name || '')} · ${esc(skillName(r.skill))}</div><div class="sub">${levelName(r.level_from)} → ${levelName(r.level_to)} · ${esc(LL(r.reason))}</div></div>${canDecide ? `<div class="row"><button class="btn small" data-act="decide" data-id="${r.id}" data-v="accept">${L('Use it', 'نعتمده')}</button><button class="btn ghost small" data-act="decide" data-id="${r.id}" data-v="adapt">${L('Adapt', 'نعدّله')}</button><button class="link small" data-act="decide" data-id="${r.id}" data-v="reject">${L('Not now', 'ليس الآن')}</button></div>` : ''}</div>`).join('')}</div>` : ''}
+  ${waiting.length ? `<h3>${L('Suggestions waiting for you', 'اقتراحات مستنية قرارك')}</h3><div class="list">${waiting.map(r => `<div class="item" style="cursor:default;align-items:flex-start;flex-wrap:wrap"><div class="grow"><div class="nm">${esc((P(r.player_id) || {}).name || '')} · ${esc(skillName(r.skill))}</div><div class="sub">${levelName(r.level_from)} → ${levelName(r.level_to)} · ${esc(LL(r.reason))}</div></div>${canDecide ? `<div class="row"><button class="btn small" data-act="decide" data-id="${r.id}" data-v="accept">${L('Use it', 'نعتمده')}</button><button class="btn ghost small" data-act="decide" data-id="${r.id}" data-v="adapt">${L('Adapt', 'نعدّله')}</button><button class="link small" data-act="decide" data-id="${r.id}" data-v="reject">${L('Not now', 'ليس الآن')}</button></div>` : ''}</div>`).join('')}</div>` : ''}
   ${canDecide ? `<h3>${L('Your decision on today’s plan', 'قرارك في خطة اليوم')}</h3><div class="chips">${[['use', 'Use it', 'نعتمدها'], ['adapt', 'Adapt it', 'نعدّلها'], ['decline', 'Not today', 'ليس اليوم']].map(o => `<button class="chip" data-act="plan-dec" data-id="${s.id}" data-v="${o[0]}" aria-pressed="${s.plan_decision === o[0]}">${L(o[1], o[2])}</button>`).join('')}</div>
    <input class="in" placeholder="${L('What did you change? (optional)', 'ماذا غيّرت؟ (اختياري)')}" data-chg="plan-note" data-sid="${s.id}" value="${esc(s.plan_note || '')}">
    ${s.date <= todayStr() ? `<p class="small">${L('After the session: was this plan useful?', 'بعد الحصة: هل كانت الخطة مفيدة؟')}</p><div class="chips">${[[1, 'Not really', 'ليس كثيرًا'], [2, 'Somewhat', 'إلى حد ما'], [3, 'Very', 'جدًا']].map(o => `<button class="chip" data-act="plan-useful" data-id="${s.id}" data-v="${o[0]}" aria-pressed="${+s.plan_useful === o[0]}">${L(o[1], o[2])}</button>`).join('')}</div>` : ''}` : `<p class="small muted">${s.plan_decision ? L('Coach decision: ', 'قرار المدرب: ') + esc(s.plan_decision) : L('The coach has not decided yet.', 'لم يقرر المدرب بعد.')}${s.plan_note ? ' · ' + esc(s.plan_note) : ''}</p>`}`;
@@ -911,17 +1082,17 @@ function evPlan(s) {
   const dr0 = S.evDraft && S.evDraft.sid === s.id ? S.evDraft : null;
   const cs = (dr0 ? dr0.cats : null) || (pl && Array.isArray(pl.cats) && pl.cats.length ? pl.cats.map(String) : s.kind === 'competition' ? ['1', '10'] : sug.cats || []);
   const deep = (dr0 ? dr0.deep : null) || (pl && pl.deep && pl.deep.length ? pl.deep : sug.deep || []);
-  const scrim = dr0 ? dr0.scrim : (pl ? pl.scrim === 'yes' : s.kind === 'competition');
+  const scrim = dr0 ? dr0.scrim : (pl ? pl.scrim === 'yes' : s.kind === 'competition' || cs.some(c => +c >= 10));   // a suggested game area means the session should include a scrimmage; untick to drop it
   S.evDraft = { sid: s.id, cats: cs.slice(), deep: deep.slice(), scrim };
   const roster = sessionRoster(s); const last = (D().coverage || {}).lastSeen || {}; const pool = sug.pool || [];
   return `<p class="small muted">${pl ? L('Plan set by ', 'وضع الخطة ') + esc(pl.set_by || pl.updated_by || '') + L('. Both evaluators use the same plan.', '. يستخدم المقيّمان الخطة نفسها.') : L('Suggested from the evidence so far. Change it if the session needs something else.', 'مقترحة من الأدلة حتى الآن. غيّرها إن احتاجت الحصة شيئًا آخر.')}</p>
   <h3>${L('Focus areas today (one or two). The coach rates the area; you rate its skills that are open for each child.', 'مجالات التركيز اليوم (واحد أو اثنان). يقيّم المدرب المجال؛ وتقيّم أنت مهاراته المفتوحة لكل طفل.')}</h3>
   <label class="row small"><input type="checkbox" data-chg="evscrim" ${scrim ? 'checked' : ''}> ${L('This session includes a scrimmage (needed for game areas 10–20)', 'هذه الحصة فيها مباراة تدريبية (مطلوبة لمجالات اللعب 10–20)')}</label>
-  <div class="chips">${cats().map(c => { const game = +c.id >= 10; const off = game && !scrim; return `<button class="chip" data-act="evcat" data-v="${c.id}" aria-pressed="${cs.indexOf(c.id) >= 0}" ${off ? 'disabled' : ''} title="${game ? esc(L('Scrimmage only', 'في المباراة التدريبية فقط')) : ''}">${c.id} · ${esc(L(c.en, c.ar))}${pool.indexOf(c.id) < 0 ? ' ·' + L(' later', ' لاحقًا') : ''}</button>` }).join('')}</div>
-  <p class="tiny muted">${L('Marked “later”: not in the suggested rotation yet (the plan widens as cycles are completed). You can still choose it.', 'المعلّم «لاحقًا»: ليس ضمن الدورة المقترحة بعد (تتسع الخطة مع اكتمال الدورات). ويمكنك اختياره.')}</p>
+  <div class="chips">${cats().map(c => { const game = +c.id >= 10; const off = game && !scrim; return `<button class="chip" data-act="evcat" data-v="${c.id}" aria-pressed="${cs.indexOf(c.id) >= 0}" ${off && cs.indexOf(c.id) < 0 ? 'disabled' : ''} title="${game ? esc(L('Scrimmage only', 'في المباراة التدريبية فقط')) : ''}">${c.id} · ${esc(L(c.en, c.ar))}${pool.indexOf(c.id) < 0 ? ' ·' + L(' later', ' لاحقًا') : ''}</button>` }).join('')}</div>
+  <p class="tiny muted">${L('Marked “later”: not suggested yet; more areas open every 4 sessions. You can still choose it.', 'المعلّم «لاحقًا»: مش مقترح لسه؛ مجالات أكتر بتتفتح كل 4 حصص. وممكن تختاره برضه.')}</p>
   <h3>${L('Watch closely today (4–6 children seen longest ago)', 'راقب عن قرب اليوم (4–6 أطفال لم يُلاحظوا منذ أطول وقت)')}</h3>
   <div class="chips">${roster.map(p => `<button class="chip" data-act="evd" data-v="${p.id}" aria-pressed="${deep.indexOf(p.id) >= 0}">${esc(p.name)}${last[p.id] ? ' · ' + fmtD(last[p.id]) : ' · ' + L('never', 'لم يُلاحظ')}</button>`).join('')}</div>
-  <p class="tiny muted">${L('Character is watched for every child, the whole session. Children not on the list are recorded only when clearly seen.', 'تُلاحظ الشخصية لكل طفل طوال الحصة. الأطفال خارج القائمة يُسجَّلون فقط عندما يُرون بوضوح.')}</p>
+  <p class="tiny muted">${L('Rate character only for these children. For the others, only if something clearly stood out.', 'قيّم الشخصية للأطفال دول بس. الباقيين بس لو حاجة واضحة لفتت نظرك.')}</p>
   <div class="row"><button class="btn" data-act="evplan-save" data-sid="${s.id}">${L('Save plan and start recording', 'احفظ الخطة وابدأ التسجيل')}</button></div>`;
 }
 function evRecord(s) {
@@ -938,7 +1109,7 @@ function evRecord(s) {
   <div class="${sent ? '' : 'compact'}">${order.map(p => { const own = ownKid(p.id); const noC = p.consent_dev !== 'yes'; const subs = subsFor(p.id, s); const done = subs.filter(k => myObs(s.id, p.id, k.id)).length;
     return `<details class="pl ${deep.indexOf(p.id) >= 0 ? 'deep' : ''}" ${deep.indexOf(p.id) >= 0 || S.evOpen === p.id ? 'open' : ''} data-pid="${p.id}"><summary><b>${esc(p.name)}</b><span class="tag ${done === subs.length && subs.length ? 'ok' : ''}">${done} / ${subs.length}</span>${own ? `<span class="tag">${L('Your child · marked', 'طفلك · مُعلَّم')}</span>` : ''}${deep.indexOf(p.id) >= 0 ? `<span class="tag info">${L('Watch closely', 'مراقبة عن قرب')}</span>` : ''}</summary>
      ${noC ? `<p class="small" style="color:var(--flame)">${L('No family consent recorded: this child cannot be recorded yet.', 'لا توجد موافقة من العائلة: لا يمكن تسجيل هذا الطفل بعد.')}</p>` :
-      cs.map(c => { const list = subs.filter(k => k.cat === c); return `<div class="small muted" style="margin-top:8px;font-weight:600">${esc(catName(c))}</div>` + (list.length ? list.map(k => row(p, k.id, k.crit, !(st(p.id, k.id) || {}).n)).join('') : `<p class="tiny muted">${+c >= 10 && !isScrim(s) ? L('Game area: rated only in a scrimmage.', 'مجال لعب: يُقيَّم في المباراة التدريبية فقط.') : L('Nothing open for this child here yet.', 'لا شيء مفتوح لهذا الطفل هنا بعد.')}</p>`) }).join('') + `<details ${deep.indexOf(p.id) >= 0 ? 'open' : ''}><summary class="small">${L('Character (whole session)', 'الشخصية (طوال الحصة)')}</summary>${charDims().map(c => row(p, 'C' + c.id, c.anchor)).join('')}</details>
+      cs.map(c => { const list = subs.filter(k => k.cat === c); return `<div class="small muted" style="margin-top:8px;font-weight:600">${esc(catName(c))}</div>` + (list.length ? list.map(k => row(p, k.id, k.crit, !(st(p.id, k.id) || {}).n)).join('') : `<p class="tiny muted">${+c >= 10 && !isScrim(s) ? L('Game area: rated only in a scrimmage.', 'مجال لعب: يُقيَّم في المباراة التدريبية فقط.') : L('Nothing open for this child here yet.', 'لا شيء مفتوح لهذا الطفل هنا بعد.')}</p>`) }).join('') + `<details ${deep.indexOf(p.id) >= 0 ? 'open' : ''}><summary class="small">${deep.indexOf(p.id) >= 0 ? L('Character (whole session)', 'الشخصية (طوال الحصة)') : L('Character: only if something clearly stood out', 'الشخصية: بس لو حاجة واضحة لفتت نظرك')}</summary>${charDims().map(c => row(p, 'C' + c.id, c.anchor)).join('')}</details>
       <input class="in" placeholder="${L('Note for staff (optional)', 'ملاحظة للفريق (اختياري)')}" data-chg="evnote" data-sid="${s.id}" data-pid="${p.id}" value="${esc(((D().obs || []).filter(o => o.session_id === s.id && o.player_id === p.id && o.rater === S.me.id && o.note).pop() || {}).note || '')}">`}</details>` }).join('')}</div>
   <div class="row"><button class="btn" data-act="evsubmit" data-sid="${s.id}" ${sub ? 'disabled' : ''}>${sub ? '✓ ' + L('Submitted', 'أُرسل') : L('Submit my record', 'أرسل تسجيلي')}</button></div>`;
 }
@@ -956,24 +1127,18 @@ function evVerify(s) {
   ${both && ag ? `<h3>${L('The two of you, this session', 'أنتما الاثنان، هذه الحصة')}</h3><p class="small">${L(`${ag.items} shared ratings · same level ${pctTxt(ag.exact / ag.items)} · within one level ${pctTxt(ag.within1 / ag.items)}`, `${ag.items} تقييمًا مشتركًا · نفس المستوى ${pctTxt(ag.exact / ag.items)} · ضمن مستوى واحد ${pctTxt(ag.within1 / ag.items)}`)}</p>
    ${dis.length ? `<p class="small">${L('Far apart (talk it through):', 'متباعدة (ناقشاها):')}</p><ul class="small">${dis.map(d => `<li>${esc((P(d.pid) || {}).name || '')} · ${esc(skillName(d.skill))}: ${d.ratings.map(r => esc(r.name) + ' ' + r.level).join(' / ')}</li>`).join('')}</ul>` : ''}` : `<p class="small muted">${L('The comparison appears when both evaluators have submitted.', 'تظهر المقارنة عندما يرسل المقيّمان تسجيلهما.')}</p>`}`;
 }
-/* taps are queued and sent together */
-const EVQ = { items: {}, t: null, sid: '' };
+/* evaluator taps: kept on the phone (outbox) until the Sheet confirms them */
 function queueEv(sid, pid, k, v, note) {
-  const key = pid + '|' + k; const prev = EVQ.items[key] || {}; EVQ.sid = sid;
-  EVQ.items[key] = { player_id: pid, skill: k, level: v === undefined ? prev.level : v, note: note === undefined ? prev.note : note };
-  const local = { id: 'local_' + sid + key, session_id: sid, player_id: pid, skill: k, level: v === 'NO' ? '' : v, state: v === 'NO' ? 'not_observed' : 'observed', source: 'evaluator', rater: S.me.id, rater_name: S.me.name, note: EVQ.items[key].note || '', at: new Date().toISOString() };
-  if (v !== undefined) upsertLocal('obs', local);
-  clearTimeout(EVQ.t); EVQ.t = setTimeout(flushEv, 700);
+  const key = 'ev|' + sid + '|' + pid + '|' + k; const pend = (OB.list.find(x => x.key === key && x.uid === S.me.id) || {}).item;
+  const cur = (D().obs || []).filter(o => o.session_id === sid && o.player_id === pid && o.skill === k && o.rater === S.me.id && o.source === 'evaluator').sort((a, b) => String(a.at).localeCompare(String(b.at))).pop();
+  const level = v !== undefined ? v : pend ? pend.level : cur ? (cur.state === 'not_observed' ? 'NO' : cur.level) : undefined;
+  if (level === undefined || level === '') return;
+  const item = { player_id: pid, skill: k, level, note: note !== undefined ? note : pend ? pend.note : cur ? cur.note || '' : '' };
+  const local = { id: 'o_' + sid + '_' + pid + '_' + String(k).replace('.', '-') + '_' + S.me.id, session_id: sid, player_id: pid, skill: k, level: level === 'NO' ? '' : level, state: level === 'NO' ? 'not_observed' : 'observed', source: 'evaluator', rater: S.me.id, rater_name: S.me.name, note: item.note || '', at: new Date().toISOString() };
+  obPut({ key, a: 'evrecord', sid, item, local: [['obs', local]] });
 }
-async function flushEv() {
-  const items = Object.values(EVQ.items).filter(x => x.level !== undefined); const sid = EVQ.sid; EVQ.items = {}; if (!items.length) return;
-  try {
-    const j = await act('evrecord', { session_id: sid, items }, true);
-    S.D.obs = (S.D.obs || []).filter(o => !String(o.id).startsWith('local_'));
-    (j.recs || []).forEach(r => upsertLocal('obs', r));
-    if (j.blocked && j.blocked.length) toast('⚠ ' + L(j.blocked.length + ' not saved (no consent, or a game skill outside a scrimmage)', j.blocked.length + ' لم يُحفظ (بلا موافقة، أو مهارة لعب خارج المباراة التدريبية)'));
-  } catch (e) { }
-}
+/* before a submit: send everything waiting; true when nothing is left */
+async function flushEv() { clearTimeout(OB.t); for (let i = 0; i < 3 && obMine().length; i++) { while (OB.busy) await new Promise(r => setTimeout(r, 200)); await obFlush() } return !obMine().length }
 
 
 /* ================= COACH ================= */
@@ -988,7 +1153,7 @@ function coachToday() {
     <p class="small">${L('Focus', 'التركيز')}: <b>${((D().plan || {}).cats || []).map(c => esc(catName(c))).join(' · ')}</b></p>
     <button class="btn" data-act="open-session" data-date="${nx.date}" data-start="${nx.start}">${L('Open: plan, who came, your rating', 'افتح: الخطة والحضور وتقييمك')}</button></div>` : ''}
   ${flags.length ? `<div class="card attn"><b>${L('Families told us before the session', 'أخبرتنا العائلات قبل الحصة')}</b><ul class="small">${flags.map(x => `<li><b>${esc(x.p.name)}</b> · ${ctxText(x.c)}</li>`).join('')}</ul></div>` : ''}
-  ${waiting.length ? `<div class="card"><b>${L(`${waiting.length} proposal(s) waiting for your decision`, `${waiting.length} مقترح بانتظار قرارك`)}</b><p class="small muted">${L('Each proposal comes from what the evaluators observed. You decide: use it, adapt it, or not now.', 'كل مقترح مبني على ما لاحظه المقيّمان. أنت تقرر: نعتمده أو نعدّله أو ليس الآن.')}</p>${nx ? `<button class="btn small" data-act="open-session" data-date="${nx.date}" data-start="${nx.start}" data-tab="plan">${w('open')}</button>` : ''}</div>` : ''}
+  ${waiting.length ? `<div class="card"><b>${L(`${waiting.length} suggestion(s) waiting for you`, `${waiting.length} مقترح بانتظار قرارك`)}</b><p class="small muted">${L('Each suggestion comes from what the evaluators saw. You decide: use it, change it, or not now.', 'كل مقترح مبني على ما لاحظه المقيّمان. أنت تقرر: نعتمده أو نعدّله أو ليس الآن.')}</p>${nx ? `<button class="btn small" data-act="open-session" data-date="${nx.date}" data-start="${nx.start}" data-tab="plan">${w('open')}</button>` : ''}</div>` : ''}
   ${adviceCard()}
   ${toTap.length ? `<div class="card"><b>${L('Your rating is waiting', 'تقييمك بانتظارك')}</b><div class="list">${toTap.map(s => `<div class="item" data-act="session" data-id="${s.id}" data-tab="taps"><div class="grow">${fmtDL(s.date)}</div><span class="tag attn">${L('2 minutes', 'دقيقتان')}</span></div>`).join('')}</div></div>` : ''}
   <div class="card"><b>${L('A session from your notebook?', 'حصة من دفترك؟')}</b><p class="small muted">${L('Add it with its real date, then enter who came and your ratings as written.', 'أضفها بتاريخها الحقيقي، ثم أدخل الحضور وتقييماتك كما كتبتها.')}</p><button class="btn ghost" data-act="past-new">+ ${L('Add a past session', 'إضافة حصة سابقة')}</button></div>`;
@@ -1002,9 +1167,9 @@ function impactScreen() {
   const tend = v => v === 'higher' ? L('you tend to rate a little higher than the evaluators', 'تميل إلى التقييم أعلى قليلًا من المقيّمين') : v === 'lower' ? L('you tend to rate a little lower than the evaluators', 'تميل إلى التقييم أقل قليلًا من المقيّمين') : v === 'in_line' ? L('in line with the evaluators', 'متوافق مع المقيّمين') : L('not enough shared ratings yet', 'لا توجد تقييمات مشتركة كافية بعد');
   return `<h1>${w('impact')}</h1><p class="small muted">${L('The last 30 days. This is for you: what moved in your children and which of your choices worked. It is never a ranking.', 'آخر 30 يومًا. هذا لك: ما تقدّم في أطفالك وأي اختياراتك نجحت. ليس ترتيبًا أبدًا.')}</p>
   <div class="card"><h2>${L('What moved', 'ما تقدّم')}</h2>${Object.keys(by).length ? `<div class="list">${Object.keys(by).map(pid => `<div class="item" data-act="player" data-id="${pid}"><div class="grow"><div class="nm">${esc((P(pid) || {}).name || '')}</div><div class="sub">${by[pid].map(m => esc(skillName(m.skill)) + ': ' + levelName(m.from) + ' → ' + levelName(m.to) + ' · ' + fmtD(m.date)).join(' · ')}</div></div></div>`).join('')}</div>` : empty(L('No level moved up this month yet. Levels move only at the end of a child’s 4-session cycle.', 'لم يتقدّم أي مستوى هذا الشهر بعد. تتحرك المستويات فقط في نهاية دورة الطفل من 4 حصص.'))}</div>
-  <div class="card"><h2>${L('Your decisions on proposals', 'قراراتك في المقترحات')}</h2><ul class="small">${line('accept', 'Used as proposed', 'اعتُمدت كما هي')}${line('adapt', 'Adapted by you', 'عدّلتها')}${line('reject', 'Not now', 'ليس الآن')}</ul>${!(d.accept && d.accept.n) && !(d.adapt && d.adapt.n) ? empty() : ''}<p class="tiny muted">${L('A proposal is checked 3–4 weeks after your decision.', 'يُفحص المقترح بعد 3–4 أسابيع من قرارك.')}</p></div>
+  <div class="card"><h2>${L('Your decisions on suggestions', 'قراراتك في المقترحات')}</h2><ul class="small">${line('accept', 'Used as proposed', 'اعتُمدت كما هي')}${line('adapt', 'Adapted by you', 'عدّلتها')}${line('reject', 'Not now', 'ليس الآن')}</ul>${!(d.accept && d.accept.n) && !(d.adapt && d.adapt.n) ? empty() : ''}<p class="tiny muted">${L('A proposal is checked 3–4 weeks after your decision.', 'يُفحص المقترح بعد 3–4 أسابيع من قرارك.')}</p></div>
   <div class="card"><h2>${L('Your ratings and the evaluators', 'تقييماتك والمقيّمان')}</h2>${rt && rt.byCat && rt.byCat.length ? `<p class="small muted">${L(`You rate the broad skill; the evaluators rate its parts. Compared over ${rt.n} of your ratings:`, `أنت تقيّم المهارة العامة؛ والمقيّمان يقيّمان أجزاءها. بالمقارنة عبر ${rt.n} من تقييماتك:`)}</p><ul class="small">${rt.byCat.map(x => `<li><b>${esc(catName(x.cat))}</b>: ${tend(x.tend)}${x.tend !== 'not_enough' ? '' : ''}</li>`).join('')}</ul>` : cal ? `<p class="small">${L(`${cal.pairs} answers compared · same level ${pctTxt(cal.exact)} · within one ${pctTxt(cal.within1)}: `, `${cal.pairs} إجابة مقارنة · نفس المستوى ${pctTxt(cal.exact)} · ضمن مستوى ${pctTxt(cal.within1)}: `)}${tend(cal.verdict)}.</p>` : empty(L('Comparisons appear when you and the evaluators have looked at the same children in the same session.', 'تظهر المقارنات عندما تلاحظ أنت والمقيّمان الأطفال أنفسهم في الحصة نفسها.'))}
-   <p class="tiny muted">${L('Use this to calibrate: after a session, watch one area together with an evaluator and talk through what each of you saw.', 'استخدم هذا للمعايرة: بعد الحصة، راقب مجالًا واحدًا مع أحد المقيّمين وناقشا ما رآه كل منكما.')}</p></div>
+   <p class="tiny muted">${L('Tip: after a session, watch one area together with an evaluator and talk through what each of you saw.', 'نصيحة: بعد الحصة، راقب مجال واحد مع واحد من المقيّمين واتكلموا عن اللي كل واحد فيكم شافه.')}</p></div>
   ${im.useful && im.useful.mean != null ? `<div class="card"><p class="small">${L(`You rated ${im.useful.n} plans; average usefulness ${im.useful.mean.toFixed(1)} of 3. Your ratings shape the plans offered next.`, `قيّمت ${im.useful.n} خطة؛ متوسط الفائدة ${im.useful.mean.toFixed(1)} من 3. تقييماتك تشكّل الخطط القادمة.`)}</p></div>` : ''}`;
 }
 
@@ -1018,7 +1183,7 @@ function adviceCard() {
     return `<li><b>${esc(p.name)}</b> · ${r ? L('working on ', 'يعمل على ') : L('next: ', 'التالي: ')}${esc(skillName(pick.id))}${pick.fix ? ' · ' + L('watch for ', 'راقب ') + esc(LL(pick.error)) + ' → ' + esc(LL(pick.fix)) : ''}</li>`;
   };
   const rows = ps.map(line).filter(Boolean);
-  return rows.length ? `<div class="card"><h2>${L('For each child', 'لكل طفل')}</h2><ul class="small">${rows.join('')}</ul><p class="tiny muted">${L('From the evaluators’ evidence after each child’s last cycle. You decide what to do with it.', 'من أدلة المقيّمين بعد آخر دورة لكل طفل. أنت تقرر ما تفعله بها.')}</p></div>` : '';
+  return rows.length ? `<div class="card"><h2>${L('For each child', 'لكل طفل')}</h2><ul class="small">${rows.join('')}</ul><p class="tiny muted">${L('From what the evaluators saw in each child’s last 4 sessions. You decide what to do with it.', 'من اللي شافه المقيّمين في آخر 4 حصص لكل طفل. انت اللي تقرر تعمل بيه إيه.')}</p></div>` : '';
 }
 
 
@@ -1040,7 +1205,7 @@ function parentScreen() {
   const views = (D().views || []).filter(x => x.player_id === p.id).sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 8);
   const sentNext = nx[0] && ctxOn(p.id, nx[0].date);
   return `${kids.length > 1 ? `<div class="chips">${kids.map(k => `<button class="chip" data-act="pk" data-v="${k.id}" aria-pressed="${k.id === p.id}">${esc(k.name)}</button>`).join('')}</div>` : ''}
-  <div class="row sp"><h1>${esc(p.name)}</h1><button class="btn ghost small" data-act="kid-open" data-v="${p.id}">${(n => L(`Open ${n}’s page`, `افتح صفحة ${n}`))(esc(String(p.name).split(' ')[0]))}</button></div>
+  <div class="row sp"><h1>${esc(p.name)}</h1><div class="row">${SET().whatsapp && SET().whatsapp.length > 4 ? `<a class="btn wa small" href="${waLink(SET().whatsapp, '')}" target="_blank" rel="noopener">${L('Message the academy', 'راسل الأكاديمية')}</a>` : ''}<button class="btn ghost small" data-act="kid-open" data-v="${p.id}">${(n => L(`Open ${n}’s page`, `افتح صفحة ${n}`))(esc(String(p.name).split(' ')[0]))}</button></div></div>
   ${p.consent_dev !== 'yes' ? `<div class="card attn"><b>${L('Please review your consents', 'برجاء مراجعة موافقاتك')}</b><p class="small">${L('HOST evaluators record your child’s development only with your agreement.', 'يسجّل مقيّمو HOST تطوّر طفلك فقط بموافقتك.')}</p><button class="btn small" data-act="consent-open" data-pid="${p.id}">${L('Review', 'راجع')}</button></div>` : ''}
   ${nx.length ? `<div class="card"><span class="tag info">${L('Next sessions', 'الحصص القادمة')}</span>${nx.map(x => `<div class="row sp"><b>${fmtDL(x.date)}</b><span class="muted">${fmtT(x.start)} – ${fmtT(x.end)}</span></div>`).join('')}
     <p class="small muted">${esc(placeName())} · ${esc(L(SET().address, SET().address_ar) || '')}</p>
@@ -1049,23 +1214,29 @@ function parentScreen() {
   <div class="card"><h2>${v.next ? L('Now we are building', 'نبني الآن') : L('Next sessions focus on', 'تركيز الحصص القادمة')}</h2>
     ${v.next ? `<p><b>${esc(L(v.next.en, v.next.ar))}</b></p>${v.next.home ? `<p class="small"><b>${L('At home', 'في البيت')}:</b> ${esc(LL(v.next.home))}</p>` : ''}<p class="tiny muted">${L('Chosen from what the HOST evaluators observed and agreed by the coach on ', 'اختير مما لاحظه مقيّمو HOST ووافق عليه المدرب في ')}${fmtDS(v.next.since)}.</p>` : `<p>${(v.focus || []).map(f => esc(L(f.en, f.ar))).join(' · ') || '–'}</p>`}</div>
   <div class="card"><h2>${L('How it is going', 'كيف تسير الأمور')}</h2>
-    <p class="small">${(v.cycle || {}).live ? ((v.cycle.done ? L(`Session ${v.cycle.inCycle} of ${v.cycle.len} in this cycle.`, `الحصة ${v.cycle.inCycle} من ${v.cycle.len} في هذه الدورة.`) : L(`First cycle: session ${v.cycle.inCycle} of ${v.cycle.len}.`, `الدورة الأولى: الحصة ${v.cycle.inCycle} من ${v.cycle.len}.`)) + ' ' + L(`Every ${v.cycle.len} sessions your child attends, what the HOST evaluators saw decides whether each skill stays or moves up. You hear here when one moves up.`, `كل ${v.cycle.len} حصص يحضرها طفلك، يحدد ما رآه مقيّمو HOST هل تبقى كل مهارة أم تتقدّم. ستعرف هنا عندما تتقدّم مهارة.`)) : L('HOST evaluation starts with the first sessions on the new platform.', 'يبدأ تقييم HOST مع أول الحصص على المنصة الجديدة.')}</p>
+    <p class="small">${(v.cycle || {}).live ? (L(`Session ${v.cycle.inCycle} of ${v.cycle.len} in this round.`, `الحصة ${v.cycle.inCycle} من ${v.cycle.len} في الجولة دي.`) + ' ' + L(`Every ${v.cycle.len} sessions your child attends, we look at what the evaluators saw and decide if a skill has moved up. You will see it here when it does.`, `كل ${v.cycle.len} حصص بيحضرها طفلك، بنشوف المقيّمين لاحظوا إيه ونقرر لو في مهارة اتقدّمت. هتشوفوها هنا لما ده يحصل.`)) : L('HOST evaluation starts with the first sessions on the new platform.', 'يبدأ تقييم HOST مع أول الحصص على المنصة الجديدة.')}</p>
     ${workedTxt(v.worked) ? `<p class="small"><b>${L('Lately we worked on', 'عملنا مؤخرًا على')}:</b> ${workedTxt(v.worked)}</p>` : ''}
-    ${v.ups && v.ups.length ? `<h3>${L('Moved up', 'تقدّم')}</h3><ul class="small">${v.ups.slice(0, 8).map(ch => `<li>${changeLine(ch)}</li>`).join('')}</ul>` : v.started ? `<p class="small muted">${L(`Starting points are set in ${v.started} skills. Moves up appear here from the next cycle.`, `تحددت نقاط البداية في ${v.started} مهارة. يظهر التقدّم هنا من الدورة القادمة.`)}</p>` : `<p class="small muted">${L('Starting points are set after the first cycle. Nothing is called progress before that.', 'تتحدد نقاط البداية بعد الدورة الأولى. لا شيء يُسمّى تقدّمًا قبل ذلك.')}</p>`}
+    ${v.ups && v.ups.length ? `<h3>${L('Moved up', 'تقدّم')}</h3><ul class="small">${v.ups.slice(0, 8).map(ch => `<li>${changeLine(ch)}</li>`).join('')}</ul>` : v.started ? `<p class="small muted">${L(`We know where your child is in ${v.started} skills. Steps forward will appear here after the next 4 sessions.`, `عرفنا طفلك فين في ${v.started} مهارة. الخطوات اللي جاية هتظهر هنا بعد الـ4 حصص الجاية.`)}</p>` : `<p class="small muted">${L('In the first 4 sessions we get to know your child. After that, every step forward appears here.', 'في أول 4 حصص بنتعرّف على طفلك. بعد كده أي خطوة لقدّام هتظهر هنا.')}</p>`}
     ${v.range ? `<p class="tiny muted">${L('Guidance for age ', 'استرشاد لعمر ')}${v.age}: ${esc(LL(v.range))} ${L('A child outside this is not ahead or behind; the next level is the same for everyone.', 'الطفل خارج هذا النطاق ليس متقدمًا ولا متأخرًا؛ المستوى التالي واحد للجميع.')}</p>` : ''}</div>
   <div class="card"><h2>${L('Who your child is becoming', 'من يصبح طفلك')}</h2><div class="list">${v.character.map(c => `<div class="drow" style="align-items:flex-start"><div class="grow"><b>${esc(L(c.en, c.ar))}</b><div class="small">${c.text ? esc(LL(c.text)) : `<span class="muted">${L('Being observed.', 'قيد الملاحظة.')}</span>`}</div></div></div>`).join('')}</div><p class="tiny muted">${L('Described in words, never graded.', 'يُوصف بالكلمات ولا يُعطى درجة.')}</p></div>
   ${pend.length ? `<div class="card"><h2>${L('Share with your child?', 'مشاركة مع طفلك؟')}</h2><p class="small muted">${L('The coach suggested sharing these with your child. Nothing reaches your child without your approval.', 'اقترح المدرب مشاركة هذه مع طفلك. لا يصل شيء لطفلك دون موافقتك.')}</p>${pend.map(n => `<div class="item" style="cursor:default;flex-wrap:wrap"><div class="grow">${esc(n.text)}<div class="sub">${fmtDS(n.date)}</div></div><button class="btn small" data-act="share" data-id="${n.id}" data-v="approve">${L('Share', 'شارك')}</button><button class="link small" data-act="share" data-id="${n.id}" data-v="decline">${L('Not now', 'ليس الآن')}</button></div>`).join('')}</div>` : ''}
   <div class="card"><h2>${L('What the coach noticed', 'ما لاحظه المدرب')}</h2>${notes.length ? `<div class="list">${notes.slice(0, 8).map(n => `<div class="item" style="cursor:default;align-items:flex-start"><div class="grow"><div class="sub">${fmtDS(n.date)} · ${esc(n.by || '')}</div><div>${esc(n.text)}</div></div></div>`).join('')}</div>` : empty()}</div>
-  <div class="card"><h2>${w('reports')}</h2>${reps.length ? `<div class="list">${reps.map(r => `<div class="item" data-act="report-view" data-id="${r.id}"><div class="grow"><div class="nm">${repTitle(r)}</div><div class="sub">${fmtDS(r.period_from)} → ${fmtDS(r.period_to)}</div></div><span class="tag">${w('open')}</span></div>`).join('')}</div>` : empty(L('Your first report arrives after the first cycle of sessions with HOST evaluators.', 'يصل أول تقرير بعد أول دورة حصص مع مقيّمي HOST.'))}</div>
+  <div class="card"><h2>${w('reports')}</h2>${reps.length ? `<div class="list">${reps.map(r => `<div class="item" data-act="report-view" data-id="${r.id}"><div class="grow"><div class="nm">${repTitle(r)}</div><div class="sub">${fmtDS(r.period_from)} → ${fmtDS(r.period_to)}</div></div><span class="tag">${w('open')}</span></div>`).join('')}</div>` : empty(L('Your first report arrives after your child’s first 4 sessions with HOST evaluators.', 'أول تقرير بيوصل بعد أول 4 حصص لطفلك مع مقيّمي HOST.'))}</div>
   <div class="card"><div class="row sp"><h2>${L('Attendance', 'الحضور')}</h2><b>${L(`${here} of ${att.length}`, `${here} من ${att.length}`)}</b></div><p class="tiny muted">${L('Away periods you told us about are not counted.', 'فترات الغياب التي أخبرتنا بها لا تُحسب.')}</p></div>
   ${!fbDone ? `<div class="card"><b>${L('Five quick taps for this month', 'خمس ضغطات سريعة لهذا الشهر')}</b><p class="small muted">${L('Tell the academy owner how it is going. It takes 20 seconds.', 'أخبر مالك الأكاديمية كيف تسير الأمور. 20 ثانية فقط.')}</p><button class="btn small" data-act="famfb-open" data-pid="${p.id}">${L('Start', 'ابدأ')}</button></div>` : ''}
   <div class="card"><h2>${L('Your settings', 'إعداداتك')}</h2><div class="row wrap"><button class="btn ghost small" data-act="consent-open" data-pid="${p.id}">${L('Consents', 'الموافقات')}</button>${SET().whatsapp && SET().whatsapp.length > 4 ? `<a class="btn wa small" href="${waLink(SET().whatsapp, '')}" target="_blank" rel="noopener">${L('Message the academy', 'راسل الأكاديمية')}</a>` : ''}</div>
    <details><summary class="small">${L('Who opened your child’s file', 'من فتح ملف طفلك')}</summary>${views.length ? `<ul class="small">${views.map(x => `<li>${fmtDS(String(x.at).slice(0, 10))} · ${esc(x.who)} · ${esc(roleName(x.role))}</li>`).join('')}</ul>` : empty()}</details></div>`;
 }
+function teamBlock(s) {
+  const team = (s.team || []).filter(t => t && t.show !== 'no' && (t.name || t.name_ar)); if (!team.length && !L(s.about_en, s.about_ar)) return '';
+  return `<div class="card"><h2>${L('Who we are', 'مين إحنا')}</h2>${L(s.about_en, s.about_ar) ? `<p>${esc(L(s.about_en, s.about_ar))}</p>` : ''}
+   ${team.length ? `<div class="team">${team.map(t => `<div class="person">${t.photo ? `<img src="${esc(t.photo)}" alt="" loading="lazy">` : `<span class="av">${esc(initials(L(t.name, t.name_ar || t.name)))}</span>`}<div class="grow"><b>${esc(L(t.name, t.name_ar || t.name))}</b><div class="rl">${esc(L(t.role_en, t.role_ar))}</div><p class="small">${esc(L(t.bio_en, t.bio_ar) || '')}</p></div></div>`).join('')}</div>` : ''}</div>`;
+}
 function academyPage() {
   const s = SET(); const se = seasonOn(todayStr());
   return `<h1>${esc(L(s.academy, s.academy_ar))}</h1>
-  <div class="card"><p>${esc(L(s.brief_en, s.brief_ar) || '')}</p></div>
+  ${s.whatsapp && s.whatsapp.length > 4 ? `<a class="btn wa" href="${waLink(s.whatsapp, '')}" target="_blank" rel="noopener">${L('Message the academy on WhatsApp', 'راسل الأكاديمية على واتساب')}</a>` : ''}
+  ${teamBlock(s)}
   <div class="card"><h2>${L('Where and when', 'المكان والموعد')}</h2><p>${esc(placeName())} · ${esc(L(s.address, s.address_ar) || '')}</p><p>${se ? (se.slots || []).map(x => dayName(x.day) + ' ' + fmtT(x.start) + '–' + fmtT(x.end)).join(' · ') : ''}</p>${s.map ? `<a class="btn ghost small" href="${esc(s.map)}" target="_blank" rel="noopener">${L('Open the map', 'افتح الخريطة')}</a>` : ''}</div>
   <div class="card"><h2>${L('Family guide', 'دليل العائلة')}</h2><ul>${String(L(s.rules_en, s.rules_ar) || '').split('\n').filter(Boolean).map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>
   <div class="card"><h2>${L('How HOST follows your child', 'كيف تتابع HOST طفلك')}</h2><ul class="small"><li>${L('HOST evaluators observe every session against one written standard, separately from the coach.', 'يلاحظ مقيّمو HOST كل حصة وفق معيار مكتوب واحد، بشكل منفصل عن المدرب.')}</li><li>${L('Every 4 sessions a child attends, the evaluators’ observations decide whether each skill stays or moves up. Families hear when a skill moves up.', 'كل 4 حصص يحضرها الطفل، تحدد ملاحظات المقيّمين هل تبقى كل مهارة أم تتقدّم. تعرف العائلة عندما تتقدّم مهارة.')}</li><li>${L('No child is compared with another. There is no single overall score.', 'لا يُقارن طفل بآخر. لا توجد درجة إجمالية واحدة.')}</li><li>${L('Your check-ins shape what the coach does that day.', 'تحديثاتك تشكّل ما يفعله المدرب في ذلك اليوم.')}</li></ul></div>`;
@@ -1081,10 +1252,10 @@ function kidPage() {
    <h1>${L('Hi ', 'أهلًا ')}${esc(first)}!</h1>
    <div class="card"><h2>${L('What I’m working on', 'ما أعمل عليه')}</h2><p class="big">${v.next ? esc(L(v.next.en, v.next.ar)) : (v.focus || []).map(f => esc(L(f.en, f.ar))).join(' · ')}</p>${v.next && v.next.home ? `<p>${L('At home: ', 'في البيت: ')}${esc(LL(v.next.home))}</p>` : ''}</div>
    <div class="card"><h2>${L('What my coach noticed', 'ما لاحظه مدربي')}</h2>${shared.length ? shared.slice(0, 5).map(n => `<p class="big">⭐ ${esc(n.text)}</p>`).join('') : `<p class="muted">${L('Your coach’s notes appear here when your family shares them.', 'تظهر ملاحظات مدربك هنا عندما تشاركها عائلتك.')}</p>`}</div>
-   ${last ? `<div class="card"><h2>${L('How was the last session?', 'كيف كانت الحصة الأخيرة؟')}</h2><p class="tiny muted">${L('Your answer has no name on it. Your coach only sees answers from five or more children together.', 'إجابتك بلا اسم. يرى مدربك فقط إجابات خمسة أطفال أو أكثر معًا.')}</p>
+   ${last ? `<div class="card"><h2>${L('How was the last session?', 'كيف كانت الحصة الأخيرة؟')}</h2><p class="tiny muted">${L('Your answers about fun and learning have no name on them.', 'إجاباتك عن المتعة والتعلّم بلا اسم.')}</p>
      ${voiced ? `<p class="big">✓ ${L('Thank you!', 'شكرًا!')}</p>` : `<form id="voiceForm" data-pid="${p.id}" data-sid="${last.id}"><p>${L('Was it fun?', 'هل كانت ممتعة؟')}</p><div class="faces">${[[3, '😀'], [2, '🙂'], [1, '😕']].map(x => `<label><input type="radio" name="fun" value="${x[0]}" required><span>${x[1]}</span></label>`).join('')}</div>
      <p>${L('Did you learn something new?', 'هل تعلمت شيئًا جديدًا؟')}</p><div class="faces">${[[3, L('Yes!', 'نعم!')], [2, L('A bit', 'قليلًا')], [1, L('Not really', 'ليس كثيرًا')]].map(x => `<label><input type="radio" name="learned" value="${x[0]}" required><span>${x[1]}</span></label>`).join('')}</div>
-     <label class="row"><input type="checkbox" name="help"> ${L('I’d like help with something', 'أريد مساعدة في شيء ما')}</label><button class="btn" type="submit">${L('Send', 'أرسل')}</button></form>`}</div>` : ''}</div>`;
+     <label class="row"><input type="checkbox" name="help"> ${L('I’d like help with something', 'محتاج مساعدة في حاجة')}</label><p class="tiny muted">${L('If you tick this, someone from the academy will talk to your family soon.', 'لو اخترت ده، حد من الأكاديمية هيكلم أهلك قريب.')}</p><button class="btn" type="submit">${L('Send', 'أرسل')}</button></form>`}</div>` : ''}</div>`;
 }
 /* ---------- modals ---------- */
 function ctxModal(pid, date) {
@@ -1112,17 +1283,17 @@ function famfbModal(pid) {
    <div class="row"><button class="btn" type="submit">${L('Send', 'أرسل')}</button><button class="btn ghost" type="button" data-act="modal-close">${w('cancel')}</button></div></form>`);
 }
 /* ---------- a frozen report, as the family receives it ---------- */
-const repTitle = r => r.type === 'cycle' ? L(`Cycle report ${((r.snapshot || {}).cycle || {}).k || ''}`, `تقرير الدورة ${((r.snapshot || {}).cycle || {}).k || ''}`) : r.type === 'term' ? L('Term report', 'تقرير الفصل') : L('Monthly report', 'التقرير الشهري');
+const repTitle = r => r.type === 'cycle' ? L(`Progress report ${((r.snapshot || {}).cycle || {}).k || ''}`, `تقرير التطور ${((r.snapshot || {}).cycle || {}).k || ''}`) : r.type === 'term' ? L('Term report', 'تقرير الفصل') : L('Monthly report', 'التقرير الشهري');
 function reportHtml(r) {
   const s = r.snapshot || {}; const c = s.child || {}; const a = s.attendance || {};
-  return `<div class="report"><div class="row sp"><img src="${LOGO}" alt="HOST" style="height:36px"><span class="tiny muted">${esc(s.protocol || '')}</span></div>
+  return `<div class="report"><div class="row sp"><img src="${LOGO}" alt="HOST" style="height:36px"><span class="tiny muted">${esc(L(SET().academy, SET().academy_ar) || '')}</span></div>
    <h2>${repTitle(r)} · ${esc(c.name || '')}</h2><p class="small muted">${fmtDS((s.period || {}).from)} → ${fmtDS((s.period || {}).to)}${c.age != null ? ' · ' + L('age ', 'العمر ') + c.age : ''}</p>
    <p>${L(`Came to ${a.here} of ${a.sessions} sessions.`, `حضر ${a.here} من ${a.sessions} حصص.`)}${a.excused ? ' ' + L(`${a.excused} away period session(s) not counted.`, `${a.excused} حصة غياب بعذر لم تُحسب.`) : ''}</p>
    <h3>${L('What we worked on', 'ما عملنا عليه')}</h3><p class="small">${workedTxt(s.worked) || '–'}${(s.worked || {}).plans && s.worked.plans.length ? ' · ' + s.worked.plans.map(x => esc(L(x.en, x.ar))).join(' · ') : ''}</p>
    <h3>${L('How your child responded', 'كيف استجاب طفلك')}</h3><ul class="small">${(s.character || []).map(k => `<li><b>${esc(L(k.en, k.ar))}</b>: ${k.text ? esc(LL(k.text)) : L('being observed', 'قيد الملاحظة')}</li>`).join('')}</ul>
    ${(s.notes || []).length ? `<p class="small"><b>${L('The coach noticed', 'لاحظ المدرب')}:</b></p><ul class="small">${s.notes.map(n => `<li>${fmtDS(n.date)}: ${esc(n.text)}</li>`).join('')}</ul>` : ''}
-   <h3>${L('Moved up', 'تقدّم')}</h3>${(s.ups || []).length ? `<ul class="small">${s.ups.map(ch => `<li>${changeLine(ch)}</li>`).join('')}</ul>` : s.started ? `<p class="small muted">${L(`Starting points were set in ${s.started} skills in this period. Moves up are reported from the next cycle.`, `تحددت نقاط البداية في ${s.started} مهارة في هذه الفترة. يُبلَّغ عن التقدّم من الدورة التالية.`)}</p>` : `<p class="small muted">${L('No skill moved up in this period. Skills hold for a while before they move; that is normal.', 'لم تتقدّم مهارة في هذه الفترة. تثبت المهارات فترة قبل أن تتقدّم؛ وهذا طبيعي.')}</p>`}
-   <h3>${L('What’s next', 'الخطوة التالية')}</h3><p class="small">${s.next ? `<b>${esc(L(s.next.en, s.next.ar))}</b>${s.next.home ? ' · ' + L('at home', 'في البيت') + ': ' + esc(LL(s.next.home)) : ''}` : L('The coach chooses the next focus with the evaluators after this cycle.', 'يختار المدرب التركيز التالي مع المقيّمين بعد هذه الدورة.')}</p>
+   <h3>${L('Moved up', 'تقدّم')}</h3>${(s.ups || []).length ? `<ul class="small">${s.ups.map(ch => `<li>${changeLine(ch)}</li>`).join('')}</ul>` : s.started ? `<p class="small muted">${L(`In this period we got to know where your child is in ${s.started} skills. Steps forward are reported from the next report.`, `في الفترة دي عرفنا طفلك فين في ${s.started} مهارة. الخطوات لقدّام هتظهر من التقرير الجاي.`)}</p>` : `<p class="small muted">${L('No skill moved up in this period. Skills hold for a while before they move; that is normal.', 'لم تتقدّم مهارة في هذه الفترة. تثبت المهارات فترة قبل أن تتقدّم؛ وهذا طبيعي.')}</p>`}
+   <h3>${L('What’s next', 'الخطوة التالية')}</h3><p class="small">${s.next ? `<b>${esc(L(s.next.en, s.next.ar))}</b>${s.next.home ? ' · ' + L('at home', 'في البيت') + ': ' + esc(LL(s.next.home)) : ''}` : L('The coach chooses the next focus with the evaluators after these sessions.', 'الكابتن بيختار التركيز الجاي مع المقيّمين بعد الحصص دي.')}</p>
    ${(s.partner || []).length ? `<h3>${L('Your part', 'دوركم')}</h3><ul class="small">${s.partner.map(x => `<li>${esc(LL(x))}</li>`).join('')}</ul>` : ''}
    <p class="tiny muted">${L('Evidence', 'الأدلة')}: ${L(`${(s.evidence || {}).moments || 0} observations by`, `${(s.evidence || {}).moments || 0} ملاحظة من`)} ${esc(((s.evidence || {}).raters || []).join(', ') || '–')}${s.range ? ' · ' + esc(LL(s.range)) : ''}</p>
    <p class="tiny muted">HOST · House of Sports Talents</p></div>`;
@@ -1132,7 +1303,7 @@ function reportModal(id) { const r = (D().reports || []).find(x => x.id === id);
 
 /* ================= DEVELOPMENT (owners) ================= */
 const VERD = { not_enough: ['Not enough evidence yet', 'لا توجد أدلة كافية بعد'], early_signal: ['Early signal that it helps', 'إشارة مبكرة أنه يساعد'], moving_less: ['Practised skills are moving less', 'المهارات المُتدرَّب عليها تتحرك أقل'], no_clear_difference: ['No clear difference yet', 'لا فرق واضح بعد'], working: ['Working', 'يعمل'], probably_helping: ['Probably helping', 'غالبًا يساعد'],
-  reliable: ['Reliable', 'موثوق'], usable: ['Usable with care', 'قابل للاستخدام بحذر'], recalibrate: ['Recalibrate together', 'تحتاجان معايرة معًا'], in_line: ['In line', 'متوافق'], higher: ['Tends higher', 'يميل للأعلى'], lower: ['Tends lower', 'يميل للأقل'] };
+  reliable: ['Reliable', 'موثوق'], usable: ['Usable with care', 'قابل للاستخدام بحذر'], recalibrate: ['Watch one session together', 'اتفرجوا على حصة مع بعض'], in_line: ['In line', 'متوافق'], higher: ['Tends higher', 'يميل للأعلى'], lower: ['Tends lower', 'يميل للأقل'] };
 const verdName = v => VERD[v] ? L(VERD[v][0], VERD[v][1]) : String(v || '').replace(/_/g, ' ');
 
 function devScreen() {
@@ -1150,9 +1321,9 @@ function levelsBoard() {
   const cat = S.boardCat || '1'; const ps = activeP().slice().sort((a, b) => String(a.name).localeCompare(String(b.name), 'ar'));
   const ids = cat === 'F' ? charDims().map(c => 'C' + c.id) : subsOf(cat).map(k => k.id);
   const cell = (pid, sk) => { const x = st(pid, sk); const op = sk[0] === 'C' || openOf(pid).indexOf(sk) >= 0; if (!x || !x.n) return `<td class="c0" title="${esc(op ? L('open, not observed yet', 'مفتوحة، لم تُلاحظ') : L('not open yet', 'لم تُفتح بعد'))}">${op ? '·' : ''}</td>`; const lv = x.level || x.seen || 0; return `<td class="c${lv} ${x.level ? '' : 'soft'}" title="${esc(skillName(sk))}: ${esc(levelName(lv))} · ${esc(statusName(x.status))} · ${x.n}">${lv}${x.level ? '' : '°'}</td>` };
-  return `<div class="card"><div class="chips">${cats().map(c => `<button class="chip" data-act="board-cat" data-v="${c.id}" aria-pressed="${cat === c.id}">${c.id}</button>`).join('')}<button class="chip" data-act="board-cat" data-v="F" aria-pressed="${cat === 'F'}">${L('Character', 'الشخصية')}</button></div>
+  return `<div class="card"><div class="chips">${cats().map(c => `<button class="chip" data-act="board-cat" data-v="${c.id}" aria-pressed="${cat === c.id}">${c.id} · ${esc(L(c.en, c.ar))}</button>`).join('')}<button class="chip" data-act="board-cat" data-v="F" aria-pressed="${cat === 'F'}">${L('Character', 'الشخصية')}</button></div>
   <h2>${cat === 'F' ? L('Character', 'الشخصية') : esc(catName(cat))}</h2>
-  <p class="small muted">${L('Children in alphabetical order, never ranked. A number = the level set at a cycle end · ° = first cycle, seen but not set yet · · = open, not observed · empty = not open yet. Tap a name for the child’s file.', 'الأطفال بالترتيب الأبجدي، دون ترتيب حسب المستوى. الرقم = المستوى المحدد في نهاية دورة · ° = الدورة الأولى، لوحظ ولم يُحدد · · = مفتوحة لم تُلاحظ · فارغ = لم تُفتح بعد. اضغط الاسم لملف الطفل.')}</p>
+  <p class="small muted">${L('Children in alphabetical order, never ranked. Number alone: the level set after 4 sessions. Number with a small ° : seen so far, not set yet. Small dot: open, not seen yet. Empty: not open yet. Darker blue = higher level. Tap a name for the child’s file.', 'الأطفال بالترتيب الأبجدي، من غير ترتيب بالمستوى. رقم لوحده: المستوى اللي اتحدد بعد 4 حصص. رقم جنبه ° صغيرة: اتشاف لحد دلوقتي ولسه ماتحددش. نقطة صغيرة: مفتوحة ولسه ماتشافتش. فاضي: لسه ماتفتحتش. الأزرق الأغمق = مستوى أعلى. اضغط على الاسم لفتح ملف الطفل.')}</p>
   <div class="tbl"><table class="board"><thead><tr><th>${L('Child', 'الطفل')}</th>${ids.map(id => `<th class="tiny" title="${esc(skillName(id))}">${id.replace('C', '')}</th>`).join('')}</tr></thead>
   <tbody>${ps.map(p => `<tr><td><button class="link small" data-act="player" data-id="${p.id}">${esc(p.name)}</button></td>${ids.map(id => cell(p.id, id)).join('')}</tr>`).join('')}</tbody></table></div>
   <p class="tiny muted">${ids.map(id => id.replace('C', '') + ' ' + esc(skillName(id))).join(' · ')}</p></div>`;
@@ -1199,9 +1370,9 @@ function qualityScreen() {
   if (tab === 'eval') {
     const bs = ag.bySkill || {};
     body = `<div class="card"><p class="small muted">${L('Two HOST evaluators rate the same children in the same session, separately. Their agreement is how the protocol earns a reliability figure. Inside HOST only: no figure is quoted outside until it is reliable.', 'يقيّم مقيّما HOST الأطفال أنفسهم في الحصة نفسها، كلٌ على حدة. اتفاقهما هو ما يمنح البروتوكول رقم موثوقية. داخل HOST فقط: لا يُذكر أي رقم خارجها حتى يصبح موثوقًا.')}</p>
-     <div class="kpis">${kv(L('Shared ratings', 'تقييمات مشتركة'), ag.items || 0)}${kv(L('Same level', 'نفس المستوى'), pctTxt(ag.exact))}${kv(L('Within one level', 'ضمن مستوى واحد'), pctTxt(ag.within1))}${ag.alpha != null ? kv('Krippendorff α', ag.alpha.toFixed(2)) : ''}</div>
-     <p><b>${esc(verdName(ag.verdict))}</b>${ag.verdict === 'not_enough' ? ' · ' + L(`needs ${ag.minItems || 30} shared ratings`, `يحتاج ${ag.minItems || 30} تقييمًا مشتركًا`) : ''} <span class="tiny muted">(${L('α ≥ 0.80 reliable · 0.67–0.80 usable with care · below: recalibrate', 'α ≥ 0.80 موثوق · 0.67–0.80 بحذر · أقل: معايرة')})</span></p></div>
-     ${(ag.raters || []).length ? `<div class="card"><h2>${L('Each evaluator against the other', 'كل مقيّم مقابل الآخر')}</h2>${ag.raters.map(r => `<p class="small"><b>${esc(r.name || r.id)}</b> · ${r.items} · ${r.severity == null ? '' : Math.abs(r.severity) < 0.25 ? L('in line', 'متوافق') : r.severity > 0 ? L(`about ${r.severity.toFixed(2)} level higher`, `أعلى بحوالي ${r.severity.toFixed(2)} مستوى`) : L(`about ${(-r.severity).toFixed(2)} level lower`, `أقل بحوالي ${(-r.severity).toFixed(2)} مستوى`)}</p>`).join('')}</div>` : ''}
+     <div class="kpis">${kv(L('Shared ratings', 'تقييمات مشتركة'), ag.items || 0)}${kv(L('Same level', 'نفس المستوى'), pctTxt(ag.exact))}${kv(L('Within one level', 'ضمن مستوى واحد'), pctTxt(ag.within1))}</div>
+     <p><b>${esc(verdName(ag.verdict))}</b>${ag.verdict === 'not_enough' ? ' · ' + L(`needs ${ag.minItems || 30} shared ratings`, `يحتاج ${ag.minItems || 30} تقييمًا مشتركًا`) : ''} <br><span class="small muted">${L('Reliable: you two give the same level almost every time, so the levels can be trusted. Usable with care: mostly the same, check the far-apart ones below. Watch one session together: you often differ, so rate a few children side by side and agree what each level looks like.', 'موثوق: انتو الاتنين بتدّوا نفس المستوى تقريبًا كل مرة، فالمستويات يُعتمد عليها. بحذر: غالبًا نفس المستوى، راجعوا الحالات المتباعدة تحت. اتفرجوا على حصة مع بعض: بتختلفوا كتير، فقيّموا كام طفل جنب بعض واتفقوا كل مستوى شكله إيه.')}</span>${ag.alpha != null && isOwner() ? `<br><span class="tiny muted">${L('Technical figure for the protocol file', 'رقم فني لملف البروتوكول')}: α ${ag.alpha.toFixed(2)}</span>` : ''}</p></div>
+     ${(ag.raters || []).length ? `<div class="card"><h2>${L('Each evaluator against the other', 'كل مقيّم مقابل الآخر')}</h2>${ag.raters.map(r => `<p class="small"><b>${esc(r.name || r.id)}</b> · ${r.items} · ${r.severity == null ? '' : Math.abs(r.severity) < 0.25 ? L('gives the same levels as the other evaluator', 'بيدّي نفس مستويات المقيّم التاني') : r.severity > 0 ? (r.severity < 0.6 ? L('gives slightly higher levels', 'بيدّي مستويات أعلى شوية') : L('gives clearly higher levels: talk it through', 'بيدّي مستويات أعلى بوضوح: اتكلموا فيها')) : (r.severity > -0.6 ? L('gives slightly lower levels', 'بيدّي مستويات أقل شوية') : L('gives clearly lower levels: talk it through', 'بيدّي مستويات أقل بوضوح: اتكلموا فيها'))}</p>`).join('')}</div>` : ''}
      ${(ag.own || {}).items ? `<div class="card"><h2>${L('Owners rating their own children', 'المالكون يقيّمون أطفالهم')}</h2><p class="small">${L(`${ag.own.items} ratings by a parent next to the other evaluator’s: ${ag.own.higher} higher, ${ag.own.lower} lower, average ${(ag.own.mean >= 0 ? '+' : '') + ag.own.mean.toFixed(2)} level.`, `${ag.own.items} تقييمًا من وليّ الأمر بجانب تقييم المقيّم الآخر: ${ag.own.higher} أعلى، ${ag.own.lower} أقل، المتوسط ${(ag.own.mean >= 0 ? '+' : '') + ag.own.mean.toFixed(2)} مستوى.`)}</p><p class="tiny muted">${(PR().rule_ui || {}).own ? esc(LL(PR().rule_ui.own)) : ''}</p></div>` : ''}
      <div class="card"><h2>${L('By skill', 'حسب المهارة')}</h2><div class="list">${Object.keys(bs).map(k => `<div class="drow"><div class="grow">${esc(skillName(k))}</div><span class="small">${bs[k].items} · ${pctTxt(bs[k].exact / bs[k].items)} · ${pctTxt(bs[k].within1 / bs[k].items)}</span></div>`).join('') || empty()}</div><p class="tiny muted">${L('shared ratings · same level · within one level', 'تقييمات مشتركة · نفس المستوى · ضمن مستوى')}</p></div>
      <div class="card"><h2>${L('Far apart: talk these through', 'متباعدة: ناقشاها')}</h2>${(ag.disputed || []).length ? `<ul class="small">${ag.disputed.map(d => `<li>${fmtD(d.date)} · ${esc((P(d.pid) || {}).name || '')} · ${esc(skillName(d.skill))}: ${d.ratings.map(r => esc(r.name) + ' ' + r.level).join(' / ')}</li>`).join('')}</ul>` : empty(L('None.', 'لا يوجد.'))}<p class="tiny muted">${(PR().rule_ui || {}).dispute ? esc(LL(PR().rule_ui.dispute)) : ''}</p></div>`;
@@ -1318,8 +1489,8 @@ function leadsBoard() {
   const inCol = st => leads().filter(l => (l.stage || 'new') === st && (st !== 'registered' || monthKey(regDate(l)) >= monthKey(addDays(t, -60))));
   return `<div class="row sp"><p class="small muted grow">${L('Every family who asked about HOST, from first message to registration. Tap a card to act.', 'كل عائلة سألت عن HOST، من أول رسالة حتى التسجيل. اضغط البطاقة لتتصرف.')}</p><button class="btn" data-act="lead-new">+ ${L('New enquiry', 'استفسار جديد')}</button></div>
   <div class="cols">${cols.map(st => { const ls = inCol(st); return `<div class="col"><h3><span>${esc(lab(STAGES, st))}</span><span class="tag">${ls.length}</span></h3>
-    ${ls.sort((a, b) => String(a.next_date || 'z').localeCompare(String(b.next_date || 'z'))).map(l => `<div class="lead ${l.next_date && l.next_date <= t && ['registered', 'lost', 'past'].indexOf(st) < 0 ? 'due' : ''}" data-act="lead" data-id="${l.id}"><b>${esc(l.child_name || '?')}</b><span class="tiny muted">${[l.dob ? L('Age ', 'العمر ') + age(l.dob) : l.age ? L('Age ', 'العمر ') + esc(l.age) : '', l.source ? esc(lab(SRC, l.source)) : ''].filter(Boolean).join(' · ')}</span>
-      ${l.trial_date && st === 'booked' ? `<span class="tiny">🏀 ${fmtD(l.trial_date)}</span>` : ''}${l.next_date && ['registered', 'lost', 'past'].indexOf(st) < 0 ? `<span class="tiny" style="color:${l.next_date <= t ? 'var(--flame)' : 'var(--muted)'}">↻ ${fmtD(l.next_date)}${l.next_note ? ' · ' + esc(l.next_note) : ''}</span>` : ''}</div>`).join('') || `<span class="tiny muted">–</span>`}</div>` }).join('')}</div>`;
+    ${ls.sort((a, b) => String(a.next_date || 'z').localeCompare(String(b.next_date || 'z'))).map(l => `<div class="lead ${l.next_date && l.next_date <= t && ['registered', 'lost', 'past'].indexOf(st) < 0 ? 'due' : ''}" data-act="lead" data-id="${l.id}"><b>${esc(l.child_name || '?')}</b>${(a => a !== '' && (a < 6 || a > 14) ? `<span class="tag attn">${L('Outside ages 6–14', 'خارج سن 6–14')}</span>` : '')(l.dob ? age(l.dob) : (l.age ? +l.age : ''))}<span class="tiny muted">${[l.dob ? L('Age ', 'العمر ') + age(l.dob) : l.age ? L('Age ', 'العمر ') + esc(l.age) : '', l.source ? esc(lab(SRC, l.source)) : ''].filter(Boolean).join(' · ')}</span>
+      ${l.trial_date && st === 'booked' ? `<span class="tiny">🏀 ${fmtD(l.trial_date)}</span>` : ''}${l.next_date && ['registered', 'lost', 'past'].indexOf(st) < 0 ? `<span class="tiny" style="color:${l.next_date <= t ? 'var(--flame)' : 'var(--muted)'}">↻ ${fmtD(l.next_date)}${l.next_note ? ' · ' + esc(noteTxt(l.next_note)) : ''}</span>` : ''}</div>`).join('') || `<span class="tiny muted">–</span>`}</div>` }).join('')}</div>`;
 }
 const regDate = l => { const h = (l.history || []).filter(x => x.stage === 'registered'); return h.length ? String(h[h.length - 1].at).slice(0, 10) : String(l.created || '').slice(0, 10) };
 function leadModal(id) {
@@ -1384,10 +1555,10 @@ function linkTab() {
 function registerPage() {
   if (S.regDone) return `<div class="login"><img src="${LOGO}" alt="HOST"><div class="card"><h1>${L('Thank you', 'شكرًا لك')}</h1><p>${L('We received your registration. We will message you on WhatsApp to book your child’s free session.', 'استلمنا التسجيل. سنراسلك على واتساب لحجز الحصة المجانية لطفلك.')}</p></div></div>`;
   return `<div class="login" style="max-width:560px"><div class="row sp"><img src="${LOGO}" alt="HOST · House of Sports Talents"><div class="lang"><button type="button" data-act="lang" data-v="en" aria-pressed="${!isAr()}">EN</button><button type="button" data-act="lang" data-v="ar" aria-pressed="${isAr()}">عربي</button></div></div>
-  <h1>${L('Register for HOST basketball', 'التسجيل في كرة السلة مع HOST')}</h1><p class="muted">${L('Nile Club, Manial · ages 6 to 14 · the first session is free.', 'نادي النيل، المنيل · من 6 إلى 14 سنة · الحصة الأولى مجانية.')}</p>
+  <h1>${L('Register for HOST basketball', 'التسجيل في كرة السلة مع HOST')}</h1>${regFacts()}
   <form id="regForm" class="card">
    <label class="f">${L('Child’s full name', 'اسم الطفل بالكامل')} *<input class="in" name="child_name" required></label>
-   <div class="grid2"><label class="f">${L('Date of birth', 'تاريخ الميلاد')} *<input class="in" type="date" name="dob" required></label><label class="f">${L('Boy / girl', 'ولد / بنت')}<select class="in" name="sex">${opt([['M', 'Boy', 'ولد'], ['F', 'Girl', 'بنت']], '', '–')}</select></label></div>
+   <div class="grid2"><label class="f">${L('Date of birth', 'تاريخ الميلاد')} *<input class="in" type="date" name="dob" required data-chg="reg-dob"><span class="small" id="ageMsg" style="color:var(--flame)"></span></label><label class="f">${L('Boy / girl', 'ولد / بنت')}<select class="in" name="sex">${opt([['M', 'Boy', 'ولد'], ['F', 'Girl', 'بنت']], '', '–')}</select></label></div>
    <div class="grid2"><label class="f">${L('Parent’s name', 'اسم ولي الأمر')} *<input class="in" name="parent_name" required></label><label class="f">${L('WhatsApp number', 'رقم الواتساب')} *<input class="in" name="phone" inputmode="tel" required></label></div>
    <label class="f">${L('Email (optional)', 'البريد الإلكتروني (اختياري)')}<input class="in" type="email" name="email"></label>
    <label class="f">${L('Has your child played basketball before?', 'هل لعب طفلك كرة السلة من قبل؟')}<select class="in" name="experience">${opt([['none', 'No', 'لا'], ['some', 'A little', 'قليلًا'], ['club', 'Yes, in a club or academy', 'نعم، في نادٍ أو أكاديمية']], '', '–')}</select></label>
@@ -1401,7 +1572,21 @@ function registerPage() {
     <label class="row small"><input type="checkbox" name="consent_learning"> ${L('Coded records with no names may be used to improve the HOST protocol (optional).', 'يمكن استخدام سجلات مُرمّزة بلا أسماء لتحسين بروتوكول HOST (اختياري).')}</label></fieldset>
    <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);border:0;padding:0;margin:-1px" aria-hidden="true">
    <button class="btn" type="submit">${L('Send registration', 'أرسل التسجيل')}</button><p class="small muted" id="regMsg"></p></form>
+   ${teamBlock(SET())}
    <p class="tiny muted">HOST · House of Sports Talents</p></div>`;
+}
+/* what a family needs before registering: when, where, how much, who to ask */
+function regFacts() {
+  const s = SET(); const t = S.pubToday || ymd(new Date()); const se = (s.seasons || []).find(x => x.from <= t && t <= x.to) || (s.seasons || [])[0];
+  const when = se ? (se.slots || []).map(x => L('every ' + DAYS[x.day][0], 'كل ' + DAYS[x.day][1]) + ' ' + fmtT(x.start) + '–' + fmtT(x.end)).join(L(' and ', ' و')) : '';
+  const cr = s.currency === 'EGP' ? L('EGP', 'ج.م') : (s.currency || '');
+  if (!s.academy) return `<p class="muted">${L('Nile Club, Manial · ages 6 to 14 · the first session is free.', 'نادي النيل، المنيل · من 6 إلى 14 سنة · الحصة الأولى مجانية.')}</p>`;
+  return `<div class="card hero"><div class="grid2">
+   ${when ? `<div><b>${L('When', 'المواعيد')}</b><p class="small">${esc(when)}</p></div>` : ''}
+   <div><b>${L('Where', 'المكان')}</b><p class="small">${esc(L(s.place, s.place_ar) || '')}${L(s.address, s.address_ar) ? ' · ' + esc(L(s.address, s.address_ar)) : ''}</p>${s.map ? `<a class="small" style="color:inherit" href="${esc(s.map)}" target="_blank" rel="noopener">${L('Open the map', 'افتح الخريطة')}</a>` : ''}</div>
+   <div><b>${L('Ages', 'الأعمار')}</b><p class="small">${esc(s.ages || '6–14')}</p></div>
+   <div><b>${L('Price', 'السعر')}</b><p class="small">${s.free_sessions ? L(`First ${s.free_sessions > 1 ? s.free_sessions + ' sessions' : 'session'} free`, `${s.free_sessions > 1 ? 'أول ' + s.free_sessions + ' حصص' : 'أول حصة'} مجانًا`) + ' · ' : ''}${s.fee_founding ? L(`founding members ${num(s.fee_founding)} ${cr} a month`, `الأعضاء المؤسسين ${num(s.fee_founding)} ${cr} في الشهر`) : ''}</p></div></div>
+   ${s.whatsapp && s.whatsapp.length > 4 ? `<a class="btn wa" href="${waLink(s.whatsapp, L('Hello, I have a question about HOST basketball.', 'أهلاً، عندي سؤال عن كرة السلة في HOST.'))}" target="_blank" rel="noopener">${L('Questions? WhatsApp us', 'عندك سؤال؟ كلّمنا واتساب')}</a>` : ''}</div>`;
 }
 async function submitReg(f) {
   const fd = new FormData(f); const o = {}; fd.forEach((v, k) => { if (k === 'hopes') (o.hopes = o.hopes || []).push(v); else o[k] = v });
@@ -1515,35 +1700,53 @@ function compModal(id) {
 
 /* ================= MESSAGES ================= */
 const TPL = {
-  reminder: ['Session reminder', 'تذكير بالحصة', 'Hello {parent}, see you tomorrow, {day} at {time}, at {place} for {child}’s basketball session. Please bring water and sports shoes.\n{academy}', 'أهلًا {parent}، نراكم غدًا {day} الساعة {time} في {place} لحصة كرة السلة مع {child}. برجاء إحضار مياه وحذاء رياضي.\n{academy}'],
-  welcome: ['Welcome', 'ترحيب', 'Welcome to {academy}, {parent}!\n{child} is registered. Sessions: {schedule} at {place} ({address}).\nYour family app: {app}\nYour PIN: {pin}\nSee you soon!', 'أهلًا بكم في {academy} يا {parent}!\nتم تسجيل {child}. الحصص: {schedule} في {place} ({address}).\nتطبيق العائلة: {app}\nالرقم السري: {pin}\nنراكم قريبًا!'],
-  trial_invite: ['Free session invite', 'دعوة لحصة مجانية', 'Hello {parent}, thank you for your interest in {academy}. {child}’s first session is free. Our next sessions: {next3}, at {place}. Which day suits you?', 'أهلًا {parent}، شكرًا لاهتمامك بـ {academy}. الحصة الأولى لـ {child} مجانية. حصصنا القادمة: {next3}، في {place}. أي يوم يناسبك؟'],
-  trial_confirm: ['Free session booked', 'تأكيد الحصة المجانية', 'Hello {parent}, {child}’s free session is booked: {trial_day} at {time}, {place} ({address}). Please come 10 minutes early with water and sports shoes. Coach {coach} will welcome {child}.', 'أهلًا {parent}، تم حجز الحصة المجانية لـ {child}: {trial_day} الساعة {time}، {place} ({address}). برجاء الحضور قبل الموعد بـ 10 دقائق مع مياه وحذاء رياضي. الكابتن {coach} في استقبال {child}.'],
-  trial_followup: ['After the free session', 'بعد الحصة المجانية', 'Hello {parent}, it was great to have {child} with us! Would you like to register? Founding member price: {fee} {cur} a month, fixed for as long as you stay. Reply here and we will send the details.', 'أهلًا {parent}، سعدنا جدًا بوجود {child} معنا! هل تودّ التسجيل؟ سعر العضو المؤسس: {fee} {cur} شهريًا، ثابت طوال فترة الاشتراك. ردّ هنا وسنرسل لك التفاصيل.'],
-  missed: ['We missed you', 'افتقدناك', 'Hello {parent}, we missed {child} in the last sessions. Is everything OK? We would love to see {child} on {day} at {time}.', 'أهلًا {parent}، افتقدنا {child} في الحصص الأخيرة. هل كل شيء على ما يرام؟ يسعدنا أن نرى {child} يوم {day} الساعة {time}.'],
-  birthday: ['Birthday', 'عيد ميلاد', 'Happy birthday, {child}! 🎉 From everyone at {academy}.', 'كل سنة وانت طيب يا {child}! 🎉 من كل فريق {academy}.'],
-  schedule: ['New season times', 'مواعيد الموسم الجديد', 'Hello {parent}, from {season_from} our sessions are {schedule} at {place}. See you there!', 'أهلًا {parent}، ابتداءً من {season_from} مواعيد الحصص: {schedule} في {place}. نراكم هناك!'],
-  cancelled: ['No session this week', 'لا حصة هذا الأسبوع', 'Hello {parent}, there is no session on {day}. Our next session is {next}.', 'أهلًا {parent}، لا توجد حصة يوم {day}. الحصة القادمة {next}.'],
-  winback: ['Win back', 'استعادة', 'Hello {parent}, we would love to see {child} back at {academy}. Our sessions are {schedule} at {place}. The first session back is on us. Shall we book a place?', 'أهلًا {parent}، يسعدنا عودة {child} إلى {academy}. حصصنا {schedule} في {place}. أول حصة عند العودة مجانية. هل نحجز مكانًا؟'],
-  referral_ask: ['Bring a friend', 'أحضر صديقًا', 'Hello {parent}, thank you for being part of {academy}. If a friend of {child} would enjoy basketball, their first session is free: {link}', 'أهلًا {parent}، شكرًا لكونك جزءًا من {academy}. إذا كان أحد أصدقاء {child} يحب كرة السلة، فحصته الأولى مجانية: {link}'],
-  thanks_referral: ['Thank you for recommending us', 'شكرًا على الترشيح', 'Hello {parent}, thank you for recommending {academy} to your friends. It means a lot to us!', 'أهلًا {parent}، شكرًا لترشيحك {academy} لأصدقائك. هذا يعني لنا الكثير!'],
-  payment: ['Fee reminder (private)', 'تذكير بالاشتراك (خاص)', 'Hello {parent}, a gentle reminder that {child}’s fee for {month} ({fee_due} {cur}) is still open. Thank you!\n{academy}', 'أهلًا {parent}، تذكير لطيف بأن اشتراك {child} لشهر {month} ({fee_due} {cur}) ما زال مفتوحًا. شكرًا لكم!\n{academy}'],
-  report_ready: ['Report ready', 'التقرير جاهز', 'Hello {parent}, {child}’s report is ready in the family app: {app}', 'أهلًا {parent}، تقرير {child} جاهز في تطبيق العائلة: {app}'],
-  checkin: ['Check-in before the session', 'تحديث قبل الحصة', 'Hello {parent}, before tomorrow’s session: if {child} slept badly, has exams or feels any pain, tell the coach in the app (30 seconds): {app}', 'أهلًا {parent}، قبل حصة الغد: إذا نام {child} بشكل سيئ أو لديه امتحانات أو يشعر بأي ألم، أخبر المدرب في التطبيق (30 ثانية): {app}'],
-  consent_ask: ['Consent request', 'طلب الموافقة', 'Hello {parent}, HOST evaluators now follow every child against one written standard. Please open the family app and review your consents (1 minute): {app}\nYour PIN: {pin}', 'أهلًا {parent}، يتابع مقيّمو HOST الآن كل طفل وفق معيار مكتوب واحد. برجاء فتح تطبيق العائلة ومراجعة موافقاتك (دقيقة واحدة): {app}\nالرقم السري: {pin}'],
-  general: ['Free message', 'رسالة حرة', 'Hello {parent}, ', 'أهلًا {parent}، '],
+  reminder: ["Session reminder", "تذكير بالحصة", "Hello {parent} 👋\nA reminder: {child}'s basketball session is {when} at {time}, at {place}.\nPlease bring water and sports shoes. If {child} slept badly or feels any pain, tell the coach in the app: {app}\nSee you there!\n{me} · {academy}", "أهلاً {parent} 👋\nبنفكّر حضرتك إن تمرين كرة السلة لـ{child} {when} الساعة {time} في {place}.\nمن فضلكم هاتوا مياه وجزمة رياضة. ولو {child} منامش كويس أو حاسس بأي وجع، عرّفوا الكابتن من التطبيق: {app}\nمستنيينكم!\n{me} · {academy}"],
+  welcome: ["Welcome", "ترحيب", "Welcome to {academy}, {parent} 🏀\n{child} is registered.\nSessions: {schedule} at {place} ({address}).\nYour family app: {app}\nTap «Parent», then enter this mobile number and your PIN: {pin}\nIn the app you will find the session times, what {child} is working on, and the reports.\nAny question? Just reply here.\n{me} · {academy}", "أهلاً بيكم في {academy} يا {parent} 🏀\nتم تسجيل {child} بنجاح.\nمواعيد التمرين: {schedule} في {place} ({address}).\nتطبيق العيلة: {app}\nاختاروا «ولي الأمر» واكتبوا رقم الموبايل ده والرقم السري: {pin}\nفي التطبيق هتلاقوا مواعيد الحصص، وإيه اللي {child} بيشتغل عليه، والتقارير.\nلو عندكم أي سؤال ردّوا هنا.\n{me} · {academy}"],
+  trial_invite: ["Free session invite", "دعوة لحصة مجانية", "Hello {parent} 👋\nThank you for your interest in {academy}. {child}'s first session is free.\nOur next sessions:\n{next3}\nPlace: {place} ({address}).\nWhich day suits you? Reply here and we will book it.\n{me} · {academy}", "أهلاً {parent} 👋\nشكراً لاهتمامكم بـ{academy}. أول حصة لـ{child} مجانية.\nأقرب مواعيد:\n{next3}\nالمكان: {place} ({address}).\nأنهي يوم يناسبكم؟ ردّوا هنا ونحجزلكم.\n{me} · {academy}"],
+  trial_confirm: ["Free session booked", "تأكيد الحصة المجانية", "Hello {parent} ✅\n{child}'s free session is booked: {trial_day} at {time}.\nPlace: {place} ({address}) {map}\nPlease come 10 minutes early with water and sports shoes. Coach {coach} will welcome {child}.\n{me} · {academy}", "أهلاً {parent} ✅\nتم حجز الحصة المجانية لـ{child}: {trial_day} الساعة {time}.\nالمكان: {place} ({address}) {map}\nياريت تيجوا قبلها بـ10 دقايق، ومعاكم مياه وجزمة رياضة. الكابتن {coach} في انتظار {child}.\n{me} · {academy}"],
+  trial_followup: ["After the free session", "بعد الحصة المجانية", "Hello {parent} 🌟\nIt was great to have {child} with us! Would you like to continue?\nFounding member price: {fee} {cur} a month, fixed for as long as {child} stays with us.\nReply here and we will send the registration steps.\n{me} · {academy}", "أهلاً {parent} 🌟\nكان جميل وجود {child} معانا في الحصة! تحبوا نكمّل؟\nسعر العضو المؤسس: {fee} {cur} في الشهر، ثابت طول ما {child} مكمّل معانا.\nردّوا هنا ونبعتلكم خطوات التسجيل.\n{me} · {academy}"],
+  missed: ["We missed you", "وحشتونا", "Hello {parent}, we missed {child} in the last sessions 💙\nIs everything OK? If there is anything we can help with, tell us.\nThe next session is {next}, and we would love to see {child} there.\n{me} · {academy}", "أهلاً {parent}، وحشنا {child} في آخر الحصص 💙\nكله تمام؟ لو في أي حاجة نقدر نساعد فيها قولولنا.\nالحصة الجاية {next}، ومستنيين {child}.\n{me} · {academy}"],
+  birthday: ["Birthday", "عيد ميلاد", "Happy birthday, {child}! 🎉🏀\nFrom everyone at {academy}.", "كل سنة و{child} بخير 🎉🏀\nمن كل فريق {academy}."],
+  schedule: ["New season times", "مواعيد الموسم الجديد", "Hello {parent} 📅\nFrom {season_from}, our sessions are {new_schedule} at {place}.\nSee you there!\n{me} · {academy}", "أهلاً {parent} 📅\nمن {season_from} مواعيد التمرين الجديدة: {new_schedule} في {place}.\nمستنيينكم!\n{me} · {academy}"],
+  cancelled: ["No session (day off)", "مفيش تمرين", "Hello {parent}, please note: there is no session {off_day}{off_reason}.\nThe next session is {next_after_off}.\nSee you then!\n{me} · {academy}", "أهلاً {parent}، للعلم: مفيش تمرين {off_day}{off_reason}.\nالحصة الجاية {next_after_off}.\nنشوفكم على خير!\n{me} · {academy}"],
+  winback: ["Win back", "استعادة", "Hello {parent} 👋\nWe miss {child} at {academy}! If you would like to come back, the first session back is on us.\nOur sessions: {schedule} at {place}.\nShall we save a place for {child}? Reply here.\n{me} · {academy}", "أهلاً {parent} 👋\nوحشنا {child} في {academy}! لو حابين ترجعوا، أول حصة عند الرجوع علينا.\nمواعيدنا: {schedule} في {place}.\nنحجز مكان لـ{child}؟ ردّوا هنا.\n{me} · {academy}"],
+  referral_ask: ["Bring a friend", "هات صاحبك", "Hello {parent} 💙\nThank you for being part of {academy}. If a friend or cousin of {child} would enjoy basketball, their first session is free. Here is the registration link: {link}\n{me} · {academy}", "أهلاً {parent} 💙\nشكراً إنكم جزء من {academy}. لو في صاحب أو قريب لـ{child} بيحب كرة السلة، أول حصة مجانية. ده رابط التسجيل: {link}\n{me} · {academy}"],
+  thanks_referral: ["Thank you for recommending us", "شكراً على الترشيح", "Hello {parent}, thank you so much for recommending us to your friends 🙏 It means a lot to us.\n{me} · {academy}", "أهلاً {parent}، شكراً جداً إنكم رشّحتونا لأصحابكم 🙏 ده بيفرق معانا كتير.\n{me} · {academy}"],
+  payment: ["Fee reminder (private)", "تذكير بالاشتراك (خاص)", "Hello {parent}, a gentle reminder: {child}'s fee for {month} ({fee_due} {cur}) is still open.\n{pay}\nThank you 🙏\n{me} · {academy}", "أهلاً {parent}، تذكير بسيط: اشتراك {child} لشهر {month} ({fee_due} {cur}) لسه مفتوح.\n{pay}\nشكراً ليكم 🙏\n{me} · {academy}"],
+  report_ready: ["Report ready", "التقرير جاهز", "Hello {parent} 📄\n{child}'s report is ready in the family app: {app}\nTap «Parent» and log in with this mobile number and your PIN.\nAny question about the report? Reply here.\n{me} · {academy}", "أهلاً {parent} 📄\nتقرير {child} جاهز في تطبيق العيلة: {app}\nاختاروا «ولي الأمر» وادخلوا برقم الموبايل ده والرقم السري.\nلو عندكم أي سؤال عن التقرير ردّوا هنا.\n{me} · {academy}"],
+  checkin: ["Check-in before the session", "تحديث قبل الحصة", "Hello {parent} 👋\nBefore the session {when}: if {child} slept badly, has exams or feels any pain, tell the coach in the app (30 seconds): {app}\nIt helps us adjust the session to {child}'s day.\n{me} · {academy}", "أهلاً {parent} 👋\nقبل تمرين {when}: لو {child} منامش كويس، أو عنده امتحانات، أو حاسس بأي وجع، عرّفوا الكابتن من التطبيق في 30 ثانية: {app}\nده بيساعدنا نظبط التمرين على حسب يوم {child}.\n{me} · {academy}"],
+  consent_ask: ["Consent request", "طلب الموافقة", "Hello {parent} 👋\nThis is {me} from {academy} (basketball at {place}).\nFrom the next session we will follow {child}'s progress properly: simple, fixed tests (like dribbling and shooting) plus the coach's notes, kept in {child}'s own file.\nOnly your family and the academy team see this file. It is never published and {child} is never compared with another child.\nWe need your agreement (1 minute):\n1) Open: {app}\n2) Tap «Parent»\n3) Enter this mobile number and the PIN: {pin}\n4) Tap «Review» under consents\nIf you prefer not to, {child} keeps training exactly as now, just without the progress record.\nAny question? Reply here.\n{me} · {academy}", "أهلاً {parent} 👋\nمعاك {me} من {academy} (كرة السلة في {place}).\nمن الحصة الجاية هنبدأ نتابع تطور {child} بشكل منظم: اختبارات بسيطة وثابتة (زي الجري بالكورة والتصويب) مع ملاحظات الكابتن، وكل ده بيتسجل في ملف خاص بـ{child}.\nالملف ده بتشوفوه انتم وفريق الأكاديمية بس. عمره ما بيتنشر، و{child} عمره ما بيتقارن بطفل تاني.\nمحتاجين موافقتكم (دقيقة واحدة):\n1) افتحوا الرابط: {app}\n2) اختاروا «ولي الأمر»\n3) اكتبوا رقم الموبايل ده والرقم السري: {pin}\n4) اضغطوا «مراجعة» عند الموافقات\nلو مش حابين، {child} هيكمل التمرين عادي جداً، بس من غير تسجيل التطور.\nأي سؤال ردّوا هنا.\n{me} · {academy}"],
+  general: ["Free message", "رسالة حرة", "Hello {parent},\n\n{me} · {academy}", "أهلاً {parent}،\n\n{me} · {academy}"],
 };
 const tplName = id => L((TPL[id] || [id, id])[0], (TPL[id] || [id, id])[1]);
 function tplText(id, lang) { const o = (SET().templates || {})[id]; const ar = (lang || S.lang) === 'ar'; if (o && (ar ? o[1] : o[0])) return ar ? o[1] : o[0]; const t = TPL[id] || TPL.general; return ar ? t[3] : t[2] }
 function scheduleText(lang) { const ar = (lang || S.lang) === 'ar'; const se = seasonOn(todayStr()) || (SET().seasons || [])[0]; if (!se || !(se.slots || []).length) return ''; return se.slots.map(x => (ar ? 'كل ' + DAYS[x.day][1] : 'every ' + DAYS[x.day][0]) + ' ' + fmtT(x.start) + '–' + fmtT(x.end)).join(ar ? ' و' : ' and ') }
+function relDay(date) { const n = daysBetween(todayStr(), date); return n === 0 ? L('today', 'النهارده') : n === 1 ? L('tomorrow', 'بكرة') : L('on ' + fmtDL(date), 'يوم ' + fmtDL(date)) }
+function nextSeason() { const t = todayStr(); return (SET().seasons || []).filter(s => s.from > t && (s.slots || []).length).sort((a, b) => String(a.from).localeCompare(String(b.from)))[0] || null }
+function slotsText(se) { if (!se || !(se.slots || []).length) return ''; return se.slots.map(x => L('every ' + DAYS[x.day][0], 'كل ' + DAYS[x.day][1]) + ' ' + fmtT(x.start) + '–' + fmtT(x.end)).join(L(' and ', ' و')) }
+/* a message that would go out with blanks is stopped, with what to set first */
+function tplMissing(id) {
+  if (id === 'cancelled' && !upcoming(12).some(x => x.closed)) return L('No day off is set yet. First mark it: Settings > Season and days > Days off, or open the session and set its status to Cancelled.', 'لسه مفيش يوم إجازة متحدد. حدّده الأول: الإعدادات > الموسم والأيام > أيام الإجازة، أو افتح الحصة وخلّي حالتها «ملغية».');
+  if (id === 'schedule' && !slotsText(nextSeason())) return L('No next season with days and times is set. First add it: Settings > Season and days.', 'مفيش موسم جاي بأيام ومواعيد متحددة. ضيفه الأول: الإعدادات > الموسم والأيام.');
+  if ((id === 'reminder' || id === 'checkin' || id === 'trial_invite' || id === 'welcome') && !upcoming(3).some(x => !x.closed)) return L('There is no coming session in the season dates. First check Settings > Season and days.', 'مفيش حصة جاية في مواعيد الموسم. راجع الإعدادات > الموسم والأيام.');
+  return '';
+}
 function fillTpl(id, ctx, lang, base) {
   const sv = S.lang; if (lang) S.lang = lang;
   try {
     const p = ctx.player || {}; const l = ctx.lead || {}; const nx = upcoming(3).filter(x => !x.closed);
     const child = (ctx.children || [p.name || l.child_name || '']).map(n => String(n).split(' ')[0]).join(isAr() ? ' و' : ' & ');
-    const se = seasonOn(nx[0] ? nx[0].date : todayStr());
-    const map = { parent: p.parent_name || l.parent_name || L('parent', 'ولي الأمر'), child, academy: L(SET().academy, SET().academy_ar), place: placeName(), address: L(SET().address, SET().address_ar), day: nx[0] ? fmtDL(nx[0].date) : '', time: nx[0] ? fmtT(nx[0].start) : '', next: nx[0] ? fmtDL(nx[0].date) + ' ' + fmtT(nx[0].start) : '', next3: nx.map(x => fmtD(x.date)).join(isAr() ? '، ' : ', '), schedule: scheduleText(), app: location.origin + location.pathname, pin: p.parent_pin || '', fee: num(SET().fee_founding), fee_due: num(ctx.amount || fee(p)), month: fmtMonth(ctx.month || monthKey(todayStr())), cur: SET().currency === 'EGP' ? L('EGP', 'ج.م') : SET().currency, coach: SET().coach || '', link: regLink(), trial_day: l.trial_date ? fmtDL(l.trial_date) : (nx[0] ? fmtDL(nx[0].date) : ''), season_from: se ? fmtDL(se.from) : '' };
-    return (base || tplText(id)).replace(/\{(\w+)\}/g, (m, k) => map[k] !== undefined ? map[k] : m);
+    const ns = nextSeason(); const se = ns || seasonOn(todayStr());
+    const off = upcoming(12).find(x => x.closed); const afterOff = off ? upcoming(6, addDays(off.date, 1)).find(x => !x.closed) : null;
+    const pay = L(SET().pay_en, SET().pay_ar) || L('You can pay in cash at the session, or by InstaPay. Reply here and we will send the details.', 'ممكن الدفع كاش في التمرين أو بإنستاباي. ردّوا هنا ونبعتلكم التفاصيل.');
+    const map = { parent: p.parent_name || l.parent_name || L('dear parent', 'حضرتك'), child, academy: L(SET().academy, SET().academy_ar), place: placeName(), address: L(SET().address, SET().address_ar), map: SET().map || '',
+      me: (S.me && S.me.name) || SET().owner_name || '', when: nx[0] ? relDay(nx[0].date) : '', day: nx[0] ? fmtDL(nx[0].date) : '', time: nx[0] ? fmtT(nx[0].start) : '',
+      next: nx[0] ? fmtDL(nx[0].date) + L(' at ', ' الساعة ') + fmtT(nx[0].start) : '', next3: nx.map(x => '• ' + fmtDL(x.date) + L(', ', '، ') + fmtT(x.start)).join('\n'),
+      schedule: scheduleText(), new_schedule: slotsText(se), season_from: se ? fmtDL(se.from) : '',
+      off_day: off ? relDay(off.date) : '', off_reason: off && off.closed && off.closed.reason ? ' (' + off.closed.reason + ')' : '', next_after_off: afterOff ? fmtDL(afterOff.date) + L(' at ', ' الساعة ') + fmtT(afterOff.start) : '',
+      app: location.origin + location.pathname, pin: p.parent_pin || '', fee: num(SET().fee_founding), fee_due: num(ctx.amount || fee(p)), month: fmtMonth(ctx.month || monthKey(todayStr())), cur: SET().currency === 'EGP' ? L('EGP', 'ج.م') : SET().currency, coach: SET().coach || '', link: regLink(), pay,
+      trial_day: l.trial_date ? fmtDL(l.trial_date) : (nx[0] ? fmtDL(nx[0].date) : '') };
+    return (base || tplText(id)).replace(/\{(\w+)\}/g, (m, k) => map[k] !== undefined ? map[k] : m).replace(/[ \t]+\n/g, '\n');
   } finally { S.lang = sv }
 }
 function audiences() {
@@ -1560,17 +1763,19 @@ function recipients(c) {
   return Object.values(by).concat(ls.map(l => ({ phone: l.phone, lead: l, lid: l.id })));
 }
 function composeModal(c) {
-  S.cmp = c = Object.assign({ tpl: 'general', aud: 'active', lang: S.lang }, S.cmp && S.cmp._keep ? S.cmp : {}, c || {});
-  if (c.base === undefined) c.base = tplText(c.tpl, c.lang);
+  S.cmp = c = Object.assign({ tpl: 'general', aud: 'active', lang: 'auto' }, S.cmp && S.cmp._keep ? S.cmp : {}, c || {});
+  if (!c.bases) c.bases = { ar: tplText(c.tpl, 'ar'), en: tplText(c.tpl, 'en') };
+  const famLang = r => c.lang !== 'auto' ? c.lang : ((r.player && r.player.lang) || (r.lead && r.lead.lang) || 'ar');
   const rs = recipients(c);
   modal(`<h2>${L('Message', 'رسالة')}: ${esc(tplName(c.tpl))}</h2>
   <div class="grid2"><label class="f">${L('Message', 'الرسالة')}<select class="in" data-chg="cmp-tpl">${Object.keys(TPL).map(k => `<option value="${k}" ${k === c.tpl ? 'selected' : ''}>${esc(tplName(k))}</option>`).join('')}</select></label>
   ${c.pid || c.lead ? '' : `<label class="f">${L('To', 'إلى')}<select class="in" data-chg="cmp-aud">${audiences().map(a => `<option value="${a[0]}" ${a[0] === c.aud ? 'selected' : ''}>${a[1]}</option>`).join('')}</select></label>`}
-  <label class="f">${L('Language', 'اللغة')}<select class="in" data-chg="cmp-lang"><option value="ar" ${c.lang === 'ar' ? 'selected' : ''}>العربية</option><option value="en" ${c.lang === 'en' ? 'selected' : ''}>English</option></select></label></div>
-  <label class="f">${L('Text (words in {braces} are filled in for each family)', 'النص (الكلمات بين {الأقواس} تُملأ لكل عائلة)')}<textarea class="in" id="cmpBase" data-chg="cmp-base" style="min-height:110px">${esc(c.base)}</textarea></label>
+  <label class="f">${L('Language', 'اللغة')}<select class="in" data-chg="cmp-lang"><option value="auto" ${c.lang === 'auto' ? 'selected' : ''}>${L('Each family’s own language', 'لغة كل عائلة')}</option><option value="ar" ${c.lang === 'ar' ? 'selected' : ''}>العربية</option><option value="en" ${c.lang === 'en' ? 'selected' : ''}>English</option></select></label></div>
+  ${(c.lang === 'auto' ? ['ar', 'en'] : [c.lang]).map(lg => `<label class="f">${L('Text', 'النص')} · ${lg === 'ar' ? 'العربية' : 'English'} <span class="tiny muted">${L('(words in {braces} are filled in for each family)', '(الكلمات بين {الأقواس} تُملأ لكل عائلة)')}</span><textarea class="in" data-chg="cmp-base" data-l="${lg}" dir="${lg === 'ar' ? 'rtl' : 'ltr'}" style="min-height:150px">${esc(c.bases[lg])}</textarea></label>`).join('')}
   <p class="small muted">${L(`${rs.length} recipient(s). Tap each WhatsApp button; WhatsApp opens with the message ready, then press send.`, `${rs.length} مستلم. اضغط زر واتساب لكل واحد؛ يفتح واتساب والرسالة جاهزة، ثم اضغط إرسال.`)}</p>
-  <div class="list">${rs.map((r, i) => { const txt = fillTpl(c.tpl, r, c.lang, c.base); const sent = (S.sentNow || {})[i + c.tpl + c.aud]; return `<div class="item" style="cursor:default;align-items:flex-start"><div class="grow"><div class="nm">${esc((r.children || [r.lead && r.lead.child_name]).join(' · '))}</div><div class="sub" style="white-space:pre-wrap">${esc(txt)}</div></div>${r.phone ? `<a class="btn small ${sent ? 'ghost' : 'wa'}" href="${waLink(r.phone, txt)}" target="_blank" rel="noopener" data-act="log-wa" data-i="${i}" ${r.pid ? `data-pid="${r.pid}"` : ''} ${r.lid ? `data-lead="${r.lid}"` : ''} data-tpl="${c.tpl}" data-text="${esc(txt)}">${sent ? '✓' : 'WhatsApp'}</a>` : `<span class="tag attn">${L('No number', 'لا رقم')}</span>`}</div>` }).join('') || `<p class="empty">${L('Nobody in this list.', 'لا أحد في هذه القائمة.')}</p>`}</div>
-  ${rs.length > 1 ? `<div class="row"><button class="btn ghost small" data-act="cmp-copy">${L('Copy one text for a WhatsApp group', 'انسخ نصًا واحدًا لجروب واتساب')}</button></div>` : ''}
+  ${tplMissing(c.tpl) ? `<div class="notice attn">${esc(tplMissing(c.tpl))}</div>` : ''}
+  <div class="list">${(tplMissing(c.tpl) ? [] : rs).map((r, i) => { const lg = famLang(r); const txt = fillTpl(c.tpl, r, lg, c.bases[lg]); const sent = (S.sentNow || {})[i + c.tpl + c.aud]; return `<div class="item" style="cursor:default;align-items:flex-start"><div class="grow"><div class="nm">${esc((r.children || [r.lead && r.lead.child_name]).join(' · '))}</div><div class="sub" style="white-space:pre-wrap">${esc(txt)}</div></div>${r.phone ? `<a class="btn small ${sent ? 'ghost' : 'wa'}" href="${waLink(r.phone, txt)}" target="_blank" rel="noopener" data-act="log-wa" data-i="${i}" ${r.pid ? `data-pid="${r.pid}"` : ''} ${r.lid ? `data-lead="${r.lid}"` : ''} data-tpl="${c.tpl}" data-text="${esc(txt)}">${sent ? '✓' : 'WhatsApp'}</a>` : `<span class="tag attn">${L('No number', 'لا رقم')}</span>`}</div>` }).join('') || `<p class="empty">${L('Nobody in this list.', 'لا أحد في هذه القائمة.')}</p>`}</div>
+  ${rs.length > 1 && !tplMissing(c.tpl) ? `<div class="row"><button class="btn ghost small" data-act="cmp-copy">${L('Copy one text for a WhatsApp group', 'انسخ نصًا واحدًا لجروب واتساب')}</button></div>` : ''}
   <button class="btn ghost" data-act="modal-close">${w('close')}</button>`);
 }
 function messagesScreen() {
@@ -1578,14 +1783,14 @@ function messagesScreen() {
   return `<div class="row sp"><h1>${w('messages')}</h1><button class="btn" data-act="compose" data-tpl="general">+ ${L('New message', 'رسالة جديدة')}</button></div>
   <div class="card"><h2>${L('Ready messages', 'رسائل جاهزة')}</h2><div class="chips">${Object.keys(TPL).filter(k => k !== 'general').map(k => `<button class="chip" data-act="compose" data-tpl="${k}">${esc(tplName(k))}</button>`).join('')}</div>
   <p class="tiny muted">${L('Edit the wording in Settings → Message texts.', 'عدّل الصياغة من الإعدادات ← نصوص الرسائل.')}</p></div>
-  <div class="card"><h2>${L('Sent', 'المُرسل')}</h2><div class="list">${log.map(m => `<div class="item" style="cursor:default;align-items:flex-start"><div class="grow"><div class="nm">${esc(m.to || '')} · <span class="muted small">${esc(tplName(m.template) || m.template || '')}</span></div><div class="sub">${esc(String(m.at).slice(0, 16).replace('T', ' '))}</div></div></div>`).join('') || `<p class="empty">${w('none')}</p>`}</div></div>`;
+  <div class="card"><h2>${L('Sent', 'المُرسل')}</h2><p class="tiny muted">${L('A line is added when you tap the WhatsApp button. If it was tapped by mistake and nothing was sent, delete the line.', 'السطر بيتسجل لما تدوس زرار واتساب. لو اتداس بالغلط ومفيش حاجة اتبعتت، امسح السطر.')}</p><div class="list">${log.map(m => `<div class="item" style="cursor:default;align-items:flex-start"><div class="grow"><div class="nm">${esc(m.to || '')} · <span class="muted small">${esc(tplName(m.template) || m.template || '')}</span></div><div class="sub">${esc(String(m.at).slice(0, 16).replace('T', ' '))}</div></div>${isOwnerish() && m.id ? `<button class="btn ghost small" data-act="del" data-kind="messages" data-id="${esc(m.id)}" title="${L('Logged by mistake? Remove it', 'اتسجلت بالغلط؟ امسحها')}">${w('del')}</button>` : ''}</div>`).join('') || `<p class="empty">${w('none')}</p>`}</div></div>`;
 }
 
 /* ================= SETTINGS ================= */
 function settingsScreen() {
   if (S.me.role !== 'owner') return `<div class="card">${L('Only the owner can change settings.', 'المالك فقط يمكنه تغيير الإعدادات.')}</div>`;
   const s = S.draft || SET(); const tab = S.sub || 'season';
-  const tabs = [['season', L('Season and days', 'الموسم والأيام')], ['academy', L('Academy and place', 'الأكاديمية والمكان')], ['fees', L('Fees and offers', 'الاشتراكات والعروض')], ['team', L('Team and access', 'الفريق والدخول')], ['protocol', L('Groups and evaluation', 'المجموعات والتقييم')], ['brief', L('Family guide', 'دليل العائلة')], ['texts', L('Message texts', 'نصوص الرسائل')], ['data', L('Import and backup', 'الاستيراد والنسخ الاحتياطي')]];
+  const tabs = [['season', L('Season and days', 'الموسم والأيام')], ['academy', L('Academy and place', 'الأكاديمية والمكان')], ['fees', L('Fees and offers', 'الاشتراكات والعروض')], ['team', L('Team and access', 'الفريق والدخول')], ['protocol', L('Groups and evaluation', 'المجموعات والتقييم')], ['brief', L('Family guide', 'دليل العائلة')], ['who', L('Who we are', 'مين إحنا')], ['texts', L('Message texts', 'نصوص الرسائل')], ['data', L('Import and backup', 'الاستيراد والنسخ الاحتياطي')]];
   let body = '';
   if (tab === 'season') body = `<p class="small muted">${L('Sessions appear by themselves from these days. Change them any time; past sessions stay as they were.', 'تظهر الحصص تلقائيًا من هذه الأيام. غيّرها في أي وقت؛ الحصص السابقة تبقى كما هي.')}</p>
     ${(s.seasons || []).map((se, i) => `<div class="card" style="background:var(--sunk)"><div class="grid2"><label class="f">${L('Season', 'الموسم')}<input class="in" data-set="seasons.${i}.name" value="${esc(se.name)}"></label><label class="f">${L('Name in Arabic', 'الاسم بالعربية')}<input class="in" data-set="seasons.${i}.name_ar" value="${esc(se.name_ar || '')}"></label>
@@ -1597,6 +1802,18 @@ function settingsScreen() {
     <div class="row"><input class="in" style="max-width:170px" type="date" id="cDate"><input class="in grow" id="cReason" placeholder="${L('Reason, e.g. Eid holiday', 'السبب، مثلًا إجازة العيد')}"><button class="btn ghost small" data-act="closed-add">+ ${w('add')}</button></div>`;
   if (tab === 'academy') body = `<div class="grid2">${[['academy', L('Academy name', 'اسم الأكاديمية')], ['academy_ar', L('Academy name in Arabic', 'اسم الأكاديمية بالعربية')], ['place', L('Place', 'المكان')], ['place_ar', L('Place in Arabic', 'المكان بالعربية')], ['address', L('Address', 'العنوان')], ['address_ar', L('Address in Arabic', 'العنوان بالعربية')], ['map', L('Google Maps link', 'رابط خرائط جوجل')], ['whatsapp', L('Academy WhatsApp (shown to parents)', 'واتساب الأكاديمية (يظهر لأولياء الأمور)')], ['coach', L('Main coach', 'المدرب الرئيسي')], ['ages', L('Ages', 'الأعمار')]].map(f => `<label class="f">${f[1]}<input class="in" data-set="${f[0]}" value="${esc(s[f[0]] || '')}"></label>`).join('')}</div>`;
   if (tab === 'fees') body = `<div class="grid2">${[['fee_founding', L('Founding member price per month', 'سعر العضو المؤسس شهريًا')], ['fee_standard', L('Standard price per month', 'السعر العادي شهريًا')], ['currency', L('Currency', 'العملة')], ['free_sessions', L('Free sessions for a new child', 'حصص مجانية للطفل الجديد')], ['new_cap', L('New children per session (most)', 'أقصى عدد أطفال جدد في الحصة')]].map(f => `<label class="f">${f[1]}<input class="in" ${f[0] === 'currency' ? '' : 'type="number" min="0" data-num="1"'} data-set="${f[0]}" value="${esc(s[f[0]] == null ? '' : s[f[0]])}"></label>`).join('')}</div>`;
+  if (tab === 'fees') body += `<div class="grid2" style="margin-top:10px"><label class="f">${L('How families pay (English, used in fee reminders)', 'طرق الدفع (إنجليزي، تظهر في تذكير الاشتراك)')}<textarea class="in" data-set="pay_en" placeholder="Cash at the session, or InstaPay to 01xxxxxxxxx (name)">${esc(s.pay_en || '')}</textarea></label><label class="f">${L('How families pay (Arabic)', 'طرق الدفع (عربي)')}<textarea class="in" dir="rtl" data-set="pay_ar" placeholder="كاش في التمرين، أو إنستاباي على 01xxxxxxxxx (الاسم)">${esc(s.pay_ar || '')}</textarea></label></div>`;
+  if (tab === 'who') body = `<p class="small muted">${L('Families read this in the app (Academy → Who we are) and on the registration page. Trust starts with knowing who runs the academy and who coaches the children.', 'تقرأ العائلات ده في التطبيق (الأكاديمية ← مين إحنا) وفي صفحة التسجيل. الثقة بتبدأ لما الأهل يعرفوا مين بيدير الأكاديمية ومين بيدرّب أولادهم.')}</p>
+    <div class="grid2"><label class="f">${L('About HOST (English)', 'عن HOST (إنجليزي)')}<textarea class="in" style="min-height:120px" data-set="about_en">${esc(s.about_en || '')}</textarea></label><label class="f">${L('About HOST (Arabic)', 'عن HOST (عربي)')}<textarea class="in" dir="rtl" style="min-height:120px" data-set="about_ar">${esc(s.about_ar || '')}</textarea></label></div>
+    <h3>${L('The people', 'الفريق')}</h3>
+    ${(s.team || []).map((t, i) => `<details class="card" style="background:var(--sunk)"><summary style="cursor:pointer;font-weight:700">${esc(L(t.name, t.name_ar || t.name))} <span class="small muted">· ${esc(L(t.role_en, t.role_ar))}${t.show === 'no' ? ' · ' + L('hidden', 'مخفي') : ''}</span></summary><div class="grid2" style="margin-top:8px">
+      <label class="f">${L('Name', 'الاسم')}<input class="in" data-set="team.${i}.name" value="${esc(t.name || '')}"></label><label class="f">${L('Name in Arabic', 'الاسم بالعربية')}<input class="in" dir="rtl" data-set="team.${i}.name_ar" value="${esc(t.name_ar || '')}"></label>
+      <label class="f">${L('Role (English)', 'الدور (إنجليزي)')}<input class="in" data-set="team.${i}.role_en" value="${esc(t.role_en || '')}"></label><label class="f">${L('Role (Arabic)', 'الدور (عربي)')}<input class="in" dir="rtl" data-set="team.${i}.role_ar" value="${esc(t.role_ar || '')}"></label>
+      <label class="f">${L('Bio (English)', 'نبذة (إنجليزي)')}<textarea class="in" data-set="team.${i}.bio_en">${esc(t.bio_en || '')}</textarea></label><label class="f">${L('Bio (Arabic)', 'نبذة (عربي)')}<textarea class="in" dir="rtl" data-set="team.${i}.bio_ar">${esc(t.bio_ar || '')}</textarea></label>
+      <label class="f">${L('Photo link (optional)', 'رابط الصورة (اختياري)')}<input class="in" data-set="team.${i}.photo" value="${esc(t.photo || '')}" placeholder="https://…"></label><label class="f">${L('Show to families', 'يظهر للعائلات')}<select class="in" data-set="team.${i}.show">${opt([['yes', 'Yes', 'نعم'], ['no', 'No', 'لا']], t.show || 'yes')}</select></label></div>
+      <button class="link small" data-act="team-del" data-i="${i}">${L('Remove this person', 'حذف هذا الشخص')}</button></details>`).join('')}
+    <button class="btn ghost small" data-act="team-add">+ ${L('Add a person', 'إضافة شخص')}</button>
+    <h3>${L('Look of the app', 'شكل التطبيق')}</h3><label class="f" style="max-width:320px">${L('Theme', 'التصميم')}<select class="in" data-set="theme">${opt([['classic', 'Classic HOST0 (navy)', 'HOST0 الكلاسيكي (كحلي)'], ['clean', 'Clean (light)', 'بسيط (فاتح)']], s.theme || 'classic')}</select></label>`;
   if (tab === 'team') body = `<p class="small muted">${L('Each person logs in with their own PIN. Coaches and evaluators never see fees, family PINs or the medical file. An owner who evaluates may rate their own child: the rating is marked and never counts on its own.', 'كل شخص يدخل برقمه السري. لا يرى المدربون والمقيّمون الرسوم أو أرقام العائلات السرية أو الملف الطبي. يمكن للمالك المقيّم تقييم طفله: يُعلَّم التقييم ولا يُحسب بمفرده.')}</p>
     <div class="list">${(D().users || []).map(u => `<div class="item" data-act="user" data-id="${u.id}"><span class="av">${esc(initials(u.name))}</span><div class="grow"><div class="nm">${esc(u.name)}</div><div class="sub">${esc(roleName(u.role))}${u.co_owner === 'yes' ? ' · ' + L('co-owner', 'شريك') : ''}${(u.own_kids || []).length ? ' · ' + L('own children: ', 'أطفاله: ') + u.own_kids.map(id => esc((P(id) || {}).name || '')).join('، ') : ''}${String(u.active) === 'false' ? ' · ' + L('no access', 'بلا دخول') : ''}</div></div></div>`).join('') || `<p class="empty">${L('Only you so far.', 'أنت فقط حتى الآن.')}</p>`}</div><button class="btn ghost small" data-act="user-new">+ ${L('Add a person', 'إضافة شخص')}</button>`;
   if (tab === 'protocol') body = `<h3>${L('Groups', 'المجموعات')}</h3><div class="list">${groups().map(g => `<div class="item" data-act="group" data-id="${g.id}"><div class="grow"><div class="nm">${esc(L(g.name, g.name_ar || g.name))}</div><div class="sub">${esc(g.age_band || '')} · ${L('protocol phase ', 'مرحلة البروتوكول ')}${esc(g.phase || 1)} · ${activeP().filter(p => p.group_id === g.id).length} ${L('players', 'لاعبين')}</div></div></div>`).join('')}</div><button class="btn ghost small" data-act="group-new">+ ${L('Add a group', 'إضافة مجموعة')}</button>
@@ -1611,10 +1828,10 @@ function settingsScreen() {
     <details><summary class="small">${L('All categories and sub-skills', 'كل الفئات والمهارات الفرعية')}</summary><ul class="small">${cats().map(c => `<li><b>${esc(c.id)} · ${esc(L(c.en, c.ar))}</b>: ${subsOf(c.id).map(k => esc(k.id + ' ' + L(k.en, k.ar))).join(' · ')}</li>`).join('')}${charDims().map(c => `<li>${esc(c.id)} · ${esc(L(c.en, c.ar))} (${L('families read', 'تقرأ العائلة')}: ${esc(L(c.spine_en, c.spine_ar))})</li>`).join('')}</ul></details>`;
   if (tab === 'brief') body = `<div class="grid2"><label class="f">${L('About the academy (English)', 'عن الأكاديمية (إنجليزي)')}<textarea class="in" data-set="brief_en">${esc(s.brief_en || '')}</textarea></label><label class="f">${L('About the academy (Arabic)', 'عن الأكاديمية (عربي)')}<textarea class="in" dir="rtl" data-set="brief_ar">${esc(s.brief_ar || '')}</textarea></label>
     <label class="f">${L('Family guide, one rule per line (English)', 'دليل العائلة، قاعدة في كل سطر (إنجليزي)')}<textarea class="in" style="min-height:140px" data-set="rules_en">${esc(s.rules_en || '')}</textarea></label><label class="f">${L('Family guide (Arabic)', 'دليل العائلة (عربي)')}<textarea class="in" dir="rtl" style="min-height:140px" data-set="rules_ar">${esc(s.rules_ar || '')}</textarea></label></div><p class="tiny muted">${L('Families read this in the app (Academy).', 'تقرأه العائلات في التطبيق (الأكاديمية).')}</p>`;
-  if (tab === 'texts') body = Object.keys(TPL).filter(k => k !== 'general').map(k => `<details><summary style="cursor:pointer;font-weight:600">${esc(tplName(k))}</summary><div class="grid2" style="margin-top:8px"><label class="f">English<textarea class="in" data-tpl-en="${k}">${esc(tplText(k, 'en'))}</textarea></label><label class="f">العربية<textarea class="in" dir="rtl" data-tpl-ar="${k}">${esc(tplText(k, 'ar'))}</textarea></label></div></details>`).join('') + `<p class="tiny muted">${L('Words in {braces} are filled in automatically: {parent} {child} {day} {time} {place} {address} {schedule} {fee} {link} {app} {pin} {month} {fee_due}.', 'الكلمات بين {الأقواس} تُملأ تلقائيًا: {parent} {child} {day} {time} {place} {address} {schedule} {fee} {link} {app} {pin} {month} {fee_due}.')}</p>`;
+  if (tab === 'texts') body = Object.keys(TPL).filter(k => k !== 'general').map(k => `<details><summary style="cursor:pointer;font-weight:600">${esc(tplName(k))}</summary><div class="grid2" style="margin-top:8px"><label class="f">English<textarea class="in" data-tpl-en="${k}">${esc(tplText(k, 'en'))}</textarea></label><label class="f">العربية<textarea class="in" dir="rtl" data-tpl-ar="${k}">${esc(tplText(k, 'ar'))}</textarea></label></div></details>`).join('') + `<p class="tiny muted">${L('Words in {braces} are filled in automatically: {parent} {child} {me} {when} {day} {time} {next} {next3} {place} {address} {map} {schedule} {new_schedule} {season_from} {off_day} {next_after_off} {fee} {fee_due} {pay} {month} {link} {app} {pin} {coach} {academy}.', 'الكلمات بين {الأقواس} تُملأ تلقائيًا: {parent} {child} {day} {time} {place} {address} {schedule} {fee} {link} {app} {pin} {month} {fee_due}.')}</p>`;
   if (tab === 'data') body = importExport();
   return `<h1>${w('settings')}</h1><div class="tabs">${tabs.map(t => `<button data-act="setsub" data-v="${t[0]}" aria-pressed="${tab === t[0]}">${t[1]}</button>`).join('')}</div>
-  <div class="card">${body}${['season', 'academy', 'fees', 'protocol', 'brief', 'texts'].indexOf(tab) >= 0 ? `<div class="row"><button class="btn" data-act="settings-save">${w('save')}</button><span class="small muted" id="setMsg"></span></div>` : ''}</div>`;
+  <div class="card">${body}${['season', 'academy', 'fees', 'protocol', 'brief', 'who', 'texts'].indexOf(tab) >= 0 ? `<div class="row"><button class="btn" data-act="settings-save">${w('save')}</button><span class="small muted" id="setMsg"></span></div>` : ''}</div>`;
 }
 function draftSettings() { if (!S.draft) S.draft = JSON.parse(JSON.stringify(SET())); return S.draft }
 function setPath(o, path, v) { const k = path.split('.'); let x = o; for (let i = 0; i < k.length - 1; i++) { const n = /^\d+$/.test(k[i + 1]) ? [] : {}; if (x[k[i]] === undefined) x[k[i]] = n; x = x[k[i]] } x[k[k.length - 1]] = v }
@@ -1624,7 +1841,7 @@ function userModal(id) {
   <label class="f">${L('Name', 'الاسم')}<input class="in" name="name" value="${esc(u.name || '')}" required></label>
   <label class="f">${L('Role', 'الدور')}<select class="in" name="role">${opt([['coach', 'Coach: sessions, quick check, his plan', 'مدرب: الحصص والملاحظة السريعة وخطته'], ['evaluator', 'HOST evaluator: records levels', 'مقيّم HOST: يسجّل المستويات'], ['admin', 'Admin: families, sessions, money', 'إداري: العائلات والحصص والمالية']], u.role)}</select></label>
   <label class="f">${L('Co-owner (sees the owner’s screens)', 'شريك (يرى شاشات المالك)')}<select class="in" name="co_owner">${opt([['no', 'No', 'لا'], ['yes', 'Yes', 'نعم']], u.co_owner || 'no')}</select></label>
-  <label class="f">${L('PIN (6 to 8 digits)', 'الرقم السري (6 إلى 8 أرقام)')}<input class="in" name="pin" inputmode="numeric" value="${esc(u.pin || '')}" ${u.id ? '' : 'required'} pattern="\\d{6,8}|••••"></label>
+  <label class="f">${L('PIN (4 digits)', 'الرقم السري (4 أرقام)')}<input class="in" name="pin" inputmode="numeric" value="${esc(u.pin || '')}" ${u.id ? '' : 'required'} pattern="\\d{4,8}|••••"></label>
   <label class="f">${L('Phone', 'الهاتف')}<input class="in" name="phone" inputmode="tel" value="${esc(u.phone || '')}"></label>
   <label class="f">${L('Access', 'الدخول')}<select class="in" name="active">${opt([['true', 'Can log in', 'يمكنه الدخول'], ['false', 'No access', 'بلا دخول']], String(u.active))}</select></label>
   <div class="f" style="grid-column:1/-1">${L('Their own children (their ratings of them are marked)', 'أطفاله (تقييماته لهم مُعلَّمة)')}<div class="chips">${players().map(p => `<label class="chip"><input type="checkbox" name="own_kids" value="${p.id}" ${own.indexOf(p.id) >= 0 ? 'checked' : ''} style="margin-inline-end:6px">${esc(p.name)}</label>`).join('')}</div></div>
@@ -1689,19 +1906,20 @@ function exportData() {
 function formObj(f) { const o = {}; new FormData(f).forEach((v, k) => { if (o[k] !== undefined) { if (!Array.isArray(o[k])) o[k] = [o[k]]; o[k].push(v) } else o[k] = v }); return o }
 function openWa(href) { const a = document.createElement('a'); a.href = href; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove() }
 async function copyText(t) { try { await navigator.clipboard.writeText(t); toast('✓ ' + L('Copied', 'نُسخ')) } catch (e) { toast(L('Press and hold to copy', 'اضغط مطولًا للنسخ')) } }
-/* attendance: one row per child per session, saved in small batches */
-const ATQ = { recs: {}, t: null };
-function queueAtt(sid, pid, status) { const r = Object.assign({}, attRec(sid, pid) || { id: 'a_' + sid + '_' + pid, session_id: sid, player_id: pid }, { status }); upsertLocal('attendance', r); ATQ.recs[r.id] = r; clearTimeout(ATQ.t); ATQ.t = setTimeout(async () => { const recs = Object.values(ATQ.recs); ATQ.recs = {}; try { await saveMany('attendance', recs, true) } catch (e) { } }, 600) }
-const TAPQ = { items: {}, t: null, sid: '' };
-function queueTap(sid, pid, q, a) { TAPQ.sid = sid; TAPQ.items[pid + '|' + q] = { player_id: pid, question: q, answer: a }; upsertLocal('obs', { id: 'lt_' + sid + pid + q, session_id: sid, player_id: pid, question: q, answer: a, source: 'coach' }); clearTimeout(TAPQ.t); TAPQ.t = setTimeout(async () => { const items = Object.values(TAPQ.items); TAPQ.items = {}; try { const j = await act('tap', { session_id: TAPQ.sid, items }, true); S.D.obs = (S.D.obs || []).filter(o => !String(o.id).startsWith('lt_')); (j.recs || []).forEach(r => upsertLocal('obs', r)) } catch (e) { } }, 600) }
-const RATEQ = { items: {}, t: null, sid: '' };
+/* everything recorded at the court goes through the outbox (p2_core): kept on the phone until the Sheet confirms it */
+function queueAtt(sid, pid, status) { const r = Object.assign({}, attRec(sid, pid) || { id: 'a_' + sid + '_' + pid, session_id: sid, player_id: pid }, { status }); obPut({ key: 'r|attendance|' + r.id, kind: 'attendance', rec: r, local: [['attendance', r]] }) }
+function queueTap(sid, pid, q, a) { obPut({ key: 'tp|' + sid + '|' + pid + '|' + q, a: 'tap', sid, item: { player_id: pid, question: q, answer: a }, local: [['obs', { id: 'lt_' + sid + pid + q, session_id: sid, player_id: pid, question: q, answer: a, source: 'coach' }]] }) }
+function myRateItem(sid, pid, cat) { const e = OB.list.find(x => x.key === 'cr|' + sid + '|' + pid + '|' + cat); return e ? e.item : null }
 function queueRate(sid, pid, cat, v, part) {
-  RATEQ.sid = sid; const prev = myRate(sid, pid, cat) || {}; const p2 = part === undefined ? (prev.part || '') : part;
-  RATEQ.items[pid + '|' + cat] = { player_id: pid, cat, level: v, part: p2 };
-  upsertLocal('obs', { id: 'k_' + sid + '_' + pid + '_' + cat, session_id: sid, player_id: pid, skill: 'K' + cat, level: v === 'NO' ? '' : v, state: v === 'NO' ? 'not_observed' : 'observed', part: p2, source: 'coach', rater: S.me.id });
-  clearTimeout(RATEQ.t); RATEQ.t = setTimeout(async () => { const items = Object.values(RATEQ.items); RATEQ.items = {}; try { const j = await act('coachrate', { session_id: RATEQ.sid, items }, true); (j.recs || []).forEach(r => upsertLocal('obs', r)); if (j.blocked && j.blocked.length) toast('⚠ ' + L(j.blocked.length + ' not saved (no family consent)', j.blocked.length + ' لم يُحفظ (بلا موافقة العائلة)')) } catch (e) { } }, 600);
+  const prev = myRate(sid, pid, cat) || {}; const p2 = part === undefined ? (prev.part || '') : part;
+  const item = { player_id: pid, cat, level: v, part: p2 };
+  obPut({ key: 'cr|' + sid + '|' + pid + '|' + cat, a: 'coachrate', sid, item, local: [['obs', { id: 'k_' + sid + '_' + pid + '_' + cat, session_id: sid, player_id: pid, skill: 'K' + cat, level: v === 'NO' ? '' : v, state: v === 'NO' ? 'not_observed' : 'observed', part: p2, source: 'coach', rater: S.me.id }]] });
 }
-async function coachSes(id, rec) { try { const j = await act('coachses', { rec: Object.assign({ id }, rec) }, true); upsertLocal('sessions', j.rec) } catch (e) { } }
+function coachSes(id, rec) {
+  const key = 'cs|' + id; const old = OB.list.find(x => x.key === key && x.uid === (S.me || {}).id);
+  const merged = Object.assign({}, old ? old.body.rec : {}, { id }, rec);
+  obPut({ key, a: 'coachses', kind: 'sessions', body: { rec: merged }, local: [['sessions', merged]] });
+}
 
 document.addEventListener('click', async ev => {
   const el = ev.target.closest('[data-act]'); if (!el) return; const a = el.dataset.act; const d = el.dataset;
@@ -1711,7 +1929,14 @@ document.addEventListener('click', async ev => {
     case 'nav': S.draft = null; S.evStep = ''; go(d.v); break;
     case 'more': moreMenu(); break;
     case 'lang': S.lang = d.v; store.set('lang', d.v); rerender(); break;
-    case 'logout': logout(); break;
+    case 'logout': if (obMine().length && !confirm(L('Some changes are not saved yet. Log out anyway? They stay on this phone and are sent when you log in again.', 'بعض التغييرات لم تُحفظ بعد. تسجيل الخروج رغم ذلك؟ ستبقى على هذا الموبايل وتُرسل عند الدخول مرة أخرى.'))) break; logout(); break;
+    case 'ob-retry': { obHeld().forEach(x => { x.hold = false; x.fails = 0 }); obSave(); obKick(10); break }
+    case 'ob-discard': { if (!confirm(L('Discard what could not be saved? It will not reach the academy.', 'تلغي اللي ماتحفظش؟ مش هيوصل للأكاديمية.'))) break; const ids = obHeld().map(x => x.stamp); OB.list = OB.list.filter(x => ids.indexOf(x.stamp) < 0); obSave(); reload(); break }
+    case 'ob-now': obKick(10); break;
+    case 'team-add': { const dr = draftSettings(); dr.team = (dr.team || []).concat([{ name: '', name_ar: '', role_en: '', role_ar: '', bio_en: '', bio_ar: '', photo: '', show: 'yes' }]); rerender(); break }
+    case 'team-del': { const dr = draftSettings(); dr.team = (dr.team || []).filter((x, i) => i !== +d.i); rerender(); break }
+    case 'help-done': { try { const j = await act('helpdone', { id: d.id }); upsertLocal('helpreq', j.rec); rerender() } catch (e) { } break }
+    case 'alert-close': { const b = document.getElementById('alertbox'); if (b) b.hidden = true; break }
     case 'loginas': S.loginAs = d.v; render(); break;
     case 'modal-close': modal(''); S.cmp = null; break;
     case 'print': window.print(); break;
@@ -1723,7 +1948,7 @@ document.addEventListener('click', async ev => {
     case 'past-new': pastSessionModal(); break;
     case 'mark': { queueAtt(d.sid, d.pid, d.v); el.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === d.v)); const k = $('#kPres'); if (k) k.textContent = hereCount(d.sid); break }
     case 'all-here': { const s = sesById(d.id); sessionRoster(s).forEach(p => { const r = attRec(s.id, p.id); if (!r || !r.status) queueAtt(s.id, p.id, holdOn(p.id, s.date) ? 'excused' : 'present') }); rerender(); break }
-    case 'coach-in': await coachSes(d.id, { coach_in: true }); rerender(); break;
+    case 'coach-in': await coachSes(d.id, { coach_in: new Date().toISOString() }); rerender(); break;
     case 'plan-dec': await coachSes(d.id, { plan_decision: d.v }); rerender(); break;
     case 'plan-useful': await coachSes(d.id, { plan_useful: +d.v }); rerender(); break;
     case 'decide': { let note = ''; if (d.v !== 'accept') { note = prompt(d.v === 'reject' ? L('Why not now? (helps the next proposals)', 'لماذا ليس الآن؟ (يساعد المقترحات القادمة)') : L('What will you change?', 'ماذا ستغيّر؟')) || '' } try { const j = await act('decide', { rec_id: d.id, decision: d.v, note }); upsertLocal('recs', j.rec); upsertLocal('decisions', j.decision) } catch (e) { } rerender(); break }
@@ -1737,7 +1962,7 @@ document.addEventListener('click', async ev => {
     case 'evd': { const dr = S.evDraft; const i = dr.deep.indexOf(d.v); if (i >= 0) dr.deep.splice(i, 1); else dr.deep.push(d.v); el.setAttribute('aria-pressed', i < 0); break }
     case 'evplan-save': { const dr = S.evDraft; if (!dr.cats.length) { toast(L('Choose at least one focus area.', 'اختر مجال تركيز واحدًا على الأقل.')); break } const old = planOf(d.sid) || {}; const rec = Object.assign({}, old, { id: 'ep_' + d.sid, session_id: d.sid, cats: dr.cats.filter(c => dr.scrim || +c < 10), scrim: dr.scrim ? 'yes' : '', focus: [], deep: dr.deep, set_by: old.set_by || S.me.name, done: old.done || [] }); if (!rec.cats.length) { toast(L('Game areas need a scrimmage.', 'مجالات اللعب تحتاج مباراة تدريبية.')); break } await save('evalplans', rec, true); S.evDraft = null; S.evStep = 'record'; rerender(); break }
     case 'ev': { S.evOpen = d.pid; queueEv(d.sid, d.pid, d.k, d.v === 'NO' ? 'NO' : +d.v); el.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === d.v)); break }
-    case 'evsubmit': { await flushEv(); try { const j = await act('evsubmit', { session_id: d.sid }); upsertLocal('evalplans', j.plan); S.evStep = 'verify'; await load(); rerender() } catch (e) { } break }
+    case 'evsubmit': { if (!(await flushEv())) { alertBox(L('Some ratings are not saved yet. Submit again when the red bar is gone.', 'بعض التقييمات لم تُحفظ بعد. أرسل مرة أخرى عندما يختفي الشريط الأحمر.')); break } try { const j = await act('evsubmit', { session_id: d.sid }); upsertLocal('evalplans', j.plan); S.evStep = 'verify'; await load(); rerender() } catch (e) { } break }
     case 'crate': { queueRate(d.sid, d.pid, d.c, d.v === 'NO' ? 'NO' : +d.v); el.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === d.v)); break }
     case 'cpart': { const o = myRate(d.sid, d.pid, d.c); if (!o || o.state !== 'observed') { toast(L('Tap a level first.', 'اختر مستوى أولًا.')); break } queueRate(d.sid, d.pid, d.c, +o.level, o.part === d.v ? '' : d.v); el.parentNode.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === d.v && o.part !== d.v)); break }
     case 'board-cat': S.boardCat = d.v; rerender(); break;
@@ -1777,7 +2002,7 @@ document.addEventListener('click', async ev => {
     case 'share': try { const j = await act('share', { note_id: d.id, decision: d.v }); upsertLocal('notes', Object.assign({}, (D().notes || []).find(n => n.id === d.id), { child_share: j.rec.child_share })); rerender() } catch (e) { } break;
     /* messages */
     case 'compose': S.cmp = null; composeModal({ tpl: d.tpl || 'general', pid: d.pid, lead: d.lead }); break;
-    case 'cmp-copy': copyText(fillTpl(S.cmp.tpl, { children: [L('your child', 'طفلكم')] }, S.cmp.lang, S.cmp.base).replace(/\{\w+\}/g, '')); break;
+    case 'cmp-copy': { const lg = S.cmp.lang === 'auto' ? 'ar' : S.cmp.lang; copyText(fillTpl(S.cmp.tpl, { children: [lg === 'ar' ? 'أولادكم' : 'your children'] }, lg, S.cmp.bases[lg]).replace(/\{\w+\}/g, '')); break }
     case 'log-wa': { const m = { template: d.tpl, text: d.text || '', player_id: d.pid || '', lead_id: d.lead || '' }; const p = d.pid && P(d.pid); const l = d.lead && leads().find(x => x.id === d.lead); m.to = p ? (p.parent_name || p.name) : l ? (l.parent_name || l.child_name) : ''; m.phone = p ? p.parent_phone : l ? l.phone : ''; logMsg(m); if (d.i !== undefined) { S.sentNow = S.sentNow || {}; S.sentNow[d.i + S.cmp.tpl + S.cmp.aud] = 1; setTimeout(() => composeModal(), 400) } break }
     /* growth */
     case 'gsub': S.sub = d.v; S.month = ''; rerender(); break;
@@ -1815,6 +2040,7 @@ document.addEventListener('change', async ev => {
   const el = ev.target; const d = el.dataset || {};
   if (el.id === 'impFile' && el.files[0]) { const f = el.files[0]; el.value = ''; previewImport(f); return }
   if (d.set !== undefined) { setPath(draftSettings(), d.set, d.num ? (+el.value || 0) : el.value); return }
+  if (d.chg === 'reg-dob') { const m = document.getElementById('ageMsg'); const dd = parseD(el.value); if (m && dd) { const n = new Date(); let a = n.getFullYear() - dd.getFullYear(); if (n < new Date(n.getFullYear(), dd.getMonth(), dd.getDate())) a--; m.textContent = a < 6 || a > 14 ? L(`Age ${a}: our groups are for ages 6 to 14. You can still register, and we will tell you what fits.`, `السن ${a}: مجموعاتنا من 6 لـ14 سنة. ممكن تسجّلوا عادي، وهنقولكم إيه المناسب.`) : '' } return }
   switch (d.chg) {
     case 'nb': { const v = el.value ? +el.value : ''; el.classList.toggle('set', !!el.value); try { const j = await act('notebook', { session_id: d.sid, items: [{ player_id: d.pid, skill: d.k, level: v }] }, true); (j.recs || []).forEach(r => upsertLocal('obs', r)) } catch (e) { } break }
     case 'evsent': S.evSent = el.checked; rerender(); break;
@@ -1824,10 +2050,10 @@ document.addEventListener('change', async ev => {
     case 'plan-note': await coachSes(d.sid, { plan_note: el.value }); break;
     case 'money-month': S.month = el.value; rerender(); break;
     case 'month': S.month = el.value; rerender(); break;
-    case 'cmp-tpl': S.cmp.tpl = el.value; S.cmp.base = tplText(el.value, S.cmp.lang); composeModal(); break;
+    case 'cmp-tpl': S.cmp.tpl = el.value; S.cmp.bases = null; composeModal(); break;
     case 'cmp-aud': S.cmp.aud = el.value; composeModal(); break;
-    case 'cmp-lang': S.cmp.lang = el.value; S.cmp.base = tplText(S.cmp.tpl, el.value); composeModal(); break;
-    case 'cmp-base': S.cmp.base = el.value; composeModal(); break;
+    case 'cmp-lang': S.cmp.lang = el.value; composeModal(); break;
+    case 'cmp-base': S.cmp.bases[el.dataset.l || 'ar'] = el.value; composeModal(); break;
   }
 });
 document.addEventListener('input', ev => {
@@ -1869,8 +2095,16 @@ playersScreen = function () { if (S.sel === '__new') return `<button class="link
 /* ================= start ================= */
 (async function start() {
   if (location.hash === '#register') { render(); return }
-  if (S.t) { $('#app').innerHTML = `<div class="login"><img src="${LOGO}" alt="HOST"><p class="muted">${L('Loading…', 'جارٍ التحميل…')}</p></div>`; try { await load(); } catch (e) { S.me = null; S.D = null; if (!/log in/i.test(e.message)) toast('⚠ ' + e.message) } }
-  render();
+  if (S.t) {
+    $('#app').innerHTML = `<div class="login"><img src="${LOGO}" alt="HOST"><p class="muted">${L('Loading…', 'جارٍ التحميل…')}</p></div>`;
+    try { await load(); }
+    catch (e) {
+      const c = e.net ? cacheLoad() : null;
+      if (c && c.D) { S.D = c.D; S.D.today = cairoToday(); S.me = c.D.me; S.offlineCopy = true; setOnline(false); applyPending(); const retry = setInterval(async () => { try { await load(); clearInterval(retry); rerender() } catch (e2) { } }, 20000) }
+      else { S.me = null; S.D = null; if (!/log in/i.test(e.message)) toast('⚠ ' + e.message) }
+    }
+  }
+  render(); obBar();
 })();
 
 </script>
