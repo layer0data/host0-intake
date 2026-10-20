@@ -4429,6 +4429,72 @@ regAction('ix-dismiss', d => { S.ixDismiss = Object.assign({}, d); modal(`<h2>${
 regForm('ixDismissForm', async o => { const d = S.ixDismiss; if (!d) return; await ixWrite(d, 'dismissed', String(o.reason || '').slice(0, 300)); S.ixDismiss = null });
 regAction('ix-go', d => { const el = document.getElementById('ic-' + d.v); if (!el) return; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.classList.add('ix-flash'); setTimeout(() => el.classList.remove('ix-flash'), 1600) });
 
+/* ================= v4.2.1 · Speed test (TEST page only) =================
+   One button under Settings → Import and backup that times each kind of request from this phone and shows where the server spent it
+   (the "_prof" every answer carries). For Gate 1: real Google numbers for check 3 without reading Apps Script › Executions by hand.
+   Shown only on the TEST page (window.HOST_EGYPT_TEST). It reads, opens two children, re-saves 5 attendance rows with the status they
+   already have, and only when ticked writes 2 test ratings (same skill and level as the child's latest rating). */
+(function () {
+  if (!window.HOST_EGYPT_TEST || typeof importExport !== 'function') return;
+  const base = importExport;
+  importExport = function () {
+    return base() + `<h3>${L('Speed test (TEST page only)', 'اختبار السرعة (صفحة الاختبار بس)')}</h3>
+    <p class="small muted">${L('Times each kind of request from this phone, 3 loads, 2 children opened, 5 attendance saves (the same status again), and shows where the server spent the time. Nothing changes in the sheet except the save time of those rows, unless you tick the ratings.', 'بيقيس كل نوع طلب من الموبايل ده: 3 تحميلات، فتح طفلين، 5 حفظ حضور (بنفس الحالة)، وبيوضح السيرفر صرف الوقت فين. مفيش حاجة بتتغير في الجدول غير وقت حفظ الصفوف دي، إلا لو علّمت على التقييمات.')}</p>
+    <label class="small"><input type="checkbox" id="spdRate"> ${L('Also 2 test ratings (adds 2 rating rows to the TEST sheet)', 'كمان تقييمين تجريبيين (بيضيف صفين تقييم في جدول الاختبار)')}</label><br>
+    <label class="small"><input type="checkbox" id="spdBurst"> ${L('Also 30 attendance saves sent at once, like three phones tapping together (check 7; same statuses again)', 'كمان 30 حفظ حضور مع بعض، زي 3 موبايلات بيدوسوا في نفس الوقت (فحص 7؛ نفس الحالات)')}</label>
+    <div class="row wrap"><button class="btn ghost" data-act="speed-test">${L('Run the speed test', 'شغّل اختبار السرعة')}</button><button class="btn ghost" data-act="speed-copy">${L('Copy the result', 'انسخ النتيجة')}</button></div>
+    <div id="spdBox" class="small"></div>`;
+  };
+  const LOG = [];
+  const top = (st, n) => Object.keys(st || {}).slice(0, n).map(k => k + ' ' + st[k]).join(', ');
+  async function one(kind, a, body) {
+    const t0 = performance.now(); let j = null, err = '';
+    try { j = await api(a, body) } catch (e) { err = e.message || String(e) }
+    const ms = Math.round(performance.now() - t0); const p = (j && j._prof) || {};
+    const row = { kind, a, ms, server: p.ms, boot: p.boot, bytes: p.bytes, prepared: p.prepared, steps: top(p.steps, 5), err };
+    LOG.push(row); show(); return j;
+  }
+  function show() {
+    const box = document.getElementById('spdBox'); if (!box) return;
+    const lines = LOG.map(r => `${r.kind.padEnd(16)} ${String(r.ms).padStart(6)} ms phone · ${String(r.server == null ? '?' : r.server).padStart(6)} ms server · boot ${r.boot == null ? '?' : r.boot} · ${r.bytes || 0} B${r.prepared ? ' · prepared' : ''}${r.err ? ' · ⚠ ' + r.err : ''}\n    ${r.steps}`);
+    const kinds = {}, srv = {}; LOG.forEach(r => { if (!r.err && r.kind !== 'done' && r.kind !== '30 at once') { (kinds[r.kind] = kinds[r.kind] || []).push(r.ms); (srv[r.kind] = srv[r.kind] || []).push(r.server == null ? 0 : r.server) } });   // judged on the phone's round trip (what a coach waits for); the script's own time beside it
+    const target = { load: 4000, 'open child': 6000, attendance: 3000, rating: 3000 };   // '30 at once' is judged by its line: 30 saved, 0 failed
+    const sum = Object.keys(kinds).map(k => { const max = Math.max(...kinds[k]), maxS = Math.max(...srv[k]); return `${k}: slowest ${max} ms on the phone (${maxS} ms in the script) · target ${target[k] ? '≤ ' + target[k] + ' ms' : '–'} ${target[k] ? (max <= target[k] ? 'PASS' : 'OVER') : ''}` });
+    box.innerHTML = `<pre class="miglog">${esc(lines.join('\n'))}\n\n${esc(sum.join('\n'))}</pre>`;
+  }
+  async function run() {
+    LOG.length = 0; const box = document.getElementById('spdBox'); if (box) box.textContent = L('Running… keep this screen open.', 'شغال… خلّي الشاشة مفتوحة.');
+    for (let i = 0; i < 3; i++) await one('load', 'load', {});
+    const D0 = S.D || {}; const kids = (D0.players || []).filter(p => (p.status || 'active') === 'active').slice(0, 2);
+    for (const p of kids) await one('open child', 'view', { player_id: p.id });
+    const att = (D0.attendance || []).slice().sort((a, b) => String(b.session_id).localeCompare(String(a.session_id)));
+    const sid = att.length ? att[0].session_id : null; const rows = att.filter(a => a.session_id === sid).slice(0, 5);
+    for (const a of rows) await one('attendance', 'bulk', { kind: 'attendance', recs: [{ session_id: a.session_id, player_id: a.player_id, status: a.status }] });
+    if (!rows.length) LOG.push({ kind: 'attendance', a: 'bulk', ms: 0, steps: '', err: L('no attendance rows to re-save', 'مفيش صفوف حضور') });
+    const tick = document.getElementById('spdRate');
+    if (tick && tick.checked) {
+      const ob = (D0.obs || []).filter(o => o.source !== 'coach' && o.session_id && o.player_id && o.skill && o.level).slice(-2);
+      for (const o of ob) await one('rating', 'evrecord', { session_id: o.session_id, items: [{ player_id: o.player_id, skill: o.skill, level: +o.level }] });
+      if (!ob.length) LOG.push({ kind: 'rating', a: 'evrecord', ms: 0, steps: '', err: L('no rating to repeat', 'مفيش تقييم') });
+    }
+    const burst = document.getElementById('spdBurst');
+    if (burst && burst.checked && att.length) {
+      const list = []; for (let i = 0; i < 30; i++) list.push(att[i % att.length]);
+      const t0 = performance.now(); const res = await Promise.all(list.map(a => { const s0 = performance.now(); return api('bulk', { kind: 'attendance', recs: [{ session_id: a.session_id, player_id: a.player_id, status: a.status }] }).then(j => ({ ok: true, ms: Math.round(performance.now() - s0), p: j._prof || {} }), e => ({ ok: false, ms: Math.round(performance.now() - s0), err: e.message || String(e) })) }));
+      const ok = res.filter(r => r.ok), bad = res.filter(r => !r.ok); const waits = ok.map(r => parseInt(String((r.p.steps || {})['lock wait'] || '0'), 10) || 0);
+      LOG.push({ kind: '30 at once', a: 'bulk', ms: Math.round(performance.now() - t0), server: Math.max(0, ...ok.map(r => r.p.ms || 0)), steps: `${ok.length} saved, ${bad.length} failed · slowest on the phone ${Math.max(0, ...res.map(r => r.ms))} ms · longest lock wait ${Math.max(0, ...waits)} ms${bad.length ? ' · ' + bad[0].err : ''}`, err: '' });
+      show();
+    }
+    LOG.push({ kind: 'done', a: '', ms: 0, steps: new Date().toISOString() + ' · ' + navigator.userAgent.slice(0, 80), err: '' }); show();
+  }
+  document.addEventListener('click', ev => {
+    const el = ev.target.closest && ev.target.closest('[data-act="speed-test"],[data-act="speed-copy"]'); if (!el) return;
+    ev.stopPropagation();
+    if (el.dataset.act === 'speed-test') run();
+    else { const b = document.getElementById('spdBox'); const txt = b ? b.innerText : ''; try { navigator.clipboard.writeText(txt) } catch (e) { } }
+  }, true);
+})();
+
 </script>
 </body>
 </html>
