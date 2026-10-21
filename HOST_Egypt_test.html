@@ -692,7 +692,7 @@ async function api(a, body) {
   } finally { clearTimeout(tm); clearTimeout(sl); if (slow) slowMark(-1) }
   if (!j.ok && j.error === 'login') { logout(true); const e = new Error(L('Please log in again. Anything not saved yet stays on this phone and is sent after you log in.', 'سجّل الدخول تاني. أي حاجة لسه ماتحفظتش فاضلة على الموبايل وهتتبعت بعد الدخول.')); e.login = true; throw e }
   if (!j.ok && j.error === 'migrate') { const e = netErr('server'); e.server = String(j.message || 'migrate'); e.message = L('The academy sheet needs a one-time update. Owner: Settings → Import and backup → Update sheet. Your work is kept on this phone and will be sent automatically.', 'جدول الأكاديمية محتاج تحديث لمرة واحدة. المالك: الإعدادات ← الاستيراد والنسخ الاحتياطي ← تحديث الجدول. عملك محفوظ على هذا الموبايل وسيُرسل تلقائيًا.'); e.migrate = true; throw e }
-  if (!j.ok && !j.refused) { const e = netErr('server'); e.server = String(j.message || j.error || 'error'); throw e }   // busy, or a Google hiccup: keep and retry
+  if (!j.ok && !j.refused) { const e = netErr('server'); e.server = String(j.message || j.error || 'error'); if (j.error === 'busy') e.busy = true; throw e }   // busy, or a Google hiccup: keep and retry
   if (!j.ok) throw new Error(j.message || j.error || 'error');
   setOnline(true);
   return j;
@@ -714,7 +714,7 @@ function obKick(ms) { clearTimeout(OB.t); OB.t = setTimeout(obFlush, ms) }
 function applyPending() { if (!S.D) return; obMine().forEach(e => (e.local || []).forEach(x => upsertLocal(x[0], x[1]))) }
 async function obFlush() {
   if (OB.busy || !S.t || !S.me) return; const mine = obMine(); if (!mine.length) return;
-  OB.busy = true; let failed = false, down = false, stop = false;
+  OB.busy = true; let failed = false, down = false, stop = false; const had = mine.length; OB.busyErr = false;
   try {
     const groups = {}; mine.forEach(e => { const g = e.item ? 'i|' + e.a + '|' + e.sid : e.rec ? 'r|' + e.kind : 'b|' + e.key; (groups[g] = groups[g] || []).push(e) });
     for (const g of Object.values(groups)) {
@@ -725,7 +725,8 @@ async function obFlush() {
       try { j = await api(a, body) }
       catch (err) {
         if (err.login) { stop = true; break }                                    // kept; sent after the next login
-        if (err.net) { failed = true; if (err.migrate) { OB.lastErr = err.server; continue } if (err.kind === 'slow') { OB.slowErr = true; continue } if (err.server) { OB.lastErr = err.server; g.forEach(x => { if (/^HTTP |^bad answer/.test(err.server)) return; x.fails = (x.fails || 0) + 1; if (x.fails >= 8) { x.hold = true; x.err = err.server } }); continue } down = true; break }   // a sheet waiting for its update is not a failure of this item: kept, retried, never put aside
+        /* v4.2.2: a busy server is never a failure of the tap: kept, sent again within seconds, never put aside */
+        if (err.net) { failed = true; if (err.migrate) { OB.lastErr = err.server; continue } if (err.kind === 'slow') { OB.slowErr = true; continue } if (err.busy) { OB.busyErr = true; continue } if (err.server) { OB.lastErr = err.server; g.forEach(x => { if (/^HTTP |^bad answer/.test(err.server)) return; x.fails = (x.fails || 0) + 1; if (x.fails >= 8) { x.hold = true; x.err = err.server } }); continue } down = true; break }   // a sheet waiting for its update is not a failure of this item: kept, retried, never put aside
         OB.list = OB.list.filter(x => !sent.some(([k, st]) => x.key === k && x.stamp === st));   // the server refused it for a reason: show the reason, do not retry forever
         alertBox(L('Not saved: ', 'لم يُحفظ: ') + err.message); continue;
       }
@@ -739,8 +740,8 @@ async function obFlush() {
     OB.busy = false;
     if (stop) { }
     else if (failed) {
-      OB.tries++; if (down) setOnline(false); obKick(Math.min(30000, 2500 * OB.tries));
-    } else { OB.tries = 0; OB.warned = false; OB.slowErr = false; if (obMine().length) obKick(800) }
+      OB.tries++; if (down) setOnline(false); obKick(OB.busyErr && !down ? 700 + Math.round(Math.random() * 1800) : Math.min(30000, 2500 * OB.tries));
+    } else { OB.tries = 0; OB.warned = false; OB.slowErr = false; if (obMine().length) obKick(800); else if (had && !stop) toast('✓ ' + L('All saved', 'اتحفظ كله')) }
     obSave();
   }
 }
@@ -755,7 +756,7 @@ function obBar() {
   if (!S.me) { el.hidden = true; return }
   const h = obHeld().length;
   const held = h ? `<div class="obheld"><b>${L(`${h} could not be saved`, `${h} ماتحفظش`)}</b><span>${esc(obHeld()[0].err || '')}</span><button type="button" data-act="ob-retry">${L('Try again', 'حاول تاني')}</button><button type="button" data-act="ob-discard">${L('Discard', 'إلغاء')}</button></div>` : '';
-  if (n) { el.hidden = false; el.className = 'obbar warn'; el.innerHTML = `<b>⚠ ${L(`${n} not saved yet`, `${n} لم يُحفظ بعد`)}</b><span>${S.online === false ? L('No connection. Kept on this phone; sent automatically when the signal is back.', 'لا يوجد اتصال. محفوظ على هذا الموبايل ويُرسل تلقائيًا عند عودة الشبكة.') : (S.slow || OB.slowErr) ? L('Slow connection, still sending… keep the app open.', 'الشبكة بطيئة، لسه بنبعت… سيب التطبيق مفتوح.') : L('Sending… keep the app open.', 'جارٍ الإرسال… اترك التطبيق مفتوحًا.')}</span><button type="button" data-act="ob-now">${L('Send now', 'أرسل الآن')}</button>${held}` }
+  if (n) { el.hidden = false; el.className = 'obbar warn'; el.innerHTML = `<b>⚠ ${L(`${n} not saved yet`, `${n} لم يُحفظ بعد`)}</b><span>${S.online === false ? L('No connection. Kept on this phone; sent automatically when the signal is back.', 'لا يوجد اتصال. محفوظ على هذا الموبايل ويُرسل تلقائيًا عند عودة الشبكة.') : OB.busyErr ? L('The academy server is busy. Kept on this phone and sent again automatically in a few seconds.', 'سيرفر الأكاديمية مشغول. محفوظ على الموبايل وهيتبعت تاني لوحده في ثواني.') : (S.slow || OB.slowErr) ? L('Slow connection, still sending… keep the app open.', 'الشبكة بطيئة، لسه بنبعت… سيب التطبيق مفتوح.') : L('Sending… keep the app open.', 'جارٍ الإرسال… اترك التطبيق مفتوحًا.')}</span><button type="button" data-act="ob-now">${L('Send now', 'أرسل الآن')}</button>${held}` }
   else if (h) { el.hidden = false; el.className = 'obbar warn'; el.innerHTML = held }
   else if (S.online === false || S.offlineCopy) { el.hidden = false; el.className = 'obbar off'; el.innerHTML = `<span>${S.online === false ? L('No connection. Showing the last saved copy on this phone.', 'لا يوجد اتصال. يظهر آخر نسخة محفوظة على هذا الموبايل.') : L('Slow connection. Showing the last saved copy on this phone while it loads.', 'الشبكة بطيئة. يظهر آخر نسخة محفوظة على الموبايل لحد ما يحمّل.')}</span>` }
   else if (S.slow) { el.hidden = false; el.className = 'obbar off'; el.innerHTML = `<span>${L('Slow connection, still loading…', 'الشبكة بطيئة، لسه بيحمّل…')}</span>` }
@@ -786,9 +787,18 @@ function cacheSave() {
 }
 function cacheLoad() { try { const c = JSON.parse(store.get('cache') || 'null'); return c && c.t === S.t ? c : null } catch (e) { return null } }
 function applyLoad(j) { S.D = j; S.me = j.me; S.offlineCopy = false; applyPending(); cacheSave(); obBar(); obKick(200); if (j.me && j.me.role !== 'parent' && typeof ensureDrills === 'function') ensureDrills(true); return j }   // drill cards are fetched once, quietly, so the plan and record screens have them without a re-render
-async function load() { return applyLoad(await api('load')) }
+async function load() { const r = applyLoad(await api('load')); S.loadedAt = Date.now(); return r }
 async function reload() { try { await load(); rerender() } catch (e) { if (e.net && e.kind === 'offline') setOnline(false); toast('⚠ ' + e.message) } }
 /* a quiet refresh every minute, so phones see each other's attendance and ratings; never while someone is typing or recording */
+async function quietReload() {
+  if (!S.me || !S.t || document.visibilityState !== 'visible' || obMine().length || OB.busy) return;
+  const m = document.getElementById('modal'); if (m && !m.hidden) return;
+  const ae = document.activeElement; if (ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName)) return;
+  if (S.view === 'evaluate' || S.sub === 'eval' || S.view === 'settings' || S.kid || location.hash === '#register') return;
+  const g = OB.gen; try { const j = await api('load'); if (g !== OB.gen || OB.busy || obMine().length) return; applyLoad(j); S.loadedAt = Date.now(); rerender() } catch (e) { }
+}
+/* v4.2.2: a page left open (screen off, another app) catches up as soon as it is shown again, if its data is older than 2 minutes */
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - (S.loadedAt || 0) > 120000) quietReload() });
 setInterval(async () => {
   if (!S.me || !S.t || document.visibilityState !== 'visible' || obMine().length || OB.busy) return;
   const m = document.getElementById('modal'); if (m && !m.hidden) return;
@@ -2599,6 +2609,9 @@ function importExport() {
   <div id="impBox"></div>
   <h3>${L('Update the sheet', 'تحديث الجدول')}</h3><p class="small muted">${L('After installing a new version of the script, press this once. It only ADDS: missing tabs are created and missing columns are added after the last column. Nothing is moved, re-typed or deleted, so the previous version keeps working on this sheet. Each step takes at most about 20 seconds; the button repeats until it says done, and every step is written to the hidden tab schema_log. It also stores PINs as a scrambled code only and starts the 10-minute background refresh.', 'بعد تركيب نسخة جديدة من السكريبت، اضغط هنا مرة واحدة. التحديث بيضيف بس: التبويبات الناقصة بتتعمل والأعمدة الناقصة بتتضاف بعد آخر عمود. مفيش حاجة بتتحرك أو تتكتب تاني أو تتمسح، فالنسخة اللي قبلها تفضل شغالة على الجدول. كل خطوة حوالي 20 ثانية بالكتير؛ الزرار بيكرر لحد ما يقول تم، وكل خطوة بتتسجل في التبويب المخفي schema_log. وكمان بيحفظ الأرقام السرية كرمز مشفّر بس، وبيشغّل التحديث في الخلفية كل 10 دقايق.')}</p>
   <div class="row wrap"><button class="btn ghost" data-act="migrate-now">${L('Update sheet now', 'حدّث الجدول دلوقتي')}</button><span id="migBox" class="small"></span></div>
+  <h3>${L('Content file', 'ملف المحتوى')}</h3><p class="small muted">${L('Drills, fitness plans, lessons, parent tips, posts, prospects and the football protocol are kept in the sheet, not in the script (so every request starts faster). Load HOST_Egypt_Content.json from the same package as the script, once after each new script.', 'التمارين وخطط اللياقة والدروس ونصايح الأهالي والبوستات والعملاء المحتملين وبروتوكول الكورة محفوظين في الجدول مش في السكريبت (عشان كل طلب يبدأ أسرع). حمّل HOST_Egypt_Content.json من نفس حزمة السكريبت، مرة واحدة بعد كل سكريبت جديد.')}</p>
+  <p class="small"><b>${D().content_ok ? '✓ ' + L('Loaded for this version of the script.', 'متحمّل لنسخة السكريبت دي.') : '⚠ ' + L('Not loaded for this version of the script yet.', 'لسه ماتحمّلش لنسخة السكريبت دي.')}</b></p>
+  <input type="file" accept=".json,application/json" id="ctFile" class="in"><span id="ctBox" class="small"></span>
   <h3>${L('Backup', 'نسخة احتياطية')}</h3><p class="small muted">${L('Everything is already in your Google Sheet. This file is an extra copy for your computer.', 'كل شيء محفوظ في جدول جوجل. هذا الملف نسخة إضافية لجهازك.')}</p>
   <button class="btn ghost" data-act="export">${L('Download a backup file', 'تنزيل ملف نسخة احتياطية')}</button>`;
 }
@@ -3435,6 +3448,19 @@ function effectBox() {
    ${ce.plateau.length ? `<h3>${L('Plateau watch', 'ثابتين في مكانهم')}</h3><p class="small">${L('Children you worked with more than once and no level moved in 90 days: try another approach or ask an evaluator what they see.', 'أطفال اشتغلت معاهم أكتر من مرة ومفيش مستوى اتحرك في 90 يوم: جرّب طريقة تانية أو اسأل مقيّم شايف إيه.')}</p><div class="chips">${ce.plateau.map(pid => `<span class="chip" data-act="player" data-id="${pid}">${esc((P(pid) || {}).name || '')}</span>`).join('')}</div>` : ''}
    ${Object.keys(ce.works).length ? `<h3>${L('What works for each child', 'إيه اللي بينفع مع كل طفل')}</h3><ul class="small">${Object.keys(ce.works).filter(P).map(pid => `<li><b>${esc(P(pid).name)}</b> · ${esc(apprName(ce.works[pid].approach))} (${ce.works[pid].landed}/${ce.works[pid].n})</li>`).join('')}</ul>` : ''}</div>`;
 }
+
+/* ================= v4.2.2 · the content file (owner) =================
+   Settings → Import and backup → Content file: the chosen HOST_Egypt_Content.json is sent as it is; the server checks it belongs to this
+   script and keeps it in the sheet's hidden 'content' tab. Home shows a card while it is missing. */
+document.addEventListener('change', async ev => {
+  const el = ev.target; if (!el || el.id !== 'ctFile' || !el.files || !el.files[0]) return;
+  const box = document.getElementById('ctBox'); const put = t => { if (box) box.textContent = t };
+  try {
+    put(L('Loading the content file…', 'جارٍ تحميل ملف المحتوى…'));
+    const text = await el.files[0].text(); const j = await act('content_put', { text }, true);
+    put('✓ ' + L(`Content file loaded (${j.parts} parts).`, `ملف المحتوى اتحمّل (${j.parts} جزء).`)); await load(); rerender();
+  } catch (e) { put('⚠ ' + (e.message || e)) }
+});
 
 /* ================= v4 batch 5 · multi-sport, branches, modes, white label, sealed data, access (client) =================
    Football appears only while the owner has it on (the server sends no football slice otherwise). Sealed values are shown once in a
@@ -4282,6 +4308,7 @@ function ownerHome() {
   const modCards = MOD.home.map(fn => { try { return fn() } catch (e) { console.error(e); return '' } }).join('');
   const PRI = { high: 'attn', medium: 'warn', low: '' };
   return `<div class="row sp"><h1>${L('Academy insights', 'رؤى الأكاديمية')}${S.me.name ? ` <span class="muted small">· ${esc(S.me.name)}</span>` : ''}</h1><span class="tiny muted">${fmtDL(todayStr())}</span></div>
+  ${D().content_ok === false && !D().migrate_needed ? `<div class="card attn"><b>${L('Load the content file once.', 'حمّل ملف المحتوى مرة واحدة.')}</b><p class="small">${L('Drills, fitness plans, lessons, tips, posts and prospects wait for it. Settings → Import and backup → Content file (HOST_Egypt_Content.json from the package).', 'التمارين وخطط اللياقة والدروس والنصايح والبوستات مستنيينه. الإعدادات ← الاستيراد والنسخ الاحتياطي ← ملف المحتوى (HOST_Egypt_Content.json من الحزمة).')}</p><button class="btn small" data-act="nav" data-v="settings">${L('Open Settings', 'افتح الإعدادات')}</button></div>` : ''}
   ${D().migrate_needed && S.me.role === 'owner' ? `<div class="card attn"><b>${L('The academy sheet needs its one-time update.', 'جدول الأكاديمية محتاج تحديثه لمرة واحدة.')}</b><p class="small">${L('Until then the app only reads; saves wait on each phone. Settings → Import and backup → Update sheet now.', 'لحد ما يتعمل، التطبيق بيقرا بس؛ والحفظ بيستنى على كل موبايل. الإعدادات ← الاستيراد والنسخ الاحتياطي ← حدّث الجدول دلوقتي.')}</p><button class="btn small" data-act="nav" data-v="settings">${L('Open Settings', 'افتح الإعدادات')}</button></div>` : ''}
   ${periodBar()}${stale ? `<p class="small muted ix-loading">${S.ixLoading ? L('Preparing the insights for this period…', 'جارٍ تجهيز الرؤى للفترة دي…') : L('Showing the last computed period.', 'بيعرض آخر فترة محسوبة.')}</p>` : ''}
   ${it && it.prepared_at && !stale ? `<p class="tiny muted ix-prep">${L('Prepared in the background at', 'اتجهزت في الخلفية الساعة')} ${esc(String(it.prepared_at).slice(11, 16))} UTC · <button class="link" data-act="ix-refresh">${L('Refresh now', 'حدّث دلوقتي')}</button></p>` : ''}
@@ -4423,7 +4450,12 @@ async function ixWrite(d, status, reason) {
   modal(''); rerender();
 }
 regAction('ix-done', async d => { await ixWrite(d, 'done', '') });
-regAction('ix-refresh', async () => { toast(L('Refreshing the insights…', 'جارٍ تحديث الرؤى…')); try { await act('refresh', {}, true); S.D.intel = null; await load(); rerender() } catch (e) { } });
+/* v4.2.2: "Refresh now" prepares the insights again on the server and shows them at once (the rest of the page reloads after) */
+regAction('ix-refresh', async () => {
+  toast(L('Refreshing the insights…', 'جارٍ تحديث الرؤى…')); const p = periodState();
+  try { const j = await act('refresh', { period: { kind: p.kind, key: p.key || '' } }, true); if (j && j.intel && S.D) { S.D.intel = j.intel; rerender() } toast('✓ ' + L('Insights refreshed', 'الرؤى اتحدّثت')); try { await load(); if (j && j.intel && S.D && !ixPeriodMatches(S.D.intel)) S.D.intel = j.intel; rerender() } catch (e) { } }
+  catch (e) { toast('⚠ ' + (e.message || e)) }
+});
 regAction('ix-look-all', () => { S.ixLookAll = true; rerender() });
 regAction('ix-dismiss', d => { S.ixDismiss = Object.assign({}, d); modal(`<h2>${L('Dismiss with a reason', 'تجاهل مع سبب')}</h2><p class="small muted">${L('The reason is kept with the recommendation so next period shows why it was set aside.', 'السبب بيتحفظ مع التوصية، فالفترة الجاية بتبيّن اتجاهلت ليه.')}</p><form id="ixDismissForm"><label class="f">${L('Reason', 'السبب')}<textarea class="in" name="reason" required placeholder="${L('e.g. already handled by phone; group is temporary; not a priority this term', 'مثلًا: اتعالجت بالتليفون؛ المجموعة مؤقتة؛ مش أولوية الفصل ده')}"></textarea></label><div class="row"><button class="btn" type="submit">${L('Dismiss', 'تجاهل')}</button><button class="btn ghost" type="button" data-act="modal-close">${w('cancel')}</button></div></form>`) });
 regForm('ixDismissForm', async o => { const d = S.ixDismiss; if (!d) return; await ixWrite(d, 'dismissed', String(o.reason || '').slice(0, 300)); S.ixDismiss = null });
@@ -4467,22 +4499,45 @@ regAction('ix-go', d => { const el = document.getElementById('ic-' + d.v); if (!
     for (let i = 0; i < 3; i++) await one('load', 'load', {});
     const D0 = S.D || {}; const kids = (D0.players || []).filter(p => (p.status || 'active') === 'active').slice(0, 2);
     for (const p of kids) await one('open child', 'view', { player_id: p.id });
-    const att = (D0.attendance || []).slice().sort((a, b) => String(b.session_id).localeCompare(String(a.session_id)));
-    const sid = att.length ? att[0].session_id : null; const rows = att.filter(a => a.session_id === sid).slice(0, 5);
+    /* v4.2.2: 5 rows across the latest sessions (one session may have fewer than 5) */
+    const sesDate = {}; (D0.sessions || []).forEach(x => sesDate[x.id] = String(x.date || ''));
+    const att = (D0.attendance || []).filter(a => a.session_id && a.player_id && a.status).slice().sort((a, b) => (sesDate[b.session_id] || '').localeCompare(sesDate[a.session_id] || '') || String(b.session_id).localeCompare(String(a.session_id)));
+    const rows = att.slice(0, 5);
     for (const a of rows) await one('attendance', 'bulk', { kind: 'attendance', recs: [{ session_id: a.session_id, player_id: a.player_id, status: a.status }] });
-    if (!rows.length) LOG.push({ kind: 'attendance', a: 'bulk', ms: 0, steps: '', err: L('no attendance rows to re-save', 'مفيش صفوف حضور') });
+    if (rows.length < 5) LOG.push({ kind: 'attendance', a: 'bulk', ms: 0, steps: '', err: L(`only ${rows.length} attendance rows to save again`, `فيه ${rows.length} صفوف حضور بس`) });
     const tick = document.getElementById('spdRate');
     if (tick && tick.checked) {
-      const ob = (D0.obs || []).filter(o => o.source !== 'coach' && o.session_id && o.player_id && o.skill && o.level).slice(-2);
-      for (const o of ob) await one('rating', 'evrecord', { session_id: o.session_id, items: [{ player_id: o.player_id, skill: o.skill, level: +o.level }] });
-      if (!ob.length) LOG.push({ kind: 'rating', a: 'evrecord', ms: 0, steps: '', err: L('no rating to repeat', 'مفيش تقييم') });
+      /* v4.2.2: ratings only on a HOST session (imported sessions keep their old records as written): the same skill and level as an evaluator
+         rating already on a HOST session, else skill 1.1 at the child's current level on the latest HOST session */
+      const host = (D0.sessions || []).filter(x => x.source !== 'notebook' && x.source !== 'old platform' && x.status !== 'cancelled' && (x.sport || 'basketball') === 'basketball' && String(x.date) <= todayStr()).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      const hostIds = {}; host.forEach(x => hostIds[x.id] = 1);
+      let ob = (D0.obs || []).filter(o => hostIds[o.session_id] && o.source === 'evaluator' && o.player_id && o.skill && /^\d+\.\d+$/.test(String(o.skill)) && +o.level >= 1).slice(-2).map(o => ({ session_id: o.session_id, player_id: o.player_id, skill: o.skill, level: +o.level }));
+      if (!ob.length && host.length) {
+        const ok = (D0.players || []).filter(p => (p.status || 'active') === 'active' && p.consent_dev === 'yes').slice(0, 2);
+        ob = ok.map(p => ({ session_id: host[0].id, player_id: p.id, skill: '1.1', level: Math.max(1, Math.min(4, ((D0.states || {})[p.id + '|1.1'] || {}).level || 1)) }));
+      }
+      for (const o of ob) await one('rating', 'evrecord', { session_id: o.session_id, items: [{ player_id: o.player_id, skill: o.skill, level: o.level }] });
+      if (!ob.length) LOG.push({ kind: 'rating', a: 'evrecord', ms: 0, steps: '', err: L('no HOST session to rate on', 'مفيش حصة HOST للتقييم') });
     }
     const burst = document.getElementById('spdBurst');
     if (burst && burst.checked && att.length) {
-      const list = []; for (let i = 0; i < 30; i++) list.push(att[i % att.length]);
-      const t0 = performance.now(); const res = await Promise.all(list.map(a => { const s0 = performance.now(); return api('bulk', { kind: 'attendance', recs: [{ session_id: a.session_id, player_id: a.player_id, status: a.status }] }).then(j => ({ ok: true, ms: Math.round(performance.now() - s0), p: j._prof || {} }), e => ({ ok: false, ms: Math.round(performance.now() - s0), err: e.message || String(e) })) }));
+      /* v4.2.2: 30 saves sent together; each one that finds the server busy is sent again after 0.7–2.5 s, exactly like the phone's queue,
+         until saved (at most 90 s). Then the rows are checked: one row per child and session, no duplicate. */
+      const list = []; for (let i = 0; i < 30; i++) list.push(att[i % Math.min(att.length, 10)]);
+      const t0 = performance.now(); const sleep = ms => new Promise(r => setTimeout(r, ms));
+      const res = await Promise.all(list.map(async a => {
+        const s0 = performance.now(); let tries = 0, last = '', p = {};
+        while (performance.now() - t0 < 90000) {
+          tries++;
+          try { const j = await api('bulk', { kind: 'attendance', recs: [{ session_id: a.session_id, player_id: a.player_id, status: a.status }] }); p = j._prof || {}; return { ok: true, tries, ms: Math.round(performance.now() - s0), p } }
+          catch (e) { last = e.message || String(e); if (!e.net) return { ok: false, tries, ms: Math.round(performance.now() - s0), err: last }; await sleep(700 + Math.round(Math.random() * 1800)) }
+        }
+        return { ok: false, tries, ms: Math.round(performance.now() - s0), err: last || 'gave up after 90 s' };
+      }));
       const ok = res.filter(r => r.ok), bad = res.filter(r => !r.ok); const waits = ok.map(r => parseInt(String((r.p.steps || {})['lock wait'] || '0'), 10) || 0);
-      LOG.push({ kind: '30 at once', a: 'bulk', ms: Math.round(performance.now() - t0), server: Math.max(0, ...ok.map(r => r.p.ms || 0)), steps: `${ok.length} saved, ${bad.length} failed · slowest on the phone ${Math.max(0, ...res.map(r => r.ms))} ms · longest lock wait ${Math.max(0, ...waits)} ms${bad.length ? ' · ' + bad[0].err : ''}`, err: '' });
+      const first = ok.filter(r => r.tries === 1).length; const total = Math.round(performance.now() - t0);
+      let dup = '?'; try { const j = await api('load', {}); const n = {}; (j.attendance || []).forEach(x => { const k = x.session_id + '|' + x.player_id; n[k] = (n[k] || 0) + 1 }); dup = list.filter((a, i, all) => all.findIndex(b => b.session_id === a.session_id && b.player_id === a.player_id) === i).filter(a => (n[a.session_id + '|' + a.player_id] || 0) !== 1).length } catch (e) { }
+      LOG.push({ kind: '30 at once', a: 'bulk', ms: total, server: Math.max(0, ...ok.map(r => r.p.ms || 0)), steps: `${ok.length} of 30 saved (${first} at the first try, ${ok.length - first} after the server was busy), ${bad.length} not saved · all saved after ${(total / 1000).toFixed(1)} s · slowest single save ${Math.max(0, ...ok.map(r => r.ms))} ms · longest lock wait ${Math.max(0, ...waits)} ms · rows with a duplicate: ${dup}${bad.length ? ' · ' + bad[0].err : ''}`, err: '' });
       show();
     }
     LOG.push({ kind: 'done', a: '', ms: 0, steps: new Date().toISOString() + ' · ' + navigator.userAgent.slice(0, 80), err: '' }); show();
