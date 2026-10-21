@@ -2611,7 +2611,7 @@ function importExport() {
   <div class="row wrap"><button class="btn ghost" data-act="migrate-now">${L('Update sheet now', 'حدّث الجدول دلوقتي')}</button><span id="migBox" class="small"></span></div>
   <h3>${L('Content file', 'ملف المحتوى')}</h3><p class="small muted">${L('Drills, fitness plans, lessons, parent tips, posts, prospects and the football protocol are kept in the sheet, not in the script (so every request starts faster). Load HOST_Egypt_Content.json from the same package as the script, once after each new script.', 'التمارين وخطط اللياقة والدروس ونصايح الأهالي والبوستات والعملاء المحتملين وبروتوكول الكورة محفوظين في الجدول مش في السكريبت (عشان كل طلب يبدأ أسرع). حمّل HOST_Egypt_Content.json من نفس حزمة السكريبت، مرة واحدة بعد كل سكريبت جديد.')}</p>
   <p class="small"><b>${D().content_ok ? '✓ ' + L('Loaded for this version of the script.', 'متحمّل لنسخة السكريبت دي.') : '⚠ ' + L('Not loaded for this version of the script yet.', 'لسه ماتحمّلش لنسخة السكريبت دي.')}</b></p>
-  <input type="file" accept=".json,application/json" id="ctFile" class="in"><span id="ctBox" class="small"></span>
+  <input type="file" accept=".json,application/json" id="ctFile" class="in"><span id="ctBox" class="small">${esc(S.ctMsg || '')}</span>
   <h3>${L('Backup', 'نسخة احتياطية')}</h3><p class="small muted">${L('Everything is already in your Google Sheet. This file is an extra copy for your computer.', 'كل شيء محفوظ في جدول جوجل. هذا الملف نسخة إضافية لجهازك.')}</p>
   <button class="btn ghost" data-act="export">${L('Download a backup file', 'تنزيل ملف نسخة احتياطية')}</button>`;
 }
@@ -3454,7 +3454,7 @@ function effectBox() {
    script and keeps it in the sheet's hidden 'content' tab. Home shows a card while it is missing. */
 document.addEventListener('change', async ev => {
   const el = ev.target; if (!el || el.id !== 'ctFile' || !el.files || !el.files[0]) return;
-  const box = document.getElementById('ctBox'); const put = t => { if (box) box.textContent = t };
+  const put = t => { S.ctMsg = t; const box = document.getElementById('ctBox'); if (box) box.textContent = t };   // v4.2.3: the message stays after the page is drawn again
   try {
     put(L('Loading the content file…', 'جارٍ تحميل ملف المحتوى…'));
     const text = await el.files[0].text(); const j = await act('content_put', { text }, true);
