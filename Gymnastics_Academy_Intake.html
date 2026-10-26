@@ -255,7 +255,7 @@ const EXCL=new Set(['nd','dk','none','only','nothing','fine','dontknow','nojudge
 let st={lang:'en',A:{},S:{branches:[],coaches:[],groups:[],wa:false},ui:{},step:0,started:false,saved:null,sent:{},opened:{}};
 let canStore=true;
 if(!VIEW&&!RESET){
-  try{const raw=localStorage.getItem(KEY);if(raw){const s=JSON.parse(raw);if(s&&s.A)st=Object.assign(st,s)}}catch(e){canStore=false}
+  try{let raw=localStorage.getItem(KEY);if(!raw&&CFG.continueFrom){raw=localStorage.getItem(CFG.continueFrom);if(raw){const o=JSON.parse(raw);if(!(o&&o.started))raw=null}}if(raw){const s=JSON.parse(raw);if(s&&s.A)st=Object.assign(st,s)}}catch(e){canStore=false}
   try{localStorage.setItem(KEY+'-t','1');localStorage.removeItem(KEY+'-t')}catch(e){canStore=false}
 }
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
@@ -310,7 +310,7 @@ const T={
  pdfTip:['The PDF is made on this phone with the HOST header and footer. When it is ready, tap Share and choose WhatsApp, Files or Mail.','يُنشأ ملف PDF على هذا الهاتف مع ترويسة HOST وتذييلها. عندما يجهز، اضغط «شارك» واختر واتساب أو الملفات أو البريد.'],
  dkTitle:['What you don’t know yet','ما لا تعرفه بعد'],dkLead:['Nothing to fix. It shows where the platform should help first.','لا شيء يحتاج إلى إصلاح؛ هذا يبيّن أين يجب أن تساعدك المنصة أولًا.'],
  ndTitle:['Still to decide','ما لم يُقرَّر بعد'],ndLead:['We decide these together.','نقرّر هذه معًا.'],
- optTitle:['Optional: if any of these interest you','اختياري: إن كان أيٌّ من هذه يهمّك'],optLead:['Your answers are complete without these.','إجاباتك مكتملة من دونها.'],
+ optTitle:['Extra parts (optional)','أجزاء إضافية (اختيارية)'],optLead:['Open any of them to add or change answers. They are sent with everything else.','افتح أيًّا منها لتضيف أو تغيّر إجاباتك. تُرسل مع كل شيء آخر.'],
  open:['Open','افتح'],answered:['{a} answered','أُجيب عن {a}'],notOpened:['Not opened','لم يُفتح'],optional:['optional','اختياري'],
  doneTitle:['Thank you','شكرًا لك'],doneText:['Please also send Hossam your logo and two or three photos you like on WhatsApp. You can come back and change anything; just send again.','أرسل لحسام أيضًا شعارك وصورتين أو ثلاثًا تعجبك على واتساب. يمكنك العودة وتغيير أي شيء ثم الإرسال من جديد.'],
  reached:['· reached Hossam','· وصلت إلى حسام'],
@@ -350,7 +350,7 @@ function optsFor(q){const b=(q.opts||[]).filter(o=>optVis(q,o));const tail=[];if
 const secQs=sid=>QS.filter(q=>q.sec===sid&&vis(q));
 const secById=id=>SECS.find(s=>s.id===id);
 
-function steps(){const s=[{k:'welcome'}];CORE.forEach(id=>s.push({k:'sec',id}));s.push({k:'review'});OPT.forEach(id=>s.push({k:'sec',id,opt:true}));return s}
+function steps(){const s=[{k:'welcome'}];CORE.forEach(id=>s.push({k:'sec',id}));OPT.forEach(id=>s.push({k:'sec',id,opt:true}));s.push({k:'review'});return s}
 const reviewIdx=()=>steps().findIndex(s=>s.k==='review');
 
 /* ---------- save / sync ---------- */
@@ -367,21 +367,25 @@ async function post(body){const ctl=new AbortController();const tm=setTimeout(()
   try{const r=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),signal:ctl.signal});const j=await r.json();if(!j||!j.ok)throw new Error((j&&j.error)||'not ok');return j}finally{clearTimeout(tm)}}
 async function submitNow(){
   if(!ENDPOINT||st.submitting)return;st.submitting=1;keep();
-  const body=payload(true);
+  const body=payload(true);body.submit=true;
   try{const blob=await withTimeout(makePdf(),45000);body.pdf=await blobB64(blob);body.pdfName=pdfName()}catch(e){body.pdfError=String(e&&e.message||e)}
   let ok=false;try{await post(body);ok=true}catch(e){ok=false}
   st.submitting=0;if(ok){st.submitted=Date.now();st.subFail=0}else st.subFail=1;
   save(true);render();window.scrollTo(0,0);toast(ok?t('subOk').replace('{t}',fmtWhen(st.submitted)):t('subFail'))}
 function fmtWhen(ms){const d=new Date(ms);return d.toLocaleString(isAr()?'ar':'en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
-function syncRemote(final){
-  if(!ENDPOINT||VIEW)return;clearTimeout(syncTimer);
-  syncTimer=setTimeout(async()=>{if(syncing)return;syncing=true;
+let syncPend=false,leaving=false;
+function beacon(){try{const b=new Blob([JSON.stringify(payload(false))],{type:'text/plain;charset=utf-8'});
+  if(navigator.sendBeacon&&navigator.sendBeacon(ENDPOINT,b))return;fetch(ENDPOINT,{method:'POST',body:b,keepalive:true}).catch(()=>{})}catch(e){}}
+function syncRemote(final,delay){
+  if(!ENDPOINT||VIEW||RESET)return;clearTimeout(syncTimer);
+  if(leaving||document.visibilityState==='hidden'){beacon();return}   // the page is closing or going to the background: send now
+  syncTimer=setTimeout(async()=>{if(syncing){syncPend=true;return}syncing=true;
     try{await post(payload(final))}catch(e){}
-    syncing=false},final?0:4000);
+    syncing=false;if(syncPend){syncPend=false;syncRemote(false,0)}},delay!=null?delay:(final?0:1500));
 }
 function showSaved(){const el=document.getElementById('saved');if(!canStore||!st.saved||VIEW){el.textContent='';return}
   const d=new Date(st.saved);el.textContent='✓ '+t('savedAt').replace('{t}',d.toLocaleTimeString(isAr()?'ar':'en-GB',{hour:'2-digit',minute:'2-digit'}))}
-window.addEventListener('pagehide',()=>save(true));
+window.addEventListener('pagehide',()=>{leaving=true;save(true)});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save(true)});
 function setLang(l){st.lang=l;save();render();if(!document.getElementById('profile').hidden)openProfile()}
 document.getElementById('l-en').onclick=()=>setLang('en');
@@ -666,7 +670,7 @@ const H2C='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.
 let h2cP=null,pdfJob=null,pdfReady=null;
 function loadH2C(){if(window.html2canvas)return Promise.resolve();if(h2cP)return h2cP;
   h2cP=new Promise((res,rej)=>{const s=document.createElement('script');s.src=H2C;s.onload=()=>res();s.onerror=()=>{h2cP=null;rej(new Error('pdf library'))};document.head.appendChild(s)});return h2cP}
-function pdfName(){const n=titleEn().replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'Academy';return n+'_Academy_Profile.pdf'}
+function pdfName(){const n=titleEn().replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'Academy';return n.replace(/_Academy$/i,'')+'_Academy_Profile.pdf'}
 const imgLoad=src=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src});
 const toJpeg=c=>new Promise((res,rej)=>c.toBlob(b=>b?b.arrayBuffer().then(x=>res(new Uint8Array(x)),rej):rej(new Error('jpeg')),'image/jpeg',0.84));
 function buildPdf(imgs,pw,ph){const W=595.28,H=841.89,enc=new TextEncoder(),parts=[],offs=[];let len=0;
@@ -760,12 +764,12 @@ function render(){
   document.getElementById('progress').hidden=!inForm;document.getElementById('bar').hidden=!inForm;
   if(inForm){
     const n=reviewIdx();const i=Math.min(st.step,n);
-    document.getElementById('stepno').textContent=cur.opt?`${stitle(secById(cur.id))} · ${t('optional')}`:t('step').replace('{i}',i).replace('{n}',n);
+    document.getElementById('stepno').textContent=t('step').replace('{i}',i).replace('{n}',n)+(cur.opt?' · '+t('optional'):'');
     document.getElementById('meter').style.width=Math.round(i/n*100)+'%';
     document.getElementById('menuBtn').textContent=t('menu');document.getElementById('backBtn').textContent=t('back');document.getElementById('laterBtn').textContent=t('later');
     const nb=document.getElementById('nextBtn');
-    nb.textContent=cur.k==='review'?(ENDPOINT?(st.submitted&&!st.subFail?t('submitAgain'):t('submit')):t('copy')):cur.opt?t('toReview'):(S[st.step+1]&&S[st.step+1].k==='review'?t('review'):t('next'));
-    document.getElementById('laterBtn').hidden=cur.k==='review'||!!cur.opt;
+    nb.textContent=cur.k==='review'?(ENDPOINT?(st.submitted&&!st.subFail?t('submitAgain'):t('submit')):t('copy')):(S[st.step+1]&&S[st.step+1].k==='review'?t('review'):t('next'));
+    document.getElementById('laterBtn').hidden=cur.k==='review';
   }
   showSaved();
 }
@@ -777,7 +781,7 @@ function missingNamed(sid){const out=[];const S=st.S;
   secQs(sid).forEach(q=>{const a=st.A[q.id];const bad=q.type==='year'?(!isAns(a)||(!(a.sel||[]).length&&!/^\d{4}$/.test(String(a.own||'').trim()))):!isAns(a);if(bad)out.push(qtitle(q))});return out}
 const missingFor=missingNamed;
 function missing(cur){if(cur.k!=='sec'||cur.opt)return [];return missingNamed(cur.id)}
-function go(i){st.step=i;save();render();window.scrollTo(0,0)}
+function go(i){st.step=i;save();if(st.started)syncRemote(false,0);render();window.scrollTo(0,0)}
 function keep(fn){const y=window.scrollY;if(fn)fn();save();render();window.scrollTo(0,y)}
 
 /* ---------- events ---------- */
@@ -787,8 +791,8 @@ document.addEventListener('click',e=>{
   if(el.id==='startBtn'){st.started=true;go(st.step>0?st.step:1);return}
   if(el.id==='w-en'){setLang('en');return}if(el.id==='w-ar'){setLang('ar');return}
   if(el.id==='vshow'){const o=readCode(document.getElementById('vin').value);if(!o){document.getElementById('verr').hidden=false;return}Object.assign(st,unpack(o));st.viewLoaded=true;render();openProfile();return}
-  if(el.id==='backBtn'){const S=steps();const cur=S[st.step];go(cur.opt?reviewIdx():Math.max(1,st.step-1));return}
-  if(el.id==='nextBtn'){const S=steps();const cur=S[st.step];if(cur.k==='review'){if(ENDPOINT)submitNow();else copyOut();return}if(cur.opt){go(reviewIdx());return}
+  if(el.id==='backBtn'){const S=steps();const cur=S[st.step];go(Math.max(1,st.step-1));return}
+  if(el.id==='nextBtn'){const S=steps();const cur=S[st.step];if(cur.k==='review'){if(ENDPOINT)submitNow();else copyOut();return}if(cur.opt){go(st.step+1);return}
     const miss=missing(cur);go(Math.min(S.length-1,st.step+1));if(miss.length)toast(t('left').replace('{n}',miss.length));return}
   if(el.id==='laterBtn'){save(true);toast(t('laterMsg'));return}
   if(el.id==='menuBtn'){openMenu();return}
@@ -873,6 +877,7 @@ function selOut(){const o=document.getElementById('out');if(!o)return;const r=do
 let toastT=null;
 function toast(msg){let el=document.getElementById('toast');if(!el){el=document.createElement('div');el.id='toast';el.className='notice';el.setAttribute('role','status');el.style.cssText='position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);z-index:30;max-width:688px;margin:0 auto;box-shadow:0 4px 18px rgba(0,0,0,.18)';document.body.appendChild(el)}el.textContent=msg;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,3500)}
 render();
+if(!VIEW&&!RESET&&st.started)syncRemote(false,800);
 if(!VIEW&&st.started&&st.step>0)setTimeout(()=>toast('✓ '+t('cont')),300);
 </script>
 </body>
