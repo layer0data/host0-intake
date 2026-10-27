@@ -491,6 +491,41 @@ details.ix-more > summary::before { content: '▸'; color: var(--muted); }
 details.ix-more[open] > summary::before { content: '▾'; }
 details.ix-more > .card { background: var(--sunk); }
 
+/* p7_zhome.css */
+/* v4.3 · homes on one screen: tiles that open their own page */
+.hp-top h1{margin:0}
+.hp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:4px}
+@media (min-width:760px){.hp-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.hp-tile{appearance:none;text-align:start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;gap:2px;align-content:start;min-height:96px;cursor:pointer;font:inherit;color:inherit;min-width:0}
+.hp-tile.wide{grid-column:1/-1;min-height:0}
+.hp-tile:active{transform:scale(.98)}
+.hp-tile:hover{box-shadow:0 0 0 2px var(--accent-soft)}
+.hp-t{font-size:13px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px}
+.hp-v{font:800 28px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.hp-s{font-size:12.5px;color:var(--muted);line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.hp-tile.lv2{border-color:var(--warn);background:linear-gradient(0deg,var(--warn-soft),var(--surface) 70%)}
+.hp-tile.lv3{border-color:var(--flame);background:linear-gradient(0deg,var(--flame-soft),var(--surface) 70%)}
+.hp-dot{width:8px;height:8px;border-radius:50%;background:var(--warn);display:inline-block}
+.hp-tile.lv3 .hp-dot{background:var(--flame)}
+.hp-sum{font-size:14px;line-height:1.5;margin:2px 2px 6px;color:var(--ink)}
+.hp-next{padding:12px 14px}
+.hp-head{display:flex;align-items:center;gap:10px;margin:2px 0 8px}
+.hp-head h1{margin:0;font-size:22px}
+.hp-back{padding:8px 12px}
+.hp-hello{margin-bottom:6px}
+.hp-kids{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
+.hp-kid{appearance:none;border:1px solid rgba(148,163,184,.45);background:rgba(255,255,255,.12);color:inherit;border-radius:999px;padding:7px 12px;font:600 14px var(--body);cursor:pointer}
+.hp-kid.flag{border-color:var(--flame);background:var(--flame-soft);color:var(--ink)}
+/* the period switch: full width and easy to tap on a phone */
+.period{display:grid;grid-template-columns:1fr;gap:8px}
+.period .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;overflow:visible}
+.period .tabs button{padding:10px 6px;font-size:15px;text-align:center}
+.hp-sum{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hp-tile{min-height:84px}
+.hp-v.sm{font-size:16px;font-weight:700;color:var(--accent)}
+.hp-last{padding:12px 14px;cursor:pointer}
+.hp-last .hp-line{font-size:14px;line-height:1.5}
+
 </style>
 <script src="host-egypt-test-settings.js"></script>
 </head>
@@ -4548,6 +4583,140 @@ regAction('ix-go', d => { const el = document.getElementById('ic-' + d.v); if (!
     if (el.dataset.act === 'speed-test') run();
     else { const b = document.getElementById('spdBox'); const txt = b ? b.innerText : ''; try { navigator.clipboard.writeText(txt) } catch (e) { } }
   }, true);
+})();
+
+/* ================= v4.3 · Home screens as agreed: one screen of cards, tap a card to open its own page =================
+   The agreed rule (HOST design sessions): no long scrolling on any home. Every role's home is a short screen of summary cards; each card
+   opens its own page (one tap to anything); "back" (the phone's own back, or ← Home) returns to the home.
+   Owner (and co-owners): Week / Month / Quarter on top, the next session, then one tile per area (one number, one line). Each tile opens
+   the full card that used to be stacked on one long page (same content, same numbers).
+   Coach: the next session with each child by name, the last session, then tiles for what he can do (brief, advice, suggestions,
+   ratings waiting, messages…). Nothing is removed: every block is one tap away. */
+(function () {
+  const pageOf = () => S.hp || null;
+  function openPage(key) { S.hp = key; try { history.pushState({ hp: key }, '') } catch (e) { } window.scrollTo(0, 0); rerender() }
+  function closePage() { if (!S.hp) return; S.hp = null; rerender(); window.scrollTo(0, 0) }
+  window.addEventListener('popstate', () => { if (S.hp) { S.hp = null; rerender() } });
+  /* the bottom menu always lands on the role's home itself */
+  document.addEventListener('click', ev => { const el = ev.target.closest && ev.target.closest('[data-act="nav"]'); if (el && S.hp) S.hp = null }, true);
+  regAction('hp-open', d => openPage(d.v));
+  regAction('hp-back', () => { if (history.state && history.state.hp) history.back(); else closePage() });
+  /* the hero's "look into" lines open their card's page (they used to scroll down the long page) */
+  regAction('ix-go', d => openPage('ix:' + d.v));
+
+  const back = title => `<div class="hp-head"><button class="btn ghost hp-back" data-act="hp-back">${S.lang === 'ar' ? '→' : '←'} ${L('Home', 'الرئيسية')}</button><h1>${esc(title)}</h1></div>`;
+  const LEV = { high: 3, medium: 2, low: 1 };
+  const worst = recs => (recs || []).reduce((m, r) => Math.max(m, LEV[r.level] || 0), 0);
+  const tile = (key, title, value, sub, o) => { o = o || {}; const lv = o.level || 0;
+    return `<button class="hp-tile${lv >= 2 ? ' lv' + lv : ''}${o.wide ? ' wide' : ''}" data-act="hp-open" data-v="${esc(key)}"><span class="hp-t">${esc(title)}${lv >= 2 ? ' <span class="hp-dot"></span>' : ''}</span><b class="hp-v${o.open ? ' sm' : ''}">${o.open ? L('Open', 'افتح') + ' ›' : value}</b>${sub ? `<span class="hp-s">${sub}</span>` : ''}</button>` };
+  /* a module's card becomes its own tile: its first heading as the title, its first count tag as the number */
+  const plain = h => String(h || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  function modTiles(list, prefix) {
+    return list.map((html, i) => { if (!String(html).replace(/\s/g, '')) return '';
+      const m = /<(h2|h3|b)[^>]*>([\s\S]*?)<\/\1>/.exec(html); let title = plain(m ? m[2] : '').replace(/\s\d+$/, ''); if (!title) title = L('More', 'المزيد'); if (title.length > 38) title = title.slice(0, 36) + '…';
+      const tg = /<span class="tag[^"]*">\s*(\d+)\s*<\/span>/.exec(html); const attn = /class="(card|tag)[^"]*\battn\b/.test(html);
+      return tile(prefix + i, title, tg ? tg[1] : '', '', tg ? { level: attn ? 2 : 0 } : { open: true, level: attn ? 2 : 0 }); }).join('');
+  }
+  const kp = (c, key) => (c && c.kpis || []).find(k => k.key === key) || {};
+  const kv1 = k => k.value == null ? '–' : ixVal(k.value, k.kind, k.hidden_reason);
+
+  /* ---------------- owner ---------------- */
+  const prevOwnerHome = ownerHome;
+  ownerHome = function () {
+    const it = ixD(); const p = periodState(); const stale = !ixPeriodMatches(it); if (stale && S.ixFailed !== p.kind + '|' + (p.key || '')) setTimeout(() => ixFetch(true), 0);
+    const hp = pageOf(); if (hp) return ownerPage(hp, it, stale);
+    const nx = upcoming(3).filter(x => !x.closed); const n0 = nx[0]; const act = activeP(); const todo = homeTodo(); const brief = D().brief || [];
+    const banners = `${D().content_ok === false && !D().migrate_needed ? `<div class="card attn"><b>${L('Load the content file once.', 'حمّل ملف المحتوى مرة واحدة.')}</b><button class="btn small" data-act="nav" data-v="settings">${L('Open Settings', 'افتح الإعدادات')}</button></div>` : ''}${D().migrate_needed && S.me.role === 'owner' ? `<div class="card attn"><b>${L('The academy sheet needs its one-time update.', 'جدول الأكاديمية محتاج تحديثه لمرة واحدة.')}</b><button class="btn small" data-act="nav" data-v="settings">${L('Open Settings', 'افتح الإعدادات')}</button></div>` : ''}`;
+    const next = n0 ? `<div class="card hp-next"><div class="row sp"><div class="grow"><span class="tag info">${w('next')}</span><div><b>${esc(fmtDL(n0.date))}</b></div><div class="small muted">${fmtT(n0.start)} – ${fmtT(n0.end)} · ${esc(placeName())} · ${L(`${act.length} expected`, `${act.length} متوقع`)}</div></div><button class="btn" data-act="open-session" data-date="${n0.date}" data-start="${n0.start}">${n0.rec ? w('open') : L('Open', 'افتح')}</button></div></div>` : `<div class="card attn"><b>${L('No session in the schedule.', 'لا توجد حصص في الجدول.')}</b></div>`;
+    let tiles = '';
+    if (it) {
+      const c = it.cards; const h = it.hero;
+      const lookTop = (h.look || [])[0];
+      tiles += tile('ix:look', L('Look into', 'بص على'), String((h.look || []).length), lookTop ? esc(String(LL(lookTop)).slice(0, 70)) + (String(LL(lookTop)).length > 70 ? '…' : '') : L('Nothing this period', 'مافيش حاجة الفترة دي'), { level: (h.counts || {}).high ? 3 : (h.counts || {}).medium ? 2 : 0, wide: true });
+      tiles += tile('ix:growth', L('Children', 'الأطفال'), kv1(kp(c.growth, 'active')), L(`joined ${kv1(kp(c.growth, 'joiners'))} · left ${kv1(kp(c.growth, 'leavers'))}`, `انضم ${kv1(kp(c.growth, 'joiners'))} · ساب ${kv1(kp(c.growth, 'leavers'))}`), { level: worst(c.growth.recs) });
+      tiles += tile('ix:families', L('Families', 'العيلات'), `${c.families.silent_families != null ? c.families.silent_families : kv1(kp(c.families, 'silent'))}`, L('quiet for 14 days', 'ساكتين 14 يوم'), { level: worst(c.families.recs) });
+      tiles += tile('ix:sessions', L('Sessions', 'الحصص'), kv1(kp(c.sessions, 'held')), L(`attendance ${kv1(kp(c.sessions, 'attendance'))}`, `الحضور ${kv1(kp(c.sessions, 'attendance'))}`), { level: worst(c.sessions.recs) });
+      tiles += tile('ix:dev', L('Development', 'التطور'), kv1(kp(c.dev, 'ups')), L(`level changes up · ${kv1(kp(c.dev, 'obs'))} ratings`, `مستويات طلعت · ${kv1(kp(c.dev, 'obs'))} تقييم`), { level: worst(c.dev.recs) });
+      tiles += tile('ix:rel', L('Relationships', 'العلاقات'), kv1(kp(c.rel, 'reds')), L('children with red signals', 'أطفال عندهم إشارات حمرا'), { level: worst(c.rel.recs) });
+      tiles += tile('ix:money', L('Money', 'الفلوس'), kv1(kp(c.money, 'collected')), L(`due ${kv1(kp(c.money, 'due'))} · overdue ${kv1(kp(c.money, 'overdue'))}`, `مستحق ${kv1(kp(c.money, 'due'))} · متأخر ${kv1(kp(c.money, 'overdue'))}`), { level: worst(c.money.recs) });
+      tiles += tile('ix:coaches', L('Coaches', 'المدربين'), String((it.coaches || []).length), L('facts per coach', 'وقائع لكل مدرب'));
+      const so = (it.setup && it.setup.items || []).filter(x => !x.dismissed).length;
+      tiles += tile('ix:setup', L('Setup advice', 'نصايح الترتيب'), String(so), L('groups, ratios, staff', 'المجموعات والنسب والمدربين'), { level: so ? 2 : 0 });
+    }
+    tiles += tile('brief', L('This week', 'الأسبوع ده'), String(brief.length), L('worth a conversation', 'يستاهل كلام'), { level: brief.some(b => b.priority === 'high') ? 3 : 0 });
+    tiles += tile('todo', L('To do', 'المطلوب'), String(todo.length), L('today and this month', 'النهارده والشهر ده'), { level: todo.length ? 2 : 0 });
+    tiles += modTiles(MOD.home.map(fn => { try { return fn() } catch (e) { return '' } }), 'mod:');
+    return `<div class="row sp hp-top"><h1>${L('Academy insights', 'رؤى الأكاديمية')}</h1><span class="tiny muted">${fmtDL(todayStr())}</span></div>${banners}
+      ${periodBar()}${stale ? `<p class="tiny muted ix-loading">${S.ixLoading ? L('Preparing the insights for this period…', 'جارٍ تجهيز الرؤى للفترة دي…') : L('Showing the last computed period.', 'بيعرض آخر فترة محسوبة.')}</p>` : it && it.prepared_at ? `<p class="tiny muted ix-prep">${L('Prepared at', 'اتجهزت الساعة')} ${esc(String(it.prepared_at).slice(11, 16))} UTC · <button class="link" data-act="ix-refresh">${L('Refresh now', 'حدّث دلوقتي')}</button></p>` : ''}
+      ${next}${it ? `<p class="hp-sum">${esc(LL(it.hero.summary))}</p>` : `<div class="card">${empty(L('Insights appear after the first session with attendance.', 'الرؤى بتظهر بعد أول حصة بحضور.'))}</div>`}
+      <div class="hp-grid">${tiles}</div>`;
+  };
+  function ownerPage(hp, it, stale) {
+    const NAMES = { look: ['Look into', 'بص على'], growth: ['Children', 'الأطفال'], families: ['Families', 'العيلات'], sessions: ['Sessions', 'الحصص'], dev: ['Development', 'التطور'], rel: ['Relationships', 'العلاقات'], money: ['Money', 'الفلوس'], coaches: ['Coaches', 'المدربين'], setup: ['Setup advice', 'نصايح الترتيب'], hero: ['Look into', 'بص على'] };
+    if (hp.indexOf('ix:') === 0) {
+      const k = hp.slice(3); const nm = NAMES[k] || [k, k];
+      if (!it) return back(L(nm[0], nm[1])) + `<div class="card">${empty()}</div>`;
+      const c = it.cards; const body = k === 'look' || k === 'hero' ? ixHero(it) : k === 'growth' ? ixGrowthCard(c.growth) : k === 'families' ? ixFamiliesCard(c.families) : k === 'sessions' ? ixSessionsCard(c.sessions) : k === 'dev' ? ixDevCard(c.dev) : k === 'rel' ? ixRelCard(c.rel) : k === 'money' ? ixMoneyCard(c.money) : k === 'coaches' ? ixCoachesCards(it.coaches) : k === 'setup' ? ixSetupCard(it.setup) : '';
+      return back(L(nm[0], nm[1])) + periodBar() + body;
+    }
+    if (hp === 'brief') { const brief = D().brief || [];
+      return back(L('This week', 'الأسبوع ده')) + `<div class="card">${brief.length ? `<div class="list">${brief.map(b => `<div class="item" style="cursor:default"><span class="dot" style="background:${b.priority === 'high' ? 'var(--flame)' : b.priority === 'medium' ? 'var(--warn)' : 'var(--muted)'}"></span><div class="grow">${esc(LL(b))}</div>${b.priority ? ixLvlTag(b.priority) : ''}${b.domain ? ixDomTag(b.domain) : ''}</div>`).join('')}</div>` : empty(L('Nothing stands out this week.', 'مافيش حاجة لافتة الأسبوع ده.'))}</div>` }
+    if (hp === 'todo') { const todo = homeTodo();
+      return back(L('To do', 'المطلوب')) + `<div class="card">${todo.length ? `<div class="list">${todo.map(t => `<div class="item" style="cursor:default"><span class="dot" style="background:${t.color || 'var(--flame)'}"></span><div class="grow"><div class="nm">${t.title}</div>${t.sub ? `<div class="sub">${t.sub}</div>` : ''}</div>${t.btn || ''}</div>`).join('')}</div>` : empty(L('Nothing waiting.', 'لا شيء ينتظر.'))}</div>${funnelCard(monthKey(todayStr()))}` }
+    if (hp.indexOf('mod:') === 0) { const html = (() => { try { return MOD.home[+hp.slice(4)]() } catch (e) { return '' } })(); const m = /<(h2|h3|b)[^>]*>([\s\S]*?)<\/\1>/.exec(html || ''); return back(plain(m ? m[2] : '') || L('More', 'المزيد')) + (html || `<div class="card">${empty()}</div>`) }
+    S.hp = null; return prevOwnerHome();
+  }
+
+  /* the last session in three lines: who came / who missed, what was worked on, who stood out; tap opens that session */
+  function lastCompact(s) {
+    const last = sessionsDone().filter(x => x.date < (s ? s.date : addDays(todayStr(), 1)) && (!s || !s.group_id || !x.group_id || x.group_id === s.group_id) && hereCount(x.id))[0]; if (!last) return '';
+    const roster = sessionRoster(last); const missed = roster.filter(p => { const a = attRec(last.id, p.id); return a && a.status === 'absent' });
+    const outs = (D().notes || []).filter(n => n.session_id === last.id && n.by_role !== 'parent'); const who = [...new Set(outs.map(n => (P(n.player_id) || {}).name).filter(Boolean))].map(n => String(n).split(' ')[0]);
+    const cats = catsOf(last).map(c => esc(catName(c))).join(' · ');
+    return `<div class="card hp-last" data-act="session" data-id="${last.id}"><div class="row sp"><h2>${L('Last session', 'الحصة اللي فاتت')}</h2><span class="tiny muted">${fmtD(last.date)}${last.coach ? ' · <bdi>' + esc(last.coach) + '</bdi>' : ''} ›</span></div>
+      <div class="hp-line"><b>${hereCount(last.id)} / ${roster.length}</b> ${L('came', 'حضروا')}${missed.length ? ` · ${L('missed', 'غاب')}: ${missed.map(p => esc(String(p.name).split(' ')[0])).join('، ')}` : ''}</div>
+      ${cats ? `<div class="hp-line">${L('Worked on', 'اشتغلنا على')}: ${cats}</div>` : ''}
+      <div class="hp-line">${who.length ? L('Stood out', 'اتميّزوا') + ': ' + who.map(esc).join('، ') : `<span class="muted">${L('No standout note written.', 'مفيش ملاحظة مميزة اتكتبت.')}</span>`}</div></div>`;
+  }
+  /* ---------------- coach ---------------- */
+  coachToday = function () {
+    const hp = pageOf();
+    const nx = upcoming(1).filter(x => !x.closed)[0]; const t = todayStr();
+    const nxs = nx ? (nx.rec || { id: '', date: nx.date, start: nx.start, end: nx.end, group_id: mainGroup(), kind: 'normal' }) : null;
+    const roster = nxs ? sessionRoster(nxs) : []; const expected = roster.filter(p => !holdOn(p.id, nxs.date) || holdOn(p.id, nxs.date).kind === 'health');
+    const flagOf = p => { if (!nxs) return null; const c = ctxOn(p.id, nxs.date) || ctxOn(p.id, addDays(nxs.date, -1)) || (t < nxs.date ? ctxOn(p.id, t) : null); return c && (c.pain === 'yes' || c.sleep === 'poor' || c.exam === 'yes' || c.mood === 'low' || c.forward === 'reluctant') ? c : null };
+    const waiting = (D().recs || []).filter(r => r.status === 'proposed');
+    const myTaps = sid => (D().obs || []).some(o => o.session_id === sid && o.source === 'coach');
+    const toTap = sessionsDone().filter(s => s.date >= addDays(t, -7) && hereCount(s.id) && s.source !== 'notebook' && s.source !== 'old platform' && !myTaps(s.id));
+    const brief = nxs ? briefLines(nxs) : [];
+    const advice = adviceCard(); const hand = handoffCard(nxs); const surv = surveyCard() + reflectionCard();
+    const modList = MOD.coachToday.map(fn => { try { return fn() } catch (e) { console.error(e); return '' } });
+    if (hp === 'brief') return back(L('Before you start', 'قبل ما تبدأ')) + (brief.length ? `<div class="card"><ul class="small brief">${brief.join('')}</ul><p class="tiny muted">${L('Check-ins, the last note on each child (any coach), who is close to a level change, concerns, medical short note, home activity.', 'تحديثات العائلة، آخر ملاحظة على كل طفل (أي مدرب)، مين قريب من تغيير مستوى، القلق، الملاحظة الطبية المختصرة، النشاط البيتي.')}</p></div>` : `<div class="card">${empty(L('Nothing special about any child before this session.', 'مافيش حاجة خاصة عن أي طفل قبل الحصة دي.'))}</div>`);
+    if (hp === 'advice') return back(L('For each child', 'لكل طفل')) + (advice || `<div class="card">${empty()}</div>`);
+    if (hp === 'waiting') return back(L('Suggestions', 'المقترحات')) + `<div class="card"><b>${L(`${waiting.length} suggestion(s) waiting for you`, `${waiting.length} مقترح بانتظار قرارك`)}</b><p class="small muted">${L('Each suggestion comes from what the evaluators saw. You decide: use it, change it, or not now.', 'كل مقترح مبني على ما لاحظه المقيّمان. أنت تقرر: نعتمده أو نعدّله أو ليس الآن.')}</p><div class="list">${waiting.map(r => `<div class="item" data-act="player" data-id="${r.player_id}"><div class="grow"><div class="nm">${esc((P(r.player_id) || {}).name || '')}</div><div class="sub">${esc(skillName(r.skill))}</div></div></div>`).join('')}</div>${nx ? `<button class="btn" data-act="open-session" data-date="${nx.date}" data-start="${nx.start}" data-tab="plan">${w('open')}</button>` : ''}</div>`;
+    if (hp === 'rate') return back(L('Your rating is waiting', 'تقييمك بانتظارك')) + `<div class="card"><div class="list">${toTap.map(s => `<div class="item" data-act="session" data-id="${s.id}" data-tab="taps"><div class="grow">${fmtDL(s.date)}</div><span class="tag attn">${L('2 minutes', 'دقيقتان')}</span></div>`).join('')}</div></div>`;
+    if (hp === 'handoff') return back(L('From the previous coach', 'من المدرب اللي قبلك')) + hand;
+    if (hp === 'survey') return back(L('Your feedback', 'رأيك')) + surv;
+    if (hp && hp.indexOf('cmod:') === 0) { const html = modList[+hp.slice(5)] || ''; const m = /<(h2|h3|b)[^>]*>([\s\S]*?)<\/\1>/.exec(html); return back(plain(m ? m[2] : '') || L('More', 'المزيد')) + (html || `<div class="card">${empty()}</div>`) }
+    if (hp === 'more') return back(L('Notebook', 'الدفتر')) + `<div class="card"><b>${L('A session from your notebook?', 'حصة من دفترك؟')}</b><p class="small muted">${L('Add it with its real date, then enter who came and your ratings as written.', 'أضفها بتاريخها الحقيقي، ثم أدخل الحضور وتقييماتك كما كتبتها.')}</p><button class="btn ghost" data-act="past-new">+ ${L('Add a past session', 'إضافة حصة سابقة')}</button></div>`;
+    if (hp) S.hp = null;
+    /* the home: the session with each child by name, the last session, then what he can do */
+    const kids = expected.slice().sort((a, b) => String(a.name).localeCompare(String(b.name), 'ar')).map(p => { const f = flagOf(p); return `<button class="hp-kid${f ? ' flag' : ''}" data-act="player" data-id="${p.id}">${esc(String(p.name).split(' ')[0])}${f ? ' ⚑' : ''}</button>` }).join('');
+    const hero = nx ? `<div class="hero"><span class="tag info">${w('next')}</span><h2>${fmtDL(nx.date)}</h2><p class="muted">${fmtT(nx.start)} – ${fmtT(nx.end)} · ${esc(placeName())}${nxs.coach_lead ? ' · ' + esc(userName(nxs.coach_lead)) : ''}</p>
+      <p class="small"><b>${L('Focus', 'التركيز')}:</b> ${catsOf(nxs).map(c => esc(catName(c))).join(' · ') || '–'}</p>
+      <div class="hp-kids">${kids || `<span class="small muted">${L('No children on this session yet.', 'مفيش أطفال على الحصة دي لسه.')}</span>`}</div>
+      <button class="btn" data-act="open-session" data-date="${nx.date}" data-start="${nx.start}">${L('Open: plan, who came, your rating', 'افتح: الخطة والحضور وتقييمك')}</button></div>` : `<div class="card">${empty(L('No session in the schedule.', 'لا توجد حصص في الجدول.'))}</div>`;
+    let tiles = '';
+    tiles += tile('brief', L('Before you start', 'قبل ما تبدأ'), String(brief.length), L('children with something to know', 'أطفال فيه حاجة تتعرف عنهم'), { level: brief.length ? 2 : 0 });
+    if (toTap.length) tiles += tile('rate', L('Your rating', 'تقييمك'), String(toTap.length), L('session(s) waiting · 2 min', 'حصة مستنية · دقيقتين'), { level: 3 });
+    if (waiting.length) tiles += tile('waiting', L('Suggestions', 'المقترحات'), String(waiting.length), L('waiting for your decision', 'مستنية قرارك'), { level: 2 });
+    if (advice) tiles += tile('advice', L('For each child', 'لكل طفل'), '›', L('what to work on, what to watch', 'يشتغل على إيه وتراقب إيه'), { open: true });
+    if (hand) tiles += tile('handoff', L('From the previous coach', 'من المدرب اللي قبلك'), '›', L('his note for you', 'ملاحظته ليك'), { level: 2, open: true });
+    if (surv.replace(/\s/g, '')) tiles += tile('survey', L('Your feedback', 'رأيك'), '›', L('a short question for you', 'سؤال قصير ليك'), { level: 2, open: true });
+    tiles += modTiles(modList, 'cmod:');
+    tiles += tile('more', L('Notebook', 'الدفتر'), '', L('add a past session', 'إضافة حصة سابقة'), { open: true });
+    return `<h1 class="hp-hello">${L('Hello', 'مرحبًا')}${S.me.name ? ' ' + esc(S.me.name) : ''}</h1>${hero}${lastCompact(nxs)}<div class="hp-grid">${tiles}</div>`;
+  };
 })();
 
 </script>
