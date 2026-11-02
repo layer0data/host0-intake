@@ -1440,10 +1440,12 @@ function playerForm(p) {
    <label class="f">${L('Status', 'الحالة')}<select class="in" name="status">${opt([['active', 'Active', 'نشط'], ['paused', 'Paused', 'متوقف مؤقتًا'], ['left', 'Left', 'غادر']], p.status || 'active')}</select></label>
    <label class="f">${L('Joined on', 'تاريخ الانضمام')}<input class="in" type="date" name="join_date" value="${v('join_date') || todayStr()}"></label>
    <label class="f">${L('If left: why', 'إن غادر: لماذا')}<select class="in" name="left_reason">${opt(LEFT, p.left_reason, '–')}</select></label>
-   <label class="f">${L('Parent’s name', 'اسم ولي الأمر')}<input class="in" name="parent_name" value="${v('parent_name')}"></label>
-   <label class="f">${L('Parent’s WhatsApp', 'واتساب ولي الأمر')}<input class="in" name="parent_phone" inputmode="tel" value="${v('parent_phone')}"></label>
-   <label class="f">${L('Second parent’s name', 'اسم ولي الأمر الثاني')}<input class="in" name="parent2_name" value="${v('parent2_name')}"></label>
-   <label class="f">${L('Second parent’s phone', 'رقم ولي الأمر الثاني')}<input class="in" name="parent2_phone" inputmode="tel" value="${v('parent2_phone')}"></label>
+   ${famFormNote(p)}
+   <label class="f">${L('Parent’s name', 'اسم ولي الأمر')}<input class="in" name="parent_name" value="${v('parent_name')}"${famRO(p)}></label>
+   <label class="f">${L('Parent’s WhatsApp', 'واتساب ولي الأمر')}<input class="in" name="parent_phone" inputmode="tel" value="${v('parent_phone')}"${famRO(p)}></label>
+   <label class="f">${L('Second parent’s name', 'اسم ولي الأمر الثاني')}<input class="in" name="parent2_name" value="${v('parent2_name')}"${famRO(p)}></label>
+   <label class="f">${L('Second parent’s phone', 'رقم ولي الأمر الثاني')}<input class="in" name="parent2_phone" inputmode="tel" value="${v('parent2_phone')}"${famRO(p)}></label>
+   <div id="famSuggest" style="grid-column:1/-1">${famSuggestBox(p, p.parent_phone)}</div>
    <label class="f">${L('Parent’s email', 'بريد ولي الأمر')}<input class="in" name="parent_email" type="email" value="${v('parent_email')}"></label>
    <label class="f">${L('Family PIN for the app', 'الرقم السري للعائلة')}<input class="in" name="parent_pin" inputmode="numeric" value="" autocomplete="off" placeholder="${p.parent_pin_set ? L('set (hidden) · type a new one to change it', 'محدد (مخفي) · اكتب رقمًا جديدًا لتغييره') : L('4 digits', '4 أرقام')}"></label>
    <label class="f">${L('Language for messages', 'لغة الرسائل')}<select class="in" name="lang">${opt([['ar', 'Arabic', 'العربية'], ['en', 'English', 'الإنجليزية']], p.lang || 'ar')}</select></label>
@@ -1996,9 +1998,9 @@ function parentScreen() {
   <div class="card" data-card="academy"><h2>${L('Your academy', 'أكاديميتكم')}</h2>
    ${mem ? `<div class="member"><div class="row sp"><b>${L('Membership', 'العضوية')}</b><span class="tag">${lab([['founding', 'Founding member', 'عضو مؤسس'], ['standard', 'Standard', 'عادي'], ['custom', 'Agreed plan', 'اتفاق خاص'], ['free', 'Free', 'مجاني']], mem.plan)}</span></div><div class="kpis">${kv(L('Monthly fee', 'الاشتراك الشهري'), mem.amount ? num(mem.amount) + ' ' + (mem.currency === 'EGP' ? L('EGP', 'ج.م') : mem.currency) : L('Free', 'مجاني'))}${kv(L('Paid until', 'مدفوع حتى'), mem.paid_until ? fmtMonth(mem.paid_until) : '–')}${kv(L('Next due', 'المستحق القادم'), mem.next_due ? fmtMonth(mem.next_due) : '–')}</div>${mem.overdue ? `<p class="small" style="color:var(--flame)">${L(`${mem.overdue} month(s) still open. ${L(SET().pay_en, SET().pay_ar) || ''}`, `أشهر ما زالت مفتوحة: ${mem.overdue}. ${L(SET().pay_en, SET().pay_ar) || ''}`)}</p>` : ''}</div>` : ''}
    <h3>${L('Who’s been with your child', 'من كان مع طفلك')}</h3>${people.coaches.length || people.evaluators.length ? `<div class="people">${people.coaches.map(c => `<span class="chip static">${L('Coach', 'مدرب')} ${esc(c.name)} · ${L(`${c.n} sessions`, `الحصص: ${c.n}`)}</span>`).join('')}${(isLight() ? [] : people.evaluators).map(c => `<span class="chip static">${L('Evaluator', 'مقيّم')} ${esc(c.name)} · ${L(`${c.n} sessions`, `الحصص: ${c.n}`)}</span>`).join('')}</div>` : empty()}
-   <h3>${L('Messages with the academy', 'الرسائل مع الأكاديمية')}</h3><p class="tiny muted">${L('We aim to answer within 24 hours. Development questions go to the coach; logistics and fees to the admin.', 'نحاول الرد خلال 24 ساعة. أسئلة التطوّر تذهب إلى المدرب؛ والمواعيد والاشتراكات إلى الإداري.')}</p><div class="row wrap"><button class="btn small" data-act="inbox-open" data-pid="${esc(p.id)}">${L('Open messages', 'افتح الرسائل')}${unread ? ` (${unread})` : ''}</button>${SET().whatsapp && SET().whatsapp.length > 4 ? `<a class="btn wa small" href="${waLink(SET().whatsapp, '')}" target="_blank" rel="noopener">WhatsApp</a>` : ''}</div>
+   ${famParentBlock(p)}<h3>${L('Messages with the academy', 'الرسائل مع الأكاديمية')}</h3><p class="tiny muted">${L('We aim to answer within 24 hours. Development questions go to the coach; logistics and fees to the admin.', 'نحاول الرد خلال 24 ساعة. أسئلة التطوّر تذهب إلى المدرب؛ والمواعيد والاشتراكات إلى الإداري.')}</p><div class="row wrap"><button class="btn small" data-act="inbox-open" data-pid="${esc(p.id)}">${L('Open messages', 'افتح الرسائل')}${unread ? ` (${unread})` : ''}</button>${SET().whatsapp && SET().whatsapp.length > 4 ? `<a class="btn wa small" href="${waLink(SET().whatsapp, '')}" target="_blank" rel="noopener">WhatsApp</a>` : ''}</div>
    <h3>${L('Your child’s data', 'بيانات طفلك')}</h3><p class="tiny muted">${L(`Retention: ${SET().retention_months || 24} months after a family leaves, personal details and sealed fields are deleted; attendance and development history stay without contact details, and you see a deletion record here while your login lasts.`, `الاحتفاظ: بعد مرور ${SET().retention_months || 24} من الأشهر على مغادرة العائلة تُمسح البيانات الشخصية والحقول المغلقة؛ ويبقى الحضور وتاريخ التطوّر دون بيانات تواصل، وترون سجل المسح هنا ما دام دخولكم مفعّلًا.`)}</p><div class="row wrap"><button class="btn ghost small" data-act="export-child" data-pid="${esc(p.id)}">${L('Download my child’s data', 'نزّل بيانات طفلي')}</button><button class="btn ghost small" data-act="delete-req" data-pid="${esc(p.id)}">${L('Ask to delete the data', 'اطلب مسح البيانات')}</button><button class="btn ghost small" data-act="consent-open" data-pid="${esc(p.id)}">${L('Consents', 'الموافقات')}</button></div>
-   ${reqs.length ? `<ul class="small">${reqs.slice(0, 6).map(r => `<li>${fmtDS(String(r.at).slice(0, 10))} · ${lab([['export', 'Data export', 'نسخة من البيانات'], ['delete', 'Deletion request (30 days)', 'طلب مسح (30 يومًا)'], ['meeting', 'Meeting request', 'طلب اجتماع'], ['field_open', 'Request to open a sealed field', 'طلب فتح حقل مغلق'], ['deleted', 'Personal data deleted (retention)', 'تم مسح البيانات الشخصية (الاحتفاظ)']], r.type)} · <span class="tag ${r.status === 'done' ? 'ok' : r.status === 'declined' ? 'attn' : ''}">${lab([['open', 'Open', 'مفتوح'], ['done', 'Done', 'تم'], ['declined', 'Declined', 'مرفوض'], ['approved', 'Approved', 'موافق']], r.status)}</span></li>`).join('')}</ul>` : ''}
+   ${reqs.length ? `<ul class="small">${reqs.slice(0, 6).map(r => `<li>${fmtDS(String(r.at).slice(0, 10))} · ${lab([['export', 'Data export', 'نسخة من البيانات'], ['delete', 'Deletion request (30 days)', 'طلب مسح (30 يومًا)'], ['meeting', 'Meeting request', 'طلب اجتماع'], ['field_open', 'Request to open a sealed field', 'طلب فتح حقل مغلق'], ['guardian', 'Request to add a guardian', 'طلب إضافة ولي أمر'], ['deleted', 'Personal data deleted (retention)', 'تم مسح البيانات الشخصية (الاحتفاظ)']], r.type)} · <span class="tag ${r.status === 'done' ? 'ok' : r.status === 'declined' ? 'attn' : ''}">${lab([['open', 'Open', 'مفتوح'], ['done', 'Done', 'تم'], ['declined', 'Declined', 'مرفوض'], ['approved', 'Approved', 'موافق']], r.status)}</span></li>`).join('')}</ul>` : ''}
    <details><summary class="small">${L('Who opened your child’s file', 'من فتح ملف طفلك')}</summary>${views.length ? `<ul class="small">${views.map(x => `<li>${fmtDS(String(x.at).slice(0, 10))} · ${esc(x.who)} · ${esc(roleName(x.role))}</li>`).join('')}</ul>` : empty()}${(D().fieldlog || []).filter(f => f.player_id === p.id).length ? `<p class="small"><b>${L('Sealed fields opened', 'حقول مغلقة فُتحت')}:</b></p><ul class="small">${(D().fieldlog || []).filter(f => f.player_id === p.id).slice(-6).map(f => `<li>${fmtDS(String(f.at).slice(0, 10))} · ${esc(f.field)} · ${esc(f.who)} · ${esc(f.purpose || '')}</li>`).join('')}</ul>` : ''}</details>
    ${p.status === 'left' && surveyDue(p.id, 'exit', 3650) ? `<div class="notice"><b>${L('Before you go: two questions', 'قبل أن تغادروا: سؤالان')}</b><p class="small muted">${L('They help us do better for the next families. The door stays open.', 'يساعداننا لنكون أفضل مع العائلات القادمة. والباب مفتوح.')}</p><button class="btn small" data-act="exit-open" data-pid="${esc(p.id)}">${L('Answer', 'أجب')}</button></div>` : ''}</div>${modCards}`;
 }
@@ -2503,17 +2505,20 @@ function leadFormBlock(l) {
     ${isOwner() && f.id_number ? line(L('ID number (owner only)', 'الرقم القومي (للمالك فقط)'), /^S1:/.test(String(f.id_number)) ? L('sealed · copied to the child’s file on registration', 'مغلق · يُنقل إلى ملف الطفل عند التسجيل') : f.id_number) : ''}</div>` : ''}</div>`;
 }
 async function registerLead(id) {
+  if (famLeadAsk(id)) return;   // v4.8.1: the phone is already a guardian of a family: ask first
   const l = leads().find(x => x.id === id); if (!l) return;
   const f = leadForm(l); const pr = leadProposal(l); const ex = f.expectations || { hopes: l.hopes || [], matters_most: '', note: '', asked_at: todayStr(), term: 'registration' };
-  const sib = l.phone ? players().find(x => x.parent_pin_set && waNum(x.parent_phone) === waNum(l.phone)) : null;   // brothers and sisters share one family PIN (the server keeps it)
+  const famPick = S.leadFam && S.leadFam.lead === id ? S.leadFam : null; S.leadFam = null;   // v4.8.1
+  const sib = (famPick && famPick.fid ? players().find(x => x.family_id === famPick.fid && x.parent_pin_set) : null) || (l.phone ? players().find(x => x.parent_pin_set && waNum(x.parent_phone) === waNum(l.phone)) : null);   // brothers and sisters share one family PIN (the server keeps it)
   const pin = sib ? '' : String(Math.floor(1000 + Math.random() * 9000));   // v4.5: a new family's PIN is shown here once and kept only as a code in the sheet
   const sp = footballOn() && f.sport === 'football' ? 'football' : 'basketball';   // v4 batch 5: the family's sport choice decides the group
   const gid = pr.group_id && groups().some(g => g.id === pr.group_id && (g.sport || 'basketball') === sp) ? pr.group_id : ((groups().find(g => (g.sport || 'basketball') === sp) || {}).id || mainGroup());
   const g = groups().find(x => x.id === gid) || {}; const full = +g.capacity && activeP().filter(p => p.group_id === gid).length >= +g.capacity;
   const p = { id: newId('p'), name: l.child_name, name_ar: f.name_ar || '', name_en: f.name_en || '', dob: l.dob || '', sex: l.sex || '', status: full ? 'paused' : 'active', group_id: gid, consent_dev: l.consent_dev || '', consent_learning: l.consent_learning || '', consent_how: l.consent_dev === 'yes' ? 'registration link' : '', consent_at: l.consent_dev === 'yes' ? l.created : '', join_date: todayStr(), parent_name: l.parent_name || '', parent_phone: l.phone || '', parent_email: l.email || '', parent_pin: pin || undefined, parent2_name: f.parent2_name || '', parent2_phone: f.parent2_phone || '', lang: f.lang || 'ar', school: f.school || '', relation: f.relation || '', pickup: f.pickup || '', emergency_name: f.emergency_name || '', emergency_phone: f.emergency_phone || '', medical_short: f.medical_short || '', prev_academy: f.prev_academy || '', experience_years: f.experience_years || '', consent_emergency: f.consent_emergency || '', consent_rules: f.consent_rules || '', expectations: ex, source: l.source || '', referred_by: l.referred_by || '', hopes: l.hopes || [], goal: ex.matters_most ? lab(HOPES, ex.matters_most) : '', experience: l.experience || '', medical_note: l.medical_note || '', medical_sealed_lead: l.id, consent_app: l.consent_app || '', consent_public: l.consent_public || '', fee_plan: 'founding', first_session: pr.date || '', sport: 'basketball' };
   if (isOwner() && f.id_number) { p.id_sealed = f.id_number; if (f.id_sealed_lead) p.id_sealed_lead = f.id_sealed_lead; }   // sealed at rest; a value sealed under the lead's id is re-sealed under the child's id by the server
-  p.sport = sp; if (g.branch) p.branch = g.branch;
+  p.sport = sp; if (g.branch) p.branch = g.branch; if (famPick) p.family_id = famPick.fid;
   await save('players', p, true);
+  if (famPick && !famPick.fid) await famNewFor(p.id);
   const nl = withStage(l, 'registered'); nl.player_id = p.id; nl.next_date = ''; nl.next_note = ''; await save('leads', nl, true);
   if (full) { try { await save('waitlist', { id: 'wl_' + p.id, player_id: p.id, lead_id: l.id, group_id: gid, since: todayStr(), status: 'waiting' }, true) } catch (e) { } }
   // the coach learns about the new child in the app (inbox, topic new_player); never the fees or the family's private notes
@@ -2947,6 +2952,7 @@ function importExport() {
   <div id="impBox"></div>
   <h3>${L('Update the sheet', 'تحديث الجدول')}</h3><p class="small muted">${L('After installing a new version of the script, press this once. It only ADDS: missing tabs are created and missing columns are added after the last column. Nothing is moved, re-typed or deleted, so the previous version keeps working on this sheet. Each step takes at most about 20 seconds; the button repeats until it says done, and every step is written to the hidden tab schema_log. It also stores PINs as a scrambled code only and starts the 10-minute background refresh.', 'بعد تركيب نسخة جديدة من السكريبت، اضغط هنا مرة واحدة. التحديث يضيف فقط: تُنشأ التبويبات الناقصة وتُضاف الأعمدة الناقصة بعد آخر عمود. لا يُنقل أي شيء ولا يُعاد كتابته ولا يُحذف، فتبقى النسخة السابقة تعمل على الجدول. تستغرق كل خطوة حوالي 20 ثانية على الأكثر؛ يتكرر الزر حتى تظهر كلمة تم، وتُسجَّل كل خطوة في التبويب المخفي schema_log. كما يحفظ الأرقام السرية كرمز مشفّر فقط، ويشغّل التحديث في الخلفية كل 10 دقائق.')}</p>
   <div class="row wrap"><button class="btn ghost" data-act="migrate-now">${L('Update sheet now', 'حدّث الجدول الآن')}</button><span id="migBox" class="small"></span></div>
+  ${famBuildBlock()}
   <h3>${L('Content file', 'ملف المحتوى')}</h3><p class="small muted">${L('Drills, fitness plans, lessons, parent tips, posts, prospects and the football protocol are kept in the sheet, not in the script (so every request starts faster). Load HOST_Egypt_Content.json once. A new script keeps it; load it again only when a package’s release notes say its content changed.', 'التمارين وخطط اللياقة والدروس ونصائح الأهالي والمنشورات والعملاء المحتملون وبروتوكول كرة القدم محفوظة في الجدول لا في السكريبت (لكي يبدأ كل طلب أسرع). حمّل HOST_Egypt_Content.json مرة واحدة. السكريبت الجديد يحتفظ به؛ حمّله مرة أخرى فقط عندما تذكر ملاحظات الإصدار أن المحتوى تغيّر.')}</p>
   <p class="small"><b>${D().content_ok ? '✓ ' + L('Loaded for this version of the script.', 'تم تحميله لهذه النسخة من السكريبت.') : '⚠ ' + L('Not loaded for this version of the script yet.', 'لم يُحمَّل بعد لهذه النسخة من السكريبت.')}</b></p>
   <input type="file" accept=".json,application/json" id="ctFile" class="in"><span id="ctBox" class="small">${esc(S.ctMsg || '')}</span>
@@ -3195,7 +3201,7 @@ document.addEventListener('submit', async ev => {
     if (MOD.forms && MOD.forms[f.id]) return await MOD.forms[f.id](o, f, id);
     if (f.id === 'regForm') return submitReg(f);
     if (f.id === 'pastForm') { modal(''); S.evStep = ''; await openSessionFor(o.date, o.start, { end: o.end, coach: o.coach, source: o.source || 'notebook', status: 'done' }); if (o.source === 'notebook') { S.sub = 'att'; rerender() } return }
-    if (f.id === 'pform') { const old = id ? P(id) : {}; ['medical_sealed', 'id_sealed'].forEach(k => { if (o[k] === '') delete o[k] }); const rec = Object.assign({}, old, o, { id: id || newId('p') }); delete rec.medical_sealed_set; delete rec.id_sealed_set; delete rec.parent_pin_set; if (rec.status === 'left' && !rec.left_date) rec.left_date = todayStr(); if (rec.status !== 'left') rec.left_date = ''; await save('players', rec); S.sel = rec.id; S.sub = id ? 'family' : 'family'; rerender(); return }
+    if (f.id === 'pform') { const old = id ? P(id) : {}; ['medical_sealed', 'id_sealed'].forEach(k => { if (o[k] === '') delete o[k] }); const rec = Object.assign({}, old, o, { id: id || newId('p') }); const famPick = famPformPick(rec, id); delete rec.medical_sealed_set; delete rec.id_sealed_set; delete rec.parent_pin_set; if (rec.status === 'left' && !rec.left_date) rec.left_date = todayStr(); if (rec.status !== 'left') rec.left_date = ''; await save('players', rec); if (famPick === 'new') await famNewFor(rec.id); S.sel = rec.id; S.sub = id ? 'family' : 'family'; rerender(); return }
     if (f.id === 'snotes') { const s = Object.assign({}, sesById(id), o); if (isAdminish()) await save('sessions', s); else await coachSes(id, { notes: o.notes }); rerender(); return }
     if (f.id === 'noteForm') { const rec = { id: newId('nt'), player_id: f.dataset.pid, text: o.text, parent_visible: o.parent_visible ? 'yes' : 'no', type: 'note', by: S.me.name, by_role: role(), at: new Date().toISOString() }; await save('notes', rec); rerender(); return }
     if (f.id === 'noticeForm') { const rec = { id: newId('nt'), session_id: f.dataset.sid, player_id: o.player_id, pillar: o.pillar, text: o.text, type: 'noticed', parent_visible: 'yes', child_share: o.child_share ? 'pending' : '', by: S.me.name, by_role: role(), at: new Date().toISOString() }; await save('notes', rec); rerender(); return }
@@ -3274,8 +3280,8 @@ const TKIND = [['post', 'Post', 'منشور'], ['call', 'Call', 'مكالمة'],
 const TSTAT = [['planned', 'Planned', 'مخطط'], ['done', 'Done', 'تم'], ['skipped', 'Skipped', 'تم التخطي']];
 const PSTAGE = [['research', 'Research', 'بحث'], ['contacted', 'Contacted', 'تم التواصل'], ['meeting', 'Meeting', 'اجتماع'], ['proposal', 'Proposal', 'عرض'], ['trial', 'Trial', 'تجربة'], ['signed', 'Signed', 'تم الاتفاق'], ['lost', 'Lost', 'خسرناه']];
 const PGOAL = [['awareness', 'Awareness', 'تعريف'], ['trust', 'Trust', 'ثقة'], ['enquiries', 'Enquiries', 'استفسارات'], ['progress', 'Progress', 'تقدّم'], ['community', 'Community', 'مجتمع'], ['other', 'Other', 'أخرى']];
-/* v4.1: one family = one parent number; with no number, the parent's name (spelling variants folded), as on the server (famKey_) */
-const famOf = p => { const ph = String(p.parent_phone || '').replace(/\D/g, '').slice(-9); if (ph.length >= 8) return 'ph:' + ph; const n = String(p.parent_name || '').replace(/[\u064B-\u0652\u0640]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim().toLowerCase(); return n ? 'nm:' + n : 'id:' + p.id };
+/* v4.1: one family = one parent number; with no number, the parent's name (spelling variants folded), as on the server (famKey_); v4.8.1: the family record first */
+const famOf = p => { if (p && p.family_id) return 'f:' + p.family_id; const ph = String(p.parent_phone || '').replace(/\D/g, '').slice(-9); if (ph.length >= 8) return 'ph:' + ph; const n = String(p.parent_name || '').replace(/[\u064B-\u0652\u0640]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim().toLowerCase(); return n ? 'nm:' + n : 'id:' + p.id };
 function famGroups(ps) { const by = {}; ps.forEach(p => { const k = famOf(p); (by[k] = by[k] || []).push(p) }); return Object.values(by) }
 const nextMonthKey = () => { const d = parseD(monthKey(todayStr()) + '-01'); d.setMonth(d.getMonth() + 1); return ymd(d).slice(0, 7) };
 function groupName(gid) { const g = groups().find(x => x.id === gid); return g ? L(g.name, g.name_ar || g.name) : '' }
@@ -4155,7 +4161,7 @@ if (typeof playerProfile === 'function') { const _pp = playerProfile; playerProf
 regAction('fam-requests', d => {
   const reqs = (D().requests || []).filter(r => !d.pid || r.player_id === d.pid).sort((a, b) => String(b.at).localeCompare(String(a.at)));
   modal(`<h2>${L('Family requests', 'طلبات العائلات')}${d.pid ? ' · ' + esc((P(d.pid) || {}).name || '') : ''}</h2><p class="tiny muted">${L('Deletion requests: 30 days to act. Export requests are answered automatically and logged.', 'طلبات المسح: 30 يومًا للتنفيذ. طلبات النسخة يُجاب عنها تلقائيًا وتُسجَّل.')}</p>
-   <div class="list">${reqs.map(r => `<div class="item" style="cursor:default;flex-wrap:wrap"><div class="grow"><b>${esc((P(r.player_id) || {}).name || r.player_id)}</b> · ${lab([['export', 'Data export', 'نسخة من البيانات'], ['delete', 'Deletion (30 days)', 'مسح (30 يومًا)'], ['meeting', 'Meeting', 'اجتماع'], ['field_open', 'Sealed field', 'حقل مغلق']], r.type)}<div class="sub">${fmtDS(String(r.at).slice(0, 10))} · ${esc(r.by || '')}${r.detail ? ' · ' + esc(r.detail) : ''}${r.handled_by ? ' · ' + esc(r.handled_by) : ''}</div></div><span class="tag ${r.status === 'done' ? 'ok' : r.status === 'declined' ? 'attn' : 'warn'}">${lab([['open', 'Open', 'مفتوح'], ['done', 'Done', 'تم'], ['declined', 'Declined', 'مرفوض']], r.status)}</span>${r.status === 'open' ? `<button class="btn small" data-act="req-handle" data-id="${esc(r.id)}" data-v="done">${L('Done', 'تم')}</button><button class="link small" data-act="req-handle" data-id="${esc(r.id)}" data-v="declined">${L('Decline', 'ارفض')}</button>` : ''}</div>`).join('') || empty()}</div><button class="btn ghost" data-act="modal-close">${w('close')}</button>`);
+   <div class="list">${reqs.map(r => `<div class="item" style="cursor:default;flex-wrap:wrap"><div class="grow"><b>${esc((P(r.player_id) || {}).name || r.player_id)}</b> · ${lab([['export', 'Data export', 'نسخة من البيانات'], ['delete', 'Deletion (30 days)', 'مسح (30 يومًا)'], ['meeting', 'Meeting', 'اجتماع'], ['field_open', 'Sealed field', 'حقل مغلق'], ['guardian', 'Add a guardian', 'إضافة ولي أمر']], r.type)}<div class="sub">${fmtDS(String(r.at).slice(0, 10))} · ${esc(r.by || '')}${r.detail ? ' · ' + esc(r.detail) : ''}${r.handled_by ? ' · ' + esc(r.handled_by) : ''}</div></div><span class="tag ${r.status === 'done' ? 'ok' : r.status === 'declined' ? 'attn' : 'warn'}">${lab([['open', 'Open', 'مفتوح'], ['done', 'Done', 'تم'], ['declined', 'Declined', 'مرفوض']], r.status)}</span>${r.status === 'open' ? `<button class="btn small" data-act="req-handle" data-id="${esc(r.id)}" data-v="done">${L('Done', 'تم')}</button><button class="link small" data-act="req-handle" data-id="${esc(r.id)}" data-v="declined">${L('Decline', 'ارفض')}</button>` : ''}</div>`).join('') || empty()}</div><button class="btn ghost" data-act="modal-close">${w('close')}</button>`);
 });
 regAction('req-handle', async d => { const j = await act('request_handle', { id: d.id, status: d.v }); upsertLocal('requests', j.rec); const r = j.rec; modal(''); rerender(); if (r.type === 'delete' && d.v === 'done') { const n = (j.deleted || {}).photos_to_check || 0; toast(n ? L(`Deleted. ${n} photo(s) with other children are back to team only: check each one in Photos.`, `تم الحذف. ${n} من الصور مع أطفال آخرين عادت للفريق فقط: راجع كل صورة في الصور.`) : L('Deleted. The full list is on the request.', 'تم الحذف. القائمة الكاملة في الطلب.')) } });   // v4.6 (Cowork 11)
 regAction('jr-set', async d => { const sel = document.querySelector(`[data-jsel="${esc(d.id)}"]`); const j = await act('journey_set', { id: d.id, status: d.v, focus: sel ? sel.value : '' }); upsertLocal('journeys', j.rec); rerender() });
@@ -6297,6 +6303,153 @@ if (typeof prospectsTab === 'function') {
   };
   regChange('h0-sales', async el => { const u = (D().users || []).find(x => x.id === el.dataset.id); if (!u) return; const flags = Object.assign({}, u.flags || {}, { host0_sales: el.checked ? 'yes' : '' }); try { await save('users', { id: u.id, flags }); rerender(); } catch (e) { } });
 }
+
+/* ================= v4.8.1 · the family record =================
+   A family is a record (D().families) with up to 4 guardians; each child carries family_id. The server keeps the child's parent fields filled from
+   the family's first two guardians, so every older screen (fees, messages, WhatsApp, reports) works as before. Owner, co-owner and the admin
+   (only when the owner opened contacts) see and change families; a parent sees only their own family, phones masked, and can ask for another
+   guardian (the academy adds it). Every value below is escaped (esc), every link goes through safeUrl. */
+const FAM_REL = [['mother', 'Mother', 'الأم'], ['father', 'Father', 'الأب'], ['guardian', 'Guardian', 'ولي أمر'], ['other', 'Other', 'غير ذلك']];
+const fams = () => D().families || [];
+const famById = id => fams().find(f => f.id === id) || null;
+const famGs = f => Array.isArray(f && f.guardians) ? f.guardians.filter(g => g && typeof g === 'object') : [];
+const famD9 = s => latinDigits(s).replace(/\D/g, '').slice(-9);
+const famOfP = p => p && p.family_id ? famById(p.family_id) : null;
+const famKids = f => f ? players().filter(p => p.family_id === f.id) : [];
+const famTitle = f => f ? (f.name ? L('Family ', 'عائلة ') + f.name : L('Family', 'العائلة')) : '';
+function famCanEdit() { if (isOwnerish()) return true; if (role() !== 'admin') return false; const oa = D().office_access; return !oa || !!oa.contacts }
+function famMatchPhone(ph) { const d = famD9(ph); if (d.length < 8) return null; return fams().find(f => famGs(f).some(g => famD9(g.phone) === d)) || null }
+function famApply(j) { if (!j) return; if (j.rec) upsertLocal('families', j.rec); if (j.family) upsertLocal('families', j.family); (j.players || []).forEach(p => upsertLocal('players', p)) }
+async function famNewFor(pid) { try { famApply(await act('family_move', { player_id: pid, family_id: '' }, true)) } catch (e) { } }
+const famBox = 'border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:16px';
+
+/* the Family card at the top of "Family and consent" */
+function famCard(p) {
+  if (!p || !p.id || isParent() || !isAdminish()) return '';
+  const f = famOfP(p); const can = famCanEdit();
+  const asks = (D().requests || []).filter(r => r.type === 'guardian' && r.status === 'open' && (r.player_id === p.id || (f && famKids(f).some(k => k.id === r.player_id))));
+  const askHtml = asks.length ? `<div class="notice" style="margin-top:10px"><b>${L('The family asked to add a guardian', 'طلبت العائلة إضافة ولي أمر')}</b>${asks.map(r => `<div class="small">${fmtDS(String(r.at).slice(0, 10))} · ${esc(r.detail || '')}</div>`).join('')}<p class="tiny muted">${L('Check with the family first, then add the guardian here and mark the request done (Family → Requests).', 'تحقق مع العائلة أولًا، ثم أضف ولي الأمر هنا وأغلق الطلب (العائلة ← الطلبات).')}</p></div>` : '';
+  const moveBtns = `<button class="btn ghost small" data-act="fam-move" data-pid="${esc(p.id)}">${f ? L('Move child to another family', 'انقل الطفل إلى عائلة أخرى') : L('Add to a family', 'أضف إلى عائلة')}</button><button class="btn ghost small" data-act="fam-new" data-pid="${esc(p.id)}">${L('Make a new family', 'أنشئ عائلة جديدة')}</button>`;
+  if (!f) return `<div class="fam-card" style="${famBox}"><h3 style="margin-top:0">${L('Family', 'العائلة')}</h3><p class="small muted">${L('No family record yet. An owner builds them once (Settings → Import and backup → Build family records), or make one here.', 'لا يوجد سجل عائلة بعد. ينشئها المالك مرة واحدة (الإعدادات ← الاستيراد والنسخ ← أنشئ سجلات العائلات)، أو أنشئ واحدًا هنا.')}</p>${askHtml}${can ? `<div class="row wrap">${moveBtns}</div>` : ''}</div>`;
+  const gs = famGs(f); const kids = famKids(f).filter(k => k.id !== p.id);
+  const gRow = g => `<div class="drow"><div class="grow"><b>${esc(g.name || L('Guardian', 'ولي أمر'))}</b> <span class="small muted">${lab(FAM_REL, g.relation || 'guardian')}</span>${g.primary === 'yes' ? ` <span class="tag info">${L('main contact', 'التواصل الأساسي')}</span>` : ''}<div class="sub"><bdi dir="ltr">${esc(g.phone || '–')}</bdi> · ${g.can_login === 'no' ? L('cannot log in', 'لا يدخل التطبيق') : L('can log in', 'يدخل التطبيق')} · ${g.lang === 'en' ? 'English' : 'العربية'}</div></div>${g.phone ? `<a class="btn wa small" href="${safeUrl(waLink(g.phone, ''))}" target="_blank" rel="noopener">WhatsApp</a>` : ''}</div>`;
+  const kRow = k => `<div class="item" data-act="player" data-id="${esc(k.id)}"><span class="av">${esc(initials(k.name))}</span><div class="grow"><div class="nm">${esc(k.name)}</div><div class="sub">${k.dob ? L('Age ', 'العمر ') + esc(age(k.dob)) + ' · ' : ''}${lab([['active', 'Active', 'نشط'], ['paused', 'Paused', 'متوقف مؤقتًا'], ['left', 'Left', 'غادر']], k.status || 'active')}</div></div></div>`;
+  return `<div class="fam-card" style="${famBox}">
+   <div class="row sp"><h3 style="margin:0">${esc(famTitle(f))}</h3>${can ? `<button class="btn ghost small" data-act="fam-edit" data-fid="${esc(f.id)}" data-pid="${esc(p.id)}">${w('edit')}</button>` : ''}</div>
+   ${f.notes ? `<p class="small muted">${esc(f.notes)}</p>` : ''}
+   <p class="tiny muted" style="margin:10px 0 0">${L('Guardians', 'أولياء الأمور')}</p><div class="list">${gs.map(gRow).join('') || empty()}</div>
+   <p class="tiny muted" style="margin:10px 0 0">${L('Brothers and sisters', 'الإخوة')}</p>${kids.length ? `<div class="list">${kids.map(kRow).join('')}</div>` : `<p class="small muted">${L('No brother or sister in the academy.', 'لا يوجد إخوة في الأكاديمية.')}</p>`}
+   ${askHtml}
+   ${can ? `<div class="row wrap" style="margin-top:10px">${gs.length < 4 ? `<button class="btn small" data-act="fam-edit" data-fid="${esc(f.id)}" data-pid="${esc(p.id)}" data-add="1">+ ${L('Add guardian', 'أضف ولي أمر')}</button>` : ''}${moveBtns}</div>` : ''}
+   <p class="tiny muted">${L('The main contact and the next guardian are the child’s parent and second parent everywhere else (messages, fees, reports). Every guardian who can log in uses the family PIN.', 'جهة التواصل الأساسية وولي الأمر التالي هما ولي الأمر الأول والثاني في كل مكان آخر (الرسائل، الاشتراكات، التقارير). كل ولي أمر يدخل التطبيق يستخدم الرقم السري للعائلة.')}</p></div>`;
+}
+if (typeof familyBox === 'function') { const _fbV481 = familyBox; familyBox = function (p) { let c = ''; try { c = famCard(p) } catch (e) { console.error(e) } return c + _fbV481(p) } }
+
+/* add or change guardians (a new family when there is no fid) */
+function famEditModal(fid, pid, add) {
+  const f = fid ? famById(fid) : null; const gs = famGs(f).map(g => Object.assign({}, g)); if (add || !gs.length) gs.push({ relation: 'guardian', lang: 'ar', can_login: 'yes' });
+  const anyP = gs.some(g => g.primary === 'yes');
+  const row = (g, i) => `<fieldset style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 10px"><legend class="small">${L('Guardian', 'ولي الأمر')} ${i + 1}</legend><div class="grid2">
+   <label class="f">${L('Name', 'الاسم')}<input class="in" name="g${i}_name" value="${esc(g.name || '')}" maxlength="80"></label>
+   <label class="f">${L('Mobile (WhatsApp)', 'الموبايل (واتساب)')}<input class="in" name="g${i}_phone" inputmode="tel" dir="ltr" value="${esc(g.phone || '')}" maxlength="20"></label>
+   <label class="f">${L('Relation', 'الصلة')}<select class="in" name="g${i}_rel">${opt(FAM_REL, g.relation || 'guardian')}</select></label>
+   <label class="f">${L('Language for messages', 'لغة الرسائل')}<select class="in" name="g${i}_lang">${opt([['ar', 'Arabic', 'العربية'], ['en', 'English', 'الإنجليزية']], g.lang || 'ar')}</select></label>
+   <label class="row small"><input type="checkbox" name="g${i}_login" value="yes" ${g.can_login === 'no' ? '' : 'checked'}> ${L('Can log in to the app', 'يدخل التطبيق')}</label>
+   <label class="row small"><input type="radio" name="primary" value="${i}" ${g.primary === 'yes' || (!anyP && i === 0) ? 'checked' : ''}> ${L('Main contact', 'جهة التواصل الأساسية')}</label>
+   ${gs.length > 1 ? `<label class="row small"><input type="checkbox" name="g${i}_remove" value="yes"> ${L('Remove this guardian', 'احذف ولي الأمر هذا')}</label>` : ''}</div></fieldset>`;
+  modal(`<h2>${f ? esc(famTitle(f)) : L('New family', 'عائلة جديدة')}</h2><form id="famForm" data-fid="${esc(fid || '')}" data-pid="${esc(pid || '')}" data-n="${gs.length}">
+   <label class="f">${L('Family name', 'اسم العائلة')}<input class="in" name="name" value="${esc(f ? f.name || '' : '')}" maxlength="80"></label>
+   ${gs.map(row).join('')}
+   <label class="f">${L('Notes (staff only)', 'ملاحظات (للفريق فقط)')}<textarea class="in" name="notes" maxlength="500">${esc(f ? f.notes || '' : '')}</textarea></label>
+   <p class="tiny muted">${L('Up to 4 guardians. A mobile has 8 to 15 digits. A guardian who can log in opens the app with their own mobile and the family PIN.', 'حتى 4 أولياء أمور. الموبايل من 8 إلى 15 رقمًا. ولي الأمر الذي يدخل التطبيق يستخدم رقم موبايله والرقم السري للعائلة.')}</p>
+   <div class="row"><button class="btn" type="submit">${w('save')}</button><button class="btn ghost" type="button" data-act="modal-close">${w('cancel')}</button></div></form>`);
+}
+regAction('fam-edit', d => famEditModal(d.fid, d.pid, d.add === '1'));
+regForm('famForm', async (o, f) => {
+  const n = +f.dataset.n || 0; const gs = [];
+  for (let i = 0; i < n; i++) { if (o['g' + i + '_remove']) continue; gs.push({ name: String(o['g' + i + '_name'] || '').trim(), phone: String(o['g' + i + '_phone'] || '').trim(), relation: o['g' + i + '_rel'] || 'guardian', lang: o['g' + i + '_lang'] || 'ar', can_login: o['g' + i + '_login'] ? 'yes' : 'no', primary: String(o.primary) === String(i) ? 'yes' : '' }) }
+  const bad = gs.find(g => g.phone && (latinDigits(g.phone).replace(/\D/g, '').length < 8 || latinDigits(g.phone).replace(/\D/g, '').length > 15));
+  if (bad) { toast('⚠ ' + L('A mobile has 8 to 15 digits.', 'رقم الموبايل من 8 إلى 15 رقمًا.')); return }
+  const body = { rec: { name: o.name || '', notes: o.notes || '', guardians: gs } }; if (f.dataset.fid) body.rec.id = f.dataset.fid; else if (f.dataset.pid) body.player_id = f.dataset.pid;
+  try { famApply(await act('family_save', body)); modal(''); rerender() } catch (e) { }
+});
+/* move a child to another family, or give the child a new family of their own */
+regAction('fam-move', d => {
+  const p = P(d.pid); if (!p) return; const list = fams().filter(f => f.id !== p.family_id).map(f => ({ f, k: famKids(f) })).sort((a, b) => famTitle(a.f).localeCompare(famTitle(b.f)));
+  modal(`<h2>${L('Move to another family', 'نقل إلى عائلة أخرى')} · ${esc(p.name)}</h2><input class="in" id="famQ" placeholder="${esc(w('search'))}" style="width:100%;margin-bottom:8px">
+   <div class="list" id="famList" style="max-height:50vh;overflow:auto">${list.map(x => `<div class="item" data-act="fam-move-to" data-pid="${esc(p.id)}" data-fid="${esc(x.f.id)}" data-q="${esc((famTitle(x.f) + ' ' + x.k.map(k => k.name).join(' ') + ' ' + famGs(x.f).map(g => g.name).join(' ')).toLowerCase())}"><div class="grow"><div class="nm">${esc(famTitle(x.f))}</div><div class="sub">${esc(x.k.map(k => k.name).join(' · ') || '–')} · ${esc(famGs(x.f).map(g => g.name).filter(Boolean).join(L(', ', '، ')))}</div></div></div>`).join('') || empty()}</div>
+   <div class="row" style="margin-top:10px"><button class="btn ghost" data-act="fam-new" data-pid="${esc(p.id)}">${L('Make a new family', 'أنشئ عائلة جديدة')}</button><button class="btn ghost" data-act="modal-close">${w('cancel')}</button></div>`);
+});
+regAction('fam-move-to', async d => {
+  const p = P(d.pid), f = famById(d.fid); if (!p || !f) return;
+  if (!confirm(L(`Move ${p.name} to ${famTitle(f)}? The child takes that family's guardians and PIN.`, `نقل ${p.name} إلى ${famTitle(f)}؟ يأخذ الطفل أولياء أمور تلك العائلة ورقمها السري.`))) return;
+  try { famApply(await act('family_move', { player_id: p.id, family_id: f.id })); modal(''); rerender() } catch (e) { }
+});
+regAction('fam-new', async d => {
+  const p = P(d.pid); if (!p) return;
+  if (!confirm(L(`Make a new family for ${p.name}? It starts with the child's current parents; change them next.`, `إنشاء عائلة جديدة لـ ${p.name}؟ تبدأ بأولياء الأمور الحاليين للطفل؛ عدّلهم بعد ذلك.`))) return;
+  try { const j = await act('family_move', { player_id: p.id, family_id: '' }); famApply(j); rerender(); if (j.family) famEditModal(j.family.id, p.id) } catch (e) { }
+});
+
+/* new player (Players → Add player): the parent's phone is already a guardian of a family → "Add to family X" (ticked) */
+function famSuggestBox(p, phone) {
+  if ((p && p.id) || !famCanEdit()) return ''; const f = famMatchPhone(phone); if (!f) return '';
+  return `<label class="row small notice"><input type="checkbox" name="fam_join" value="yes" checked> ${L('Add to', 'أضف إلى')} <b>${esc(famTitle(f))}</b> <span class="muted">(${esc(famKids(f).map(k => k.name).join(' · ') || '–')})</span></label><input type="hidden" name="fam_offer" value="${esc(f.id)}">`;
+}
+const famRO = p => famOfP(p) ? ' readonly' : '';
+function famFormNote(p) { const f = famOfP(p); return f ? `<p class="small muted" style="grid-column:1/-1">${L('This child is in ', 'هذا الطفل في ')}<b>${esc(famTitle(f))}</b>${L(': parents and phones are changed in the Family card above, once for all brothers and sisters.', ': تُعدَّل أسماء وأرقام أولياء الأمور من بطاقة العائلة أعلاه، مرة واحدة لكل الإخوة.')}</p>` : '' }
+function famPformPick(rec, id) { const offer = rec.fam_offer, join = rec.fam_join; delete rec.fam_offer; delete rec.fam_join; if (id || !offer) return ''; rec.family_id = join ? offer : ''; return join ? '' : 'new' }
+document.addEventListener('input', ev => {
+  const el = ev.target; if (!el) return;
+  if (el.name === 'parent_phone' && el.form && el.form.id === 'pform' && !el.form.dataset.id) { const box = el.form.querySelector('#famSuggest'); if (box) box.innerHTML = famSuggestBox(null, el.value) }
+  if (el.id === 'famQ') { const q = String(el.value || '').toLowerCase().trim(); document.querySelectorAll('#famList [data-q]').forEach(it => { it.hidden = !!q && it.dataset.q.indexOf(q) < 0 }) }
+});
+/* registration from a lead: the lead's phone is already a guardian of a family → ask first, "Add to family X" is the first button */
+function famLeadAsk(id) {
+  if (S.leadFam && S.leadFam.lead === id) return false;
+  const l = (typeof leads === 'function' ? leads() : []).find(x => x.id === id); if (!l || !famCanEdit()) return false;
+  const f = famMatchPhone(l.phone); if (!f) return false;
+  modal(`<h2>${L('Same family?', 'نفس العائلة؟')}</h2><p>${L('This mobile is already a guardian of ', 'هذا الموبايل مسجّل بالفعل لولي أمر في ')}<b>${esc(famTitle(f))}</b> (${esc(famKids(f).map(k => k.name).join(' · ') || '–')}).</p>
+   <div class="row wrap"><button class="btn" data-act="lead-fam" data-id="${esc(id)}" data-v="${esc(f.id)}">${L('Add to ', 'أضف إلى ')}${esc(famTitle(f))}</button><button class="btn ghost" data-act="lead-fam" data-id="${esc(id)}" data-v="">${L('New family', 'عائلة جديدة')}</button><button class="btn ghost" data-act="modal-close">${w('cancel')}</button></div>`);
+  return true;
+}
+regAction('lead-fam', d => { S.leadFam = { lead: d.id, fid: d.v || '' }; modal(''); registerLead(d.id) });
+
+/* Settings → Import and backup: the one-time build (owners) */
+function famBuildBlock() {
+  if (!isOwnerish()) return ''; const n = fams().length; const linked = players().filter(p => p.family_id && famById(p.family_id)).length;
+  return `<h3>${L('Family records', 'سجلات العائلات')}</h3><p class="small muted">${L('Makes one family record for each family as the platform counts families today (the same parent phone, else the same parent name), with the parent and the second parent as guardians, and links every child to it. No name or phone on a child is changed. Safe to press again: children already in a family stay, and a new child joins the family of the same parent.', 'ينشئ سجل عائلة واحدًا لكل عائلة كما تعدّها المنصة اليوم (رقم ولي الأمر نفسه، وإلا اسم ولي الأمر نفسه)، وولي الأمر الأول والثاني كأولياء أمور، ويربط كل طفل به. لا يتغير أي اسم أو رقم على الطفل. يمكن الضغط مرة أخرى بأمان: الأطفال الموجودون في عائلة يبقون، والطفل الجديد ينضم إلى عائلة ولي الأمر نفسه.')}</p>
+  <p class="small"><b>${L(`${n} families · ${linked} of ${players().length} children linked`, `العائلات: ${n} · الأطفال المرتبطون: ${linked} من ${players().length}`)}</b></p>
+  <div class="row wrap"><button class="btn ghost" data-act="fam-build">${L('Build family records', 'أنشئ سجلات العائلات')}</button><span id="famBuildBox" class="small">${esc(S.famBuildMsg || '')}</span></div>`;
+}
+regAction('fam-build', async () => {
+  try { const j = await act('families_build', {}, true); S.famBuildMsg = L(`Done: ${j.families_created} new families, ${j.children_linked} children linked, ${j.already_linked} already in a family.`, `تم: عائلات جديدة ${j.families_created}، أطفال رُبطوا ${j.children_linked}، كانوا في عائلة ${j.already_linked}.`); await reload() } catch (e) { }
+});
+
+/* parent → Your academy: who can log in for this family, and a request for another guardian (the academy adds it) */
+function famParentBlock(p) {
+  if (!p || !isParent()) return '';
+  const f = (D().family || []).find(x => (x.kids || []).indexOf(p.id) >= 0);
+  const gs = f ? (f.guardians || []).filter(g => g.can_login !== 'no') : [[p.parent_name, p.parent_phone], [p.parent2_name, p.parent2_phone]].filter(x => String(x[1] || '').replace(/\D/g, '').length >= 8).map(x => ({ name: x[0] || '', tail: String(x[1]).replace(/\D/g, '').slice(-4) }));
+  const asked = (D().requests || []).some(r => r.player_id === p.id && r.type === 'guardian' && r.status === 'open');
+  return `<div class="fam-par"><h3>${L('Your family', 'عائلتكم')}</h3><p class="tiny muted">${L('Guardians who can log in', 'أولياء الأمور الذين يدخلون التطبيق')}</p>
+   <div class="list">${gs.map(g => `<div class="drow"><div class="grow">${esc(g.name || L('Guardian', 'ولي أمر'))}${g.relation ? ` <span class="small muted">${lab(FAM_REL, g.relation)}</span>` : ''}${g.me === 'yes' ? ` <span class="tag ok">${L('you', 'أنت')}</span>` : ''}</div><bdi class="small muted" dir="ltr">•••• ${esc(g.tail || '')}</bdi></div>`).join('') || empty()}</div>
+   ${asked ? `<p class="small">⏳ ${L('Your request for another guardian reached the academy.', 'وصل طلبكم بإضافة ولي أمر آخر إلى الأكاديمية.')}</p>` : ''}
+   <button class="btn ghost small" data-act="fam-req-open" data-pid="${esc(p.id)}">+ ${L('Add another guardian', 'أضف ولي أمر آخر')}</button>
+   <p class="tiny muted">${L('The academy checks every new guardian before they can log in.', 'تتحقق الأكاديمية من كل ولي أمر جديد قبل أن يدخل التطبيق.')}</p></div>`;
+}
+regAction('fam-req-open', d => modal(`<h2>${L('Add another guardian', 'إضافة ولي أمر آخر')}</h2><p class="small muted">${L('We send these details to the academy. They check with you and add the guardian.', 'نرسل هذه البيانات إلى الأكاديمية. ستتحقق معكم ثم تضيف ولي الأمر.')}</p>
+  <form id="famReqForm" data-pid="${esc(d.pid)}" class="grid2" style="grid-template-columns:1fr">
+   <label class="f">${L('Name', 'الاسم')}<input class="in" name="name" maxlength="80" required></label>
+   <label class="f">${L('Mobile (WhatsApp)', 'الموبايل (واتساب)')}<input class="in" name="phone" inputmode="tel" dir="ltr" maxlength="20" required></label>
+   <label class="f">${L('Relation to the child', 'الصلة بالطفل')}<select class="in" name="relation">${opt(FAM_REL, 'guardian')}</select></label>
+   <div class="row"><button class="btn" type="submit">${L('Send to the academy', 'أرسل إلى الأكاديمية')}</button><button class="btn ghost" type="button" data-act="modal-close">${w('cancel')}</button></div></form>`));
+regForm('famReqForm', (o, f) => {
+  const ph = latinDigits(o.phone).replace(/\D/g, ''); if (ph.length < 8 || ph.length > 15) { toast('⚠ ' + L('A mobile has 8 to 15 digits.', 'رقم الموبايل من 8 إلى 15 رقمًا.')); return }
+  const rel = FAM_REL.some(r => r[0] === o.relation) ? o.relation : 'guardian';
+  const rec = { id: 'rq_guardian_' + f.dataset.pid + '_' + todayStr(), player_id: f.dataset.pid, type: 'guardian', detail: [String(o.name || '').replace(/[<>"`]/g, '').trim().slice(0, 80), ph, rel].join(' · ') };
+  queueFam('requests', rec, [['requests', Object.assign({ status: 'open', by: S.me.name, at: famNow() }, rec)]]); modal(''); rerender();
+});
 
 </script>
 </body>

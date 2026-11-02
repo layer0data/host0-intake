@@ -1,11 +1,11 @@
-/* HOST Egypt · offline helper (service worker), v4.1
+/* HOST Egypt · offline helper (service worker), v4.8.1 (v4.1 + always checks for a newer page)
    Lets HOST_Egypt.html (and the TEST page) open with no signal: the page, its settings file and the fonts are kept on the phone.
    - The page and its settings file: network first (a new version is picked up at once); after 5 seconds without an answer, or with no
      network, the copy on the phone opens instead, and the app shows its red bar.
    - Fonts: the copy on the phone first, refreshed in the background.
    - Everything else (the academy's Google Apps Script, the intake pages, any other file of this site) is NOT touched: it goes to the network
      exactly as without this file. Saves are never cached here; unsent work lives in the app's own outbox. */
-const VERSION = 'host-egypt-sw-v4.1-1';
+const VERSION = 'host-egypt-sw-v4.8.1-1';
 const OURS = ['HOST_Egypt.html', 'host-egypt-settings.js', 'HOST_Egypt_test.html', 'host-egypt-test-settings.js'];
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
@@ -23,7 +23,7 @@ self.addEventListener('fetch', ev => {
   if (mine) {
     ev.respondWith((async () => {
       const cache = await caches.open(VERSION);
-      const net = fetch(req).then(r => { if (r && r.ok) cache.put(mine, r.clone()); return r; });
+      const net = fetch(req, { cache: 'no-cache' }).then(r => { if (r && r.ok) cache.put(mine, r.clone()); return r; });   // v4.8.1: always ask the server whether the page changed (cheap: 304 when it did not), never an old browser copy
       const timer = new Promise(res => setTimeout(() => res(null), 5000));
       try { const r = await Promise.race([net, timer]); if (r && r.ok) return r; } catch (e) { }
       const kept = await cache.match(mine); if (kept) return kept;
