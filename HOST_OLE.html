@@ -712,6 +712,57 @@ function tidyHomes_() {
 }
 regAction('my-pin', () => modal(`<h2>${L('My PIN', 'رقمي السري')}</h2><p class="small muted">${L('Choose your own 4 digits. You will use them next time you log in on a new phone.', 'اختر 4 أرقام خاصة بك. ستستخدمها عند الدخول من هاتف جديد.')}</p><form id="myPinForm" class="grid2"><label class="f">${L('New PIN', 'الرقم الجديد')}<input class="in" name="pin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9\u0660-\u0669\u06F0-\u06F9]{4}" required autocomplete="new-password"></label><label class="f">${L('Again', 'مرة أخرى')}<input class="in" name="pin2" type="password" inputmode="numeric" maxlength="4" required autocomplete="new-password"></label><div class="row" style="grid-column:1/-1"><button class="btn" type="submit">${L('Save', 'حفظ')}</button><button type="button" class="btn ghost" data-act="modal-close">${L('Cancel', 'إلغاء')}</button></div></form>`));   // v4.8.1
 regForm('myPinForm', async o => { if (o.pin !== o.pin2) { toast('⚠ ' + L('The two PINs are not the same.', 'الرقمان غير متطابقين.')); return } try { await act('my_pin', { pin: o.pin }); modal(''); toast('✓ ' + L('Your new PIN is saved.', 'تم حفظ رقمك الجديد.')) } catch (e) { } });
+/* ================= v4.8.1 · TEAM (owner and co-owners): who is on the team and what each person did ================= */
+function teamSeason_() { const t = todayStr(); const ss = SET().seasons || []; return ss.find(x => x.from <= t && t <= x.to) || ss[ss.length - 1] || { slots: [] }; }
+function teamStats_(u) {
+  const t = todayStr(), since = addDays(t, -30);
+  const mine = s => s.coach_lead === u.id || (s.assistants || []).some(a => a && a.id === u.id) || (!s.coach_lead && s.coach && s.coach === u.name);
+  const ses = (D().sessions || []).filter(mine);
+  const past = ses.filter(s => s.date >= since && s.date <= t && s.status !== 'cancelled').sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const att = {}, rated = {}; (D().attendance || []).forEach(a => { att[a.session_id] = 1 }); (D().obs || []).forEach(o => { if (o.rater === u.id) rated[o.session_id] = 1 });
+  const slots = (teamSeason_().slots || []).filter(x => (x.coaches || []).indexOf(u.id) >= 0);
+  const notes = (D().notes || []).filter(n => (n.by_id === u.id || n.by === u.name) && String(n.at || n.date || '').slice(0, 10) >= since).length;
+  let last = ''; const seen = d => { d = String(d || '').slice(0, 10); if (d > last) last = d };
+  (D().attendance || []).forEach(a => { if (a.by === u.name) seen(a.at) }); (D().obs || []).forEach(o => { if (o.rater === u.id) seen(o.at) });
+  (D().notes || []).forEach(n => { if (n.by_id === u.id || n.by === u.name) seen(n.at || n.date) }); past.forEach(s => { if (att[s.id]) seen(s.date) });
+  const gids = [...new Set(slots.map(x => x.group_id).concat(past.map(s => s.group_id)).filter(Boolean))];
+  return { slots, past, recorded: past.filter(s => att[s.id]).length, rated: past.filter(s => rated[s.id]).length, notes, last, gids, att, ratedSet: rated };
+}
+const TEAM_ROLE = { coach: ['Coach', 'مدرب'], evaluator: ['Evaluator', 'مقيّم'], admin: ['Office', 'الإدارة'], marketing: ['Media / marketing', 'الإعلام والتسويق'] };
+function teamScreen() {
+  if (!isOwnerish()) return `<div class="card">${empty()}</div>`;
+  const ord = { coach: 0, evaluator: 1, admin: 2, marketing: 3 };
+  const us = (D().users || []).filter(u => String(u.active) !== 'false').sort((a, b) => (ord[a.role] ?? 9) - (ord[b.role] ?? 9) || String(a.name).localeCompare(String(b.name)));
+  const t = todayStr();
+  const row = u => { const x = teamStats_(u); const court = u.role === 'coach' || u.role === 'evaluator';
+    const quiet = court && x.slots.length && (!x.last || daysBetween(x.last, t) > 14);
+    const br = [...new Set((Array.isArray(u.branches) ? u.branches : []).concat(x.slots.map(z => z.branch)).filter(Boolean))].map(branchName).filter(Boolean);
+    return `<div class="item" data-act="team-open" data-id="${esc(u.id)}" role="button" tabindex="0" style="flex-wrap:wrap"><span class="av">${esc(initials(u.name))}</span><div class="grow">
+      <div class="nm">${esc(u.name)} <span class="tag">${esc(L(...(TEAM_ROLE[u.role] || [u.role, u.role])))}</span>${u.pin ? '' : ` <span class="tag warn">${L('no PIN yet', 'بلا رقم سري بعد')}</span>`}${quiet ? ` <span class="tag attn">${L('quiet 14+ days', 'بلا نشاط منذ 14+ يومًا')}</span>` : ''}</div>
+      ${br.length ? `<div class="sub">${esc(br.join(' · '))}</div>` : ''}
+      ${court ? `<div class="sub">${L(`Each week: ${x.slots.length} session(s)`, `أسبوعيًا: ${x.slots.length} حصة`)}${x.gids.length ? ' · ' + esc(x.gids.map(groupName).filter(Boolean).slice(0, 4).join('، ')) : ''}</div>
+      <div class="sub">${L(`Last 30 days: ${x.past.length} session(s) · attendance taken ${x.recorded} · rated ${x.rated} · ${x.notes} note(s)`, `آخر 30 يومًا: ${x.past.length} حصة · الحضور مسجّل ${x.recorded} · التقييم ${x.rated} · ملاحظات ${x.notes}`)}</div>` : ''}
+      <div class="sub">${x.last ? L('Last active ', 'آخر نشاط ') + fmtD(x.last) : L('No activity yet', 'لا نشاط بعد')}</div></div></div>` };
+  return `<div class="row sp"><h1>${L('Team', 'الفريق')}</h1><button class="btn small ghost" data-act="team-manage">${L('Add or remove people', 'إضافة أو إزالة أشخاص')}</button></div>
+   <div class="card"><p class="small muted">${L('Everyone on your team and what they did: sessions, attendance taken, ratings and notes. Tap a person for the details.', 'كل أعضاء فريقك وما قاموا به: الحصص، تسجيل الحضور، التقييمات والملاحظات. اضغط على أي شخص لرؤية التفاصيل.')}</p>
+   <div class="list">${us.map(row).join('') || empty(L('No team members yet. Add them in Settings → Team and access.', 'لا يوجد أعضاء بعد. أضفهم من الإعدادات ← الفريق والدخول.'))}</div></div>`;
+}
+regScreen('team', teamScreen, ['Team', 'الفريق']);
+MOD.icons.team = '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.2c3 .3 5.5 2.6 5.5 5.8"/>';
+regNav(['ownerish'], 'team', 'settings');
+navItems = (f => function () { const a = f(); const i = a.indexOf('team'), j = a.indexOf('settings'); if (i > j && j >= 0) { a.splice(i, 1); a.splice(j, 0, 'team') } return a })(navItems);   /* v4.8.1: Team sits just before Settings */
+regAction('team-manage', () => { S.view = 'settings'; S.sub = 'team'; render() });
+regAction('team-open', d => {
+  const u = (D().users || []).find(x => x.id === d.id); if (!u) return; const x = teamStats_(u);
+  const slots = x.slots.slice().sort((a, b) => a.day - b.day || String(a.start).localeCompare(String(b.start)));
+  modal(`<h2>${esc(u.name)} <span class="tag">${esc(L(...(TEAM_ROLE[u.role] || [u.role, u.role])))}</span></h2>
+   <div class="row" style="margin:6px 0">${u.phone ? `<a class="btn small wa" href="${waLink(u.phone, '')}" target="_blank" rel="noopener">WhatsApp</a>` : `<span class="small muted">${L('No phone number saved', 'لا يوجد رقم هاتف محفوظ')}</span>`}<span class="small muted">${u.pin ? L('PIN set', 'الرقم السري مضبوط') : L('No PIN yet: give a first 4-digit code in Settings → Team', 'بلا رقم سري: أعطه رمزًا أوليًا من 4 أرقام في الإعدادات ← الفريق')}</span></div>
+   ${slots.length ? `<h3 style="margin-top:8px">${L('Weekly timetable', 'الجدول الأسبوعي')}</h3><div class="list">${slots.map(z => `<div class="item" style="cursor:default"><div class="grow"><div class="nm">${esc(dayName(z.day))} ${fmtT(z.start)}–${fmtT(z.end)}</div><div class="sub">${esc(groupName(z.group_id) || '')}${z.branch ? ' · ' + esc(branchName(z.branch) || '') : ''}</div></div></div>`).join('')}</div>` : ''}
+   <h3 style="margin-top:8px">${L('Last 30 days', 'آخر 30 يومًا')}</h3>
+   <div class="kpis">${kv(L('Sessions', 'الحصص'), x.past.length)}${kv(L('Attendance taken', 'الحضور مسجّل'), x.recorded)}${kv(L('Rated', 'تم التقييم'), x.rated)}${kv(L('Notes', 'ملاحظات'), x.notes)}</div>
+   <div class="list">${x.past.slice(0, 12).map(s => `<div class="item" data-act="session" data-id="${esc(s.id)}"><div class="grow"><div class="nm">${fmtD(s.date)} · ${esc(groupName(s.group_id) || '')}</div><div class="sub">${x.att[s.id] ? '✓ ' + L('attendance', 'الحضور') : '– ' + L('no attendance', 'بلا حضور')} · ${x.ratedSet[s.id] ? '✓ ' + L('rated', 'تقييم') : '– ' + L('not rated', 'بلا تقييم')}</div></div></div>`).join('') || empty(L('No sessions in the last 30 days.', 'لا حصص في آخر 30 يومًا.'))}</div>
+   <div class="row" style="margin-top:10px"><button class="btn ghost" data-act="team-manage">${L('Edit in Settings', 'تعديل في الإعدادات')}</button><button class="btn ghost" data-act="modal-close">${L('Close', 'إغلاق')}</button></div>`);
+});
 regAction('fee-filter', d => { S.feeF = d.v; rerender() });   // v4.8.1
 regAction('hp-more', () => { S.hpAll = true; document.querySelectorAll('#app .hp-calm-off').forEach(t => t.classList.remove('hp-calm-off')); document.querySelectorAll('#app .hp-more').forEach(t => t.remove()) });
 try { new MutationObserver(() => { if (tidyHomes_.t) return; tidyHomes_.t = requestAnimationFrame(() => { tidyHomes_.t = 0; tidyHomes_() }) }).observe(document.getElementById('app') || document.body, { childList: true, subtree: true }) } catch (e) { }
@@ -5743,12 +5794,21 @@ regAction('xp-new', async () => {
   try { const j = await act('xpoint_save', { rec: { en, ar: en, how: 'level', band: 'all' } }); S.D.xpoints = j.xpoints.filter(x => x.by === 'owner' || x.by === S.me.id); toast('✓ ' + w('saved')); rerender() } catch (e) { }
 });
 
+/* v4.8.1: what every child is already measured on, shown before anyone adds a point */
+function xpBasics_() {
+  const B = BDEF(); if (!B.skills || !B.skills.length) return '';
+  const nm = b => (b.n && (b.n.m || b.n.y || b.n.t)) || [b.id, b.id];
+  return `<div class="card" style="background:var(--sunk);margin-bottom:12px"><h3>${L('Already measured for every child', 'يُقاس بالفعل لكل طفل')}</h3>
+   <p class="small muted">${L('The 5 basic skills, each with 4 written levels for every age group. Add a point below only for something these do not cover.', 'المهارات الأساسية الخمس، ولكل منها 4 مستويات مكتوبة لكل فئة عمرية. أضف نقطة بالأسفل فقط لما لا تغطيه هذه المهارات.')}</p>
+   ${B.skills.map(b => `<details style="border-top:1px solid var(--line);padding:6px 0"><summary style="cursor:pointer;font-weight:600">${esc(L(nm(b)[0], nm(b)[1]))}</summary>${(B.bands || []).map(bd => `<div class="small" style="margin:6px 0"><b>${esc(L(bd.en, bd.ar))}</b><ol style="margin:4px 0;padding-inline-start:22px">${(((b.can || {})[bd.id]) || []).map(x => `<li>${esc(L(x[0], x[1]))}</li>`).join('')}</ol></div>`).join('')}</details>`).join('')}
+   ${(D().xpoints || []).length ? `<p class="small" style="margin-top:8px"><b>${L('Your own points', 'نقاطك الخاصة')}:</b> ${(D().xpoints || []).map(x => esc(L(x.en, x.ar))).join(' · ')}</p>` : ''}</div>`;
+}
 /* ---------- Settings → Extra points (the owner) */
 MOD.settingsTabs.push(['xpoints', ['Extra points', 'نقاط إضافية'], () => {
   const list = D().xpoints || [];
   const bands = [['all', 'All ages', 'كل الأعمار']].concat(BDEF().bands.map(b => [b.id, b.en, b.ar]));
   const hows = [['level', 'A level 1–4', 'مستوى من 1 إلى 4'], ['yesno', 'Yes / Not yet', 'نعم / ليس بعد'], ['note', 'A short note', 'ملاحظة قصيرة']];
-  return `<p class="small muted">${L('Every coach rates the same 5 basic skills. Add your own points here if you need more (for example “Comes on time” or “Left-hand layup”). Coaches see them on the rating screen; families see a point only if you choose to share it. A coach may add up to 2 points of his own; you see them here too.', 'يقيّم كل مدرب المهارات الأساسية الخمس نفسها. أضف نقاطك الخاصة هنا إذا احتجت المزيد (مثل «يحضر في الموعد» أو «رمية سلمية باليد اليسرى»). يراها المدربون في شاشة التقييم، ولا تراها العائلات إلا إذا اخترت مشاركتها. يمكن لكل مدرب إضافة نقطتين خاصتين به، وتظهران لك هنا أيضًا.')}</p>
+  return `${xpBasics_()}<p class="small muted">${L('Every coach rates the same 5 basic skills. Add your own points here if you need more (for example “Comes on time” or “Left-hand layup”). Coaches see them on the rating screen; families see a point only if you choose to share it. A coach may add up to 2 points of his own; you see them here too.', 'يقيّم كل مدرب المهارات الأساسية الخمس نفسها. أضف نقاطك الخاصة هنا إذا احتجت المزيد (مثل «يحضر في الموعد» أو «رمية سلمية باليد اليسرى»). يراها المدربون في شاشة التقييم، ولا تراها العائلات إلا إذا اخترت مشاركتها. يمكن لكل مدرب إضافة نقطتين خاصتين به، وتظهران لك هنا أيضًا.')}</p>
    <div class="list">${list.map(x => `<div class="item" style="cursor:default;flex-wrap:wrap"><div class="grow"><div class="nm">${esc(L(x.en, x.ar))}${x.active === false ? ` <span class="tag">${L('off', 'متوقفة')}</span>` : ''}</div><div class="sub">${esc(lab(hows, x.how))} · ${esc(lab(bands, x.band))} · ${x.by === 'owner' ? L('owner', 'المالك') : esc(x.by_name || '')}${x.share === 'yes' ? ' · ' + L('shared with families', 'تُشارك مع العائلات') : ''}</div></div>${isOwnerish() ? `<button class="btn ghost small" data-act="xp-toggle" data-id="${esc(x.id)}">${x.active === false ? L('Turn on', 'تشغيل') : L('Turn off', 'إيقاف')}</button>` : ''}</div>`).join('') || empty(L('No extra points yet.', 'لا توجد نقاط إضافية بعد.'))}</div>
    ${isOwnerish() ? `<form id="xpForm" class="grid2" style="margin-top:10px"><label class="f">${L('Point (English)', 'النقطة (بالإنجليزية)')}<input class="in" name="en" maxlength="60"></label><label class="f">${L('Point (Arabic)', 'النقطة (بالعربية)')}<input class="in" name="ar" maxlength="60"></label>
     <label class="f">${L('How it is rated', 'طريقة التقييم')}<select class="in" name="how">${opt(hows, 'level')}</select></label><label class="f">${L('Ages', 'الأعمار')}<select class="in" name="band">${opt(bands, 'all')}</select></label>
@@ -6086,7 +6146,7 @@ const V48 = () => { const v = (S.D && S.D.screens) || SET().screens; return v &&
 const v48role = () => (isOwnerish() ? 'owner' : role());
 /* ---------- 1 · the menu */
 const _navV48 = navItems;
-navItems = function () { const all = _navV48(); const v = V48(); const l = v && v.nav && v.nav[v48role()]; if (!Array.isArray(l) || !l.length) return all; const out = all.filter(x => l.indexOf(x) >= 0); return out.length ? out : all; };
+navItems = function () { const all = _navV48(); const v = V48(); const l = v && v.nav && v.nav[v48role()]; if (!Array.isArray(l) || !l.length) return all; const out = all.filter(x => l.indexOf(x) >= 0 || x === 'team');   /* v4.8.1: Team is always in the owner's menu */ return out.length ? out : all; };
 /* ---------- 2 · the tabs of a screen: a tab not on the list is taken out; if it was the open one, the first listed tab opens */
 const TAB_KEY = { setsub: 'settings', rsub: 'reports', 'md-tab': 'media', gsub: 'growth', msub: 'messages', dsub: 'dev', psub: 'player', ssub: 'session' };
 function v48Tabs() {
