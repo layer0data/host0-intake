@@ -671,7 +671,7 @@ const okUrl = u => {
 };
 const safeUrl = u => esc(okUrl(u));
 /* v4.1: the TEST page (HOST_Egypt_test.html) keeps its own login, outbox and copy on the phone, apart from the real app */
-const APP_PFX = window.HOST_EGYPT_TEST ? 'hostegy-test-' : 'hostegy-';
+const APP_PFX = window.HOST0_PFX || (window.HOST_EGYPT_TEST ? 'hostegy-test-' : 'hostegy-');   // v4.8.1: each academy page keeps its own login and outbox on the phone (e.g. OLE: 'ole-')
 const store = { get(k) { try { return localStorage.getItem(APP_PFX + k) || '' } catch (e) { return '' } }, set(k, v) { try { localStorage.setItem(APP_PFX + k, v) } catch (e) { } }, del(k) { try { localStorage.removeItem(APP_PFX + k) } catch (e) { } } };
 /* v4 module registry: later files (p7_*.js) add screens, actions, change handlers, nav items and labels without editing the core */
 const MOD = { screens: {}, actions: {}, changes: {}, forms: {}, nav: [], navLabels: {}, icons: {}, home: [], settingsTabs: [], parentCards: [], coachToday: [], sessionTabs: [], playerTabs: [] };
