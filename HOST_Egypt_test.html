@@ -859,7 +859,8 @@ const branches = () => SET().branches || [];
 const branchName = id => { const b = branches().find(x => x.id === id); return b ? L(b.name, b.name_ar || b.name) : (id || '') };
 const SPORTS = [['basketball', 'Basketball', 'كرة السلة'], ['football', 'Football', 'كرة القدم']];
 const sportName = id => lab(SPORTS, id || 'basketball');
-const brand = () => SET().brand || {};
+const brandKept_ = () => { try { const v = JSON.parse(store.get('brand') || 'null'); return v && typeof v === 'object' ? v : null } catch (e) { return null } };
+const brand = () => { const b = SET().brand; if (b && (b.name || b.logo_url)) return b; return brandKept_() || window.HOST0_BRAND || {} }   /* v4.8.1: before the academy answers, the brand kept on this phone or given by the settings file */;
 const isPartner = () => (SET().mode || (S.pub || {}).mode) === 'partner_light';   // v4.5: a partner academy: its coaches record, no HOST evaluators
 const whoSaw = () => isPartner() ? L('the coaches', 'المدربين') : L('the evaluators', 'المقيّمين');
 const brandName = () => brand().name ? L(brand().name, brand().name_ar || brand().name) : L(SET().academy, SET().academy_ar);
@@ -1159,8 +1160,8 @@ function render() {
   document.body.classList.toggle('rtl', isAr()); document.body.classList.toggle('th-classic', theme() !== 'clean'); try { store.set('theme', theme()) } catch (e) { } document.documentElement.lang = S.lang; document.documentElement.dir = isAr() ? 'rtl' : 'ltr';
   const app = $('#app'); const onLogin = location.hash !== '#register' && (!S.me || !S.D);
   document.body.classList.toggle('on-login', onLogin); document.documentElement.classList.toggle('on-login', onLogin);
-  if (location.hash === '#register') { if (!S.pub && !S.pubAsked) { S.pubAsked = true; api('pub').then(j => { S.pub = j.settings; if (j.today) S.pubToday = j.today; render() }).catch(() => { }) } app.innerHTML = registerPage(); return }
-  if (!S.me || !S.D) { if (ENDPOINT && !S.pub && !S.pubAsked) { S.pubAsked = true; api('pub').then(j => { S.pub = j.settings; applyBrand(); const pin = document.getElementById('lgPin'); if (!S.me && !(pin && pin.value)) render() }).catch(() => { }) } app.innerHTML = loginPage(); return }   // v4 batch 5: the login page carries the academy's brand
+  if (location.hash === '#register') { if (!S.pub && !S.pubAsked) { S.pubAsked = true; api('pub').then(j => { S.pub = j.settings; try { const q = j.settings || {}; store.set('pub', JSON.stringify({ mode: q.mode || '', mkt: q.mkt || '', player_login: q.player_login || '' })) } catch (e) { } if (j.today) S.pubToday = j.today; render() }).catch(() => { }) } app.innerHTML = registerPage(); return }
+  if (!S.me || !S.D) { if (ENDPOINT && !S.pub && !S.pubAsked) { S.pubAsked = true; api('pub').then(j => { S.pub = j.settings; try { const q = j.settings || {}; store.set('pub', JSON.stringify({ mode: q.mode || '', mkt: q.mkt || '', player_login: q.player_login || '' })) } catch (e) { } applyBrand(); const pin = document.getElementById('lgPin'); if (!S.me && !(pin && pin.value)) render() }).catch(() => { }) } app.innerHTML = loginPage(); return }   // v4 batch 5: the login page carries the academy's brand
   if (S.kid) { app.innerHTML = kidPage(); return }
   const items = navItems(); if (items.indexOf(S.view) < 0 && S.view !== 'settings') S.view = items[0];
   const btn = k => `<button type="button" data-act="nav" data-v="${k}" ${S.view === k ? 'aria-current="page"' : ''}>${icon(k)}<span>${w(k)}</span></button>`;
@@ -1174,7 +1175,8 @@ function render() {
     <nav class="bottom">${bottom}</nav>`;
 }
 /* v4 batch 5 white label: the brand colour becomes the accent; a small HOST0 line stays on the login and about pages when the brand is not HOST */
-function applyBrand() { const pr = String(brand().primary || '').trim(); const ok = /^#[0-9a-fA-F]{6}$/.test(pr); document.documentElement.style.setProperty('--accent', ok ? pr : ''); if (!ok) document.documentElement.style.removeProperty('--accent');
+function applyBrand() { try { const sb = SET().brand; if (sb && (sb.name || sb.logo_url)) { const j = JSON.stringify(sb); if (store.get('brand') !== j) store.set('brand', j) } } catch (e) { }   /* v4.8.1: remembered for the next open */
+  const pr = String(brand().primary || '').trim(); const ok = /^#[0-9a-fA-F]{6}$/.test(pr); document.documentElement.style.setProperty('--accent', ok ? pr : ''); if (!ok) document.documentElement.style.removeProperty('--accent');
   if (document.body) { if (ok) { document.body.dataset.brand = '1'; document.body.style.setProperty('--brand-pr', pr); } else { delete document.body.dataset.brand; document.body.style.removeProperty('--brand-pr'); } } }
 const poweredBy = () => brand().name && !/^HOST\b/i.test(brand().name) ? `<p class="tiny muted lgfoot">${L('Runs on HOST0', 'يعمل بنظام HOST0')}</p>` : `<p class="tiny muted lgfoot">HOST · House of Sports Talents</p>`;
 function moreMenu() { const items = navItems().slice(4); modal(`<h2>${w('more')}</h2><div class="list">${items.map(k => `<div class="item" data-act="nav" data-v="${k}">${icon(k)}<div class="grow nm">${w(k)}</div></div>`).join('')}</div><button class="btn ghost" data-act="modal-close">${w('close')}</button>`) }
@@ -4272,7 +4274,7 @@ const lgMask = ph => { const d = String(ph || '').replace(/\D/g, ''); return d ?
 
 loginPage = function () {
   applyBrand();
-  const pub = S.pub || {}; const tile = S.loginTile || '';
+  const pub = Object.assign({}, window.HOST0_PUB || {}, (() => { try { return JSON.parse(store.get('pub') || '{}') || {} } catch (e) { return {} } })(), S.pub || {}); const tile = S.loginTile || '';   /* v4.8.1: settings file, then what this phone remembers, then the academy's answer */
   const tiles = LG_TILES.filter(t => (t[0] !== 'player' || pub.player_login) && (t[0] !== 'evaluator' || pub.mode !== 'partner_light') && (t[0] !== 'marketing' || pub.mkt));   // v4.5: an Office login for reception; no evaluator tile at a partner academy
   const head = `<div class="lg-head"><img src="${safeUrl(logoSrc())}" alt="${esc(brandName() || 'HOST · House of Sports Talents')}"><div class="lang"><button type="button" data-act="lang" data-v="en" aria-pressed="${!isAr()}">EN</button><button type="button" data-act="lang" data-v="ar" aria-pressed="${isAr()}">عربي</button></div></div>
    <h1>${brand().name ? esc(brandName()) : L('HOST Egypt', 'HOST مصر')}</h1>
