@@ -710,6 +710,8 @@ function tidyHomes_() {
     });
   } catch (e) { }
 }
+regAction('my-pin', () => modal(`<h2>${L('My PIN', 'رقمي السري')}</h2><p class="small muted">${L('Choose your own 4 digits. You will use them next time you log in on a new phone.', 'اختر 4 أرقام خاصة بك. ستستخدمها عند الدخول من هاتف جديد.')}</p><form id="myPinForm" class="grid2"><label class="f">${L('New PIN', 'الرقم الجديد')}<input class="in" name="pin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9\u0660-\u0669\u06F0-\u06F9]{4}" required autocomplete="new-password"></label><label class="f">${L('Again', 'مرة أخرى')}<input class="in" name="pin2" type="password" inputmode="numeric" maxlength="4" required autocomplete="new-password"></label><div class="row" style="grid-column:1/-1"><button class="btn" type="submit">${L('Save', 'حفظ')}</button><button type="button" class="btn ghost" data-act="modal-close">${L('Cancel', 'إلغاء')}</button></div></form>`));   // v4.8.1
+regForm('myPinForm', async o => { if (o.pin !== o.pin2) { toast('⚠ ' + L('The two PINs are not the same.', 'الرقمان غير متطابقين.')); return } try { await act('my_pin', { pin: o.pin }); modal(''); toast('✓ ' + L('Your new PIN is saved.', 'تم حفظ رقمك الجديد.')) } catch (e) { } });
 regAction('fee-filter', d => { S.feeF = d.v; rerender() });   // v4.8.1
 regAction('hp-more', () => { S.hpAll = true; document.querySelectorAll('#app .hp-calm-off').forEach(t => t.classList.remove('hp-calm-off')); document.querySelectorAll('#app .hp-more').forEach(t => t.remove()) });
 try { new MutationObserver(() => { if (tidyHomes_.t) return; tidyHomes_.t = requestAnimationFrame(() => { tidyHomes_.t = 0; tidyHomes_() }) }).observe(document.getElementById('app') || document.body, { childList: true, subtree: true }) } catch (e) { }
@@ -1116,7 +1118,7 @@ function render() {
   applyBrand();
   app.innerHTML = `<header class="top"><img src="${safeUrl(logoSrc())}" alt="${esc(brandName())}"><span class="ttl">${esc(brandName())}</span><span class="saving" id="saving"></span>
     <div class="lang"><button type="button" data-act="lang" data-v="en" aria-pressed="${!isAr()}">EN</button><button type="button" data-act="lang" data-v="ar" aria-pressed="${isAr()}">ع</button></div>
-    <button type="button" class="link small" data-act="logout">${w('logout')}</button></header>
+    ${S.me && S.me.id !== 'owner' && ['admin', 'coach', 'evaluator', 'marketing'].indexOf(S.me.role) >= 0 ? `<button type="button" class="link small" data-act="my-pin">${L('My PIN', 'رقمي السري')}</button>` : ''}<button type="button" class="link small" data-act="logout">${w('logout')}</button></header>
     <div class="layout"><nav class="side">${side}<p class="tiny muted" style="padding:10px 12px">${esc(S.me.name || '')} · ${esc(roleName(role()))}${S.me.co_owner ? ' · ' + L('co-owner', 'شريك') : ''}</p></nav><main id="main">${screen()}</main></div>
     <nav class="bottom">${bottom}</nav>`;
 }
@@ -2925,7 +2927,7 @@ function userModal(id) {
   <label class="f">${L('Name', 'الاسم')}<input class="in" name="name" value="${esc(u.name || '')}" required></label>
   <label class="f">${L('Role', 'الدور')}<select class="in" name="role">${opt([['coach', 'Coach: sessions, quick check, his plan', 'مدرب: الحصص والملاحظة السريعة وخطته'], ['evaluator', 'HOST evaluator: records levels', 'مقيّم HOST: يسجّل المستويات'], ['admin', 'Admin: families, sessions, money', 'إداري: العائلات والحصص والمالية'], ['marketing', 'Marketing: enquiries, posts, photos (no fees, no ratings)', 'تسويق: الاستفسارات والمنشورات والصور (دون اشتراكات أو تقييمات)']], u.role)}</select></label>
   <label class="f">${L('Co-owner (sees the owner’s screens)', 'شريك (يرى شاشات المالك)')}<select class="in" name="co_owner">${opt([['no', 'No', 'لا'], ['yes', 'Yes', 'نعم']], u.co_owner || 'no')}</select></label>
-  <label class="f">${L('PIN (6 to 8 digits)', 'الرقم السري (6 إلى 8 أرقام)')}<input class="in" name="pin" inputmode="numeric" value="${esc(u.pin || '')}" ${u.id ? '' : 'required'} pattern="[0-9\u0660-\u0669\u06F0-\u06F9]{6,8}|••••"></label>
+  <label class="f">${L('PIN (4 digits; they can change it themselves)', 'الرقم السري (4 أرقام، ويمكنه تغييره بنفسه)')}<input class="in" name="pin" inputmode="numeric" value="${esc(u.pin || '')}" ${u.id ? '' : 'required'} pattern="[0-9\u0660-\u0669\u06F0-\u06F9]{4,8}|••••"></label>
   <label class="f">${L('Phone', 'الهاتف')}<input class="in" name="phone" inputmode="tel" value="${esc(u.phone || '')}"></label>
   <label class="f">${L('Access', 'الدخول')}<select class="in" name="active">${opt([['true', 'Can log in', 'يمكنه الدخول'], ['false', 'No access', 'بلا دخول']], String(u.active))}</select></label>
   ${footballOn() ? `<div class="f" style="grid-column:1/-1">${L('Sports this person works in', 'الرياضات التي يعمل فيها')}<div class="chips">${SPORTS.map(x => `<label class="chip"><input type="checkbox" name="sports" value="${x[0]}" ${(u.sports || []).indexOf(x[0]) >= 0 ? 'checked' : ''} style="margin-inline-end:6px">${esc(L(x[1], x[2]))}</label>`).join('')}</div></div>` : ''}
