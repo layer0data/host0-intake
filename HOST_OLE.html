@@ -1188,7 +1188,7 @@ function render() {
   applyBrand();
   app.innerHTML = `<header class="top"><img src="${safeUrl(logoSrc())}" alt="${esc(brandName())}"><span class="ttl">${esc(brandName())}</span><span class="saving" id="saving"></span>
     <div class="lang"><button type="button" data-act="lang" data-v="en" aria-pressed="${!isAr()}">EN</button><button type="button" data-act="lang" data-v="ar" aria-pressed="${isAr()}">ع</button></div>
-    ${S.me && S.me.id !== 'owner' && ['admin', 'coach', 'evaluator', 'marketing', 'parent'].indexOf(S.me.role) >= 0 ? `<button type="button" class="link small" data-act="my-pin">${L('My PIN', 'رقمي السري')}</button>` : ''}<button type="button" class="link small" data-act="logout">${w('logout')}</button></header>
+    ${S.me && S.me.id !== 'owner' && ['admin', 'coach', 'evaluator', 'marketing', 'parent'].indexOf(S.me.role) >= 0 && !(SET().mode === 'partner_light' && SET().trial_open !== false && String(SET().trial_open) !== 'false') ? `<button type="button" class="link small" data-act="my-pin">${L('My PIN', 'رقمي السري')}</button>` : ''}<button type="button" class="link small" data-act="logout">${w('logout')}</button></header>
     <div class="layout"><nav class="side">${side}<p class="tiny muted" style="padding:10px 12px">${esc(S.me.name || '')} · ${esc(roleName(role()))}${S.me.co_owner ? ' · ' + L('co-owner', 'شريك') : ''}</p></nav><main id="main">${screen()}</main></div>
     <nav class="bottom">${bottom}</nav>`;
 }
