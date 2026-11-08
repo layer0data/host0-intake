@@ -715,6 +715,43 @@ function myPinForm(first) { const co = myPinCo(); const n = co ? '6,8' : '4'; co
   modal(`<h2>${first ? L('Choose your own PIN', 'اختر رقمك السري') : L('My PIN', 'رقمي السري')}</h2><p class="small muted">${first ? L(`The PIN you received was a starting PIN. Choose your own ${co ? '6 to 8' : '4'} digits now; keep them to yourself. On this phone the app stays open, so you will not type it every time.`, `الرقم الذي وصلك رقم مؤقت. اختر الآن ${co ? 'من 6 إلى 8 أرقام' : '4 أرقام'} خاصة بك ولا تعطها لأحد. التطبيق يظل مفتوحًا على هذا الموبايل، فلن تكتبه كل مرة.`) : L(`Choose your own ${co ? '6 to 8' : '4'} digits. You will use them next time you log in on a new phone.`, `اختر ${co ? 'من 6 إلى 8 أرقام' : '4 أرقام'} خاصة بك. ستستخدمها عند الدخول من هاتف جديد.`)}</p><form id="myPinForm" class="grid2"><label class="f">${L('New PIN', 'الرقم الجديد')}<input class="in" name="pin" type="password" inputmode="numeric" maxlength="${mx}" pattern="[0-9\u0660-\u0669\u06F0-\u06F9]{${n}}" required autocomplete="new-password"></label><label class="f">${L('Again', 'مرة أخرى')}<input class="in" name="pin2" type="password" inputmode="numeric" maxlength="${mx}" required autocomplete="new-password"></label><div class="row" style="grid-column:1/-1"><button class="btn" type="submit">${L('Save', 'حفظ')}</button>${first ? '' : `<button type="button" class="btn ghost" data-act="modal-close">${L('Cancel', 'إلغاء')}</button>`}</div></form>`);
   if (first) { const bg = document.querySelector('#modal .modal'); if (bg) bg.removeAttribute('data-act'); }   /* the first-login form cannot be closed */ }
 regAction('my-pin', () => myPinForm(false));
+/* v4.8.1 (8 Nov): the last session at a glance, on the owner's home */
+function lastSessionCard() {
+  const now = todayStr() + ' ' + new Date().toTimeString().slice(0, 5);
+  const s = sessionsDone().find(x => (x.date + ' ' + (x.start || '00:00')) <= now); if (!s) return '';
+  const att = attOf(s.id); const here = att.filter(isHere).length;
+  const exp = players().filter(p => p.group_id === s.group_id && (p.status || 'active') === 'active').length;
+  const nm = pid => esc(((P(pid) || {}).name || '').split(/\s+/)[0]);
+  const away = att.filter(a => !isHere(a)); const absent = away.filter(a => a.status === 'absent'), excused = away.filter(a => a.status === 'excused');
+  const obs = (D().obs || []).filter(o => o.session_id === s.id); const users = D().users || [];
+  const coachIds = [s.coach_lead].concat((Array.isArray(s.assistants) ? s.assistants : []).map(a => a && a.id)).filter(Boolean);
+  const coachRated = [...new Set(obs.filter(o => coachIds.indexOf(o.rater) >= 0 || (users.find(u => u.id === o.rater) || {}).role === 'coach').map(o => o.player_id))].length;
+  const notes = (D().notes || []).filter(n => n.session_id === s.id).length;
+  const takenBy = att.length ? esc(att[0].by || '') : '';
+  const ok = t => `<span class="tag ok">✓ ${t}</span>`, no = t => `<span class="tag attn">✗ ${t}</span>`;
+  let ev = '';
+  if (!isLight()) {
+    const pl = planOf(s.id); const done = new Set(((pl && pl.done) || []).concat(obs.map(o => o.rater)));
+    const evs = users.filter(u => u.role === 'evaluator' && String(u.active) !== 'false');
+    if (evs.length) ev = `<p class="small"><b>${L('Evaluators', 'المقيّمون')}</b> (${L('needed', 'المطلوب')} ${nEv()}): ${evs.map(u => done.has(u.id) ? ok(esc(u.name)) : no(esc(u.name))).join(' ')}</p>`;
+  }
+  const coachName = esc(s.coach || ((users.find(u => u.id === s.coach_lead) || {}).name) || '');
+  return `<div class="card hp-last" data-act="session" data-id="${esc(s.id)}" style="cursor:pointer">
+    <div class="row sp"><h2 style="margin:0">${L('Last session', 'آخر حصة')}</h2><span class="tiny muted">${esc(fmtDL(s.date))}${s.start ? ' · ' + fmtT(s.start) : ''}</span></div>
+    <p class="small muted">${esc(groupName(s.group_id) || '')}${coachName ? ' · <bdi>' + coachName + '</bdi>' : ''}</p>
+    <p class="small"><b>${L('Attendance', 'الحضور')}</b>: ${att.length ? `${here} ${L('of', 'من')} ${exp || att.length}${takenBy ? ` <span class="tiny muted">(${L('taken by', 'سجّله')} <bdi>${takenBy}</bdi>)</span>` : ''}` : no(L('not taken', 'لم يُسجَّل'))}</p>
+    ${absent.length ? `<p class="small"><b>${L('Absent', 'الغائبون')}</b>: ${absent.slice(0, 8).map(a => nm(a.player_id)).join('، ')}${absent.length > 8 ? ' …' : ''}</p>` : ''}
+    ${excused.length ? `<p class="small"><b>${L('Away with notice', 'غياب بعذر')}</b>: ${excused.slice(0, 8).map(a => nm(a.player_id)).join('، ')}</p>` : ''}
+    <p class="small"><b>${L('Coach rating', 'تقييم المدرب')}</b>: ${coachRated ? ok(`${coachRated} / ${here || exp}`) : no(L('not done', 'لم يتم'))}${notes ? ` · <b>${L('Notes', 'الملاحظات')}</b>: ${notes}` : ''}</p>
+    ${ev}
+    <p class="tiny muted">${L('Tap to open the session', 'اضغط لفتح الحصة')}</p></div>`;
+}
+const _renderLastSes = render;
+render = function () { const r = _renderLastSes.apply(this, arguments); try {
+  if (S.me && S.D && isOwnerish() && S.view === 'home' && !S.hp) { const main = document.querySelector('main'); const nx = main && main.querySelector('.hp-next');
+    if (main && !main.querySelector('.hp-last')) { const h = lastSessionCard(); if (h) { if (nx) nx.insertAdjacentHTML('afterend', h); else { const top = main.querySelector('.hp-top, .ix-prep'); if (top) top.insertAdjacentHTML('afterend', h); else main.insertAdjacentHTML('afterbegin', h); } } } }
+} catch (e) { } return r; };
+
 regAction('open-data', () => { S.view = 'settings'; S.sub = 'data'; S.draft = null; render(); });   /* v4.8.1: straight to Import and backup */
 regAction('user-pin-wa', () => {   /* v4.8.1: the starting PIN goes privately to the person, with the link and the button to tap */
   const f = document.getElementById('userForm'); if (!f) return; const v = k => ((f.querySelector(`[name="${k}"]`) || {}).value || '').trim();
