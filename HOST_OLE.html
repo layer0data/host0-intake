@@ -720,11 +720,98 @@ function myPinForm(first) { const co = myPinCo(); const n = co ? '6,8' : '4'; co
   modal(`<h2>${first ? L('Choose your own PIN', 'اختر رقمك السري') : L('My PIN', 'رقمي السري')}</h2><p class="small muted">${first ? L(`The PIN you received was a starting PIN. Choose your own ${co ? '6 to 8' : '4'} digits now; keep them to yourself. On this phone the app stays open, so you will not type it every time.`, `الرقم الذي وصلك رقم مؤقت. اختر الآن ${co ? 'من 6 إلى 8 أرقام' : '4 أرقام'} خاصة بك ولا تعطها لأحد. التطبيق يظل مفتوحًا على هذا الموبايل، فلن تكتبه كل مرة.`) : L(`Choose your own ${co ? '6 to 8' : '4'} digits. You will use them next time you log in on a new phone.`, `اختر ${co ? 'من 6 إلى 8 أرقام' : '4 أرقام'} خاصة بك. ستستخدمها عند الدخول من هاتف جديد.`)}</p><form id="myPinForm" class="grid2"><label class="f">${L('New PIN', 'الرقم الجديد')}<input class="in" name="pin" type="password" inputmode="numeric" maxlength="${mx}" pattern="[0-9\u0660-\u0669\u06F0-\u06F9]{${n}}" required autocomplete="new-password"></label><label class="f">${L('Again', 'مرة أخرى')}<input class="in" name="pin2" type="password" inputmode="numeric" maxlength="${mx}" required autocomplete="new-password"></label><div class="row" style="grid-column:1/-1"><button class="btn" type="submit">${L('Save', 'حفظ')}</button>${first ? '' : `<button type="button" class="btn ghost" data-act="modal-close">${L('Cancel', 'إلغاء')}</button>`}</div></form>`);
   if (first) { const bg = document.querySelector('#modal .modal'); if (bg) bg.removeAttribute('data-act'); }   /* the first-login form cannot be closed */ }
 regAction('my-pin', () => myPinForm(false));
+/* ================= v4.8.1 (9 Nov) · term goals (the 6-month plan) ================= */
+/* TG-CORE-START (pure; the simulation in tools/harness/goalsim.js runs this exact text) */
+const TG_DEFAULT = { b6: { t1: { cats: ['1', '6', '8'], char: '21' }, t2: { cats: ['3', '2', '7'], char: '24' } },
+  b9: { t1: { cats: ['1', '2', '6'], char: '21' }, t2: { cats: ['3', '4', '5'], char: '22' } },
+  b13: { t1: { cats: ['2', '4', '11'], char: '23' }, t2: { cats: ['5', '12', '15'], char: '25' } } };
+const TG_CAT = {"1": ["Ball handling & dribbling", "التحكم بالكرة والتنطيط"], "2": ["Shooting", "التصويب"], "3": ["Passing & receiving", "التمرير والاستلام"], "4": ["Layups & finishing", "الرمية السلمية والإنهاء"], "5": ["Individual defence", "الدفاع الفردي"], "6": ["Footwork & body control", "حركة القدمين والتحكم بالجسم"], "7": ["Speed & agility", "السرعة والرشاقة"], "8": ["Coordination", "التناسق الحركي"], "9": ["Endurance", "التحمّل"], "10": ["Court awareness", "قراءة الملعب"], "11": ["Decision making", "اتخاذ القرار"], "12": ["Rebounding", "الكرات المرتدة"], "13": ["Spacing & movement", "توزيع المسافات والتحرك بدون كرة"], "14": ["Screening", "الحجز"], "15": ["Transition offence", "الهجمة السريعة"], "16": ["Offensive communication", "التواصل الهجومي"], "17": ["Man-to-man principles", "دفاع رجل لرجل"], "18": ["Help defence", "دفاع المساندة"], "19": ["Defensive communication", "التواصل الدفاعي"], "20": ["Transition defence", "الارتداد الدفاعي"], "21": ["Effort & resilience", "الجهد والمثابرة"], "22": ["Teamwork & social confidence", "العمل الجماعي والثقة الاجتماعية"], "23": ["Sportsmanship & emotional control", "الروح الرياضية والتحكم في الانفعالات"], "24": ["Coachability & focus", "تقبّل التوجيه والتركيز"], "25": ["Leadership & self-expression", "القيادة والتعبير عن النفس"]};   /* area names only (no criteria), for families */
+const TG_BANDS = [['b6', '6–8', '6–8'], ['b9', '9–12', '9–12'], ['b13', '13+', '13+']];
+function tgTermOf(date) { const y = +date.slice(0, 4), m = +date.slice(5, 7);
+  if (m >= 9) return { key: y + '-t1', t: 't1', from: y + '-09-01', to: (y + 1) + '-01-31', summer: false };
+  if (m === 1) return { key: (y - 1) + '-t1', t: 't1', from: (y - 1) + '-09-01', to: y + '-01-31', summer: false };
+  if (m <= 6) return { key: y + '-t2', t: 't2', from: y + '-02-01', to: y + '-06-30', summer: false };
+  return { key: y + '-t2', t: 't2', from: y + '-02-01', to: y + '-08-31', summer: true }; }
+function tgBand(age) { return age >= 13 ? 'b13' : age >= 9 ? 'b9' : 'b6'; }
+function tgCore(o) {   // o: { age, term, tpl, skills, levelOf(sk), startOf(sk, from), plateauOf(sk), attend (0..1 or null), hold, char }
+  const band = tgBand(o.age); const cfg = ((o.tpl || {})[band] || TG_DEFAULT[band])[o.term.t];
+  const paused = !!o.hold || (o.attend != null && o.attend < 0.5);
+  const goals = cfg.cats.map(cat => {
+    const list = o.skills.filter(k => String(k.cat) === String(cat)).sort((a, b) => (b.core ? 1 : 0) - (a.core ? 1 : 0) || (+a.phase || 9) - (+b.phase || 9) || String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
+    const k = list.find(x => (o.levelOf(x.id) || 0) < 4);
+    if (!k) return { cat: String(cat), skill: null, status: 'mastered' };
+    const now = o.levelOf(k.id) || 0, start = o.startOf(k.id, o.term.from) || 0;
+    const status = paused ? 'paused' : now > start ? 'moved' : o.plateauOf(k.id) ? 'stuck' : 'working';
+    return { cat: String(cat), skill: k.id, start, now, target: Math.min(4, now + 1), status };
+  });
+  return { band, term: o.term, paused, goals, char: cfg.char };
+}
+/* TG-CORE-END */
+const tgTpl = () => SET().goal_template || TG_DEFAULT;
+const tgTerm = () => tgTermOf(todayStr());
+const tgApproved = () => SET().goals_ok === tgTerm().key;
+function tgAge(p) { const d = String(p.dob || ''); if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return 10; const t = todayStr(); let a = +t.slice(0, 4) - +d.slice(0, 4); if (t.slice(5) < d.slice(5)) a--; return a; }
+function tgAttend(pid) { const ses = sessionsDone().slice(0, 8); const mine = ses.filter(s => attOf(s.id).some(a => a.player_id === pid)); if (mine.length < 3) return null; return mine.filter(s => attOf(s.id).some(a => a.player_id === pid && isHere(a))).length / mine.length; }
+function tgFor(p) {
+  const term = tgTerm();
+  return tgCore({ age: tgAge(p), term, tpl: tgTpl(), skills: (PR0().skills || skills()),
+    levelOf: sk => ((st(p.id, sk) || {}).level) || 0,
+    startOf: (sk, from) => { const h = ((st(p.id, sk) || {}).hist || []).filter(x => String(x.date) < from); return h.length ? +h[h.length - 1].to || 0 : 0 },
+    plateauOf: sk => !!((st(p.id, sk) || {}).plateau), attend: tgAttend(p.id), hold: holdOn(p.id, todayStr()) });
+}
+function tgMethod(pid) {   // another way of teaching than the one the coaches used most with this child
+  const used = {}; (D().obs || []).forEach(o => { if (o.player_id === pid && o.approach) used[o.approach] = (used[o.approach] || 0) + 1 });
+  const top = Object.keys(used).sort((a, b) => used[b] - used[a])[0]; const alt = (typeof APPR !== 'undefined' ? APPR : []).find(a => a[0] !== top);
+  return alt ? L(alt[1], alt[2]) : L('try a game or a teammate', 'جرّب لعبة أو العمل مع زميل');
+}
+const TG_ST = { moved: ['↗ moved up this term', '↗ تقدّم هذا الترم', 'ok'], working: ['working on it', 'يعمل عليه', 'info'], stuck: ['⚠ not moving: change the way', '⚠ لا يتقدّم: غيّر الطريقة', 'warn'], paused: ['⏸ paused', '⏸ متوقف مؤقتًا', ''], mastered: ['✓ area mastered', '✓ أتقن المجال', 'ok'] };
+const tgTag = st => { const x = TG_ST[st] || TG_ST.working; return `<span class="tag ${x[2]}">${L(x[0], x[1])}</span>` };
+const tgTermName = t => t.t === 't1' ? L('Term 1 (Sept–Jan)', 'الفصل الأول (سبتمبر–يناير)') : t.summer ? L('Summer (light)', 'الصيف (خفيف)') : L('Term 2 (Feb–June)', 'الفصل الثاني (فبراير–يونيو)');
+function tgChildCard(p, forParent) {
+  if (isLight() || !tgApproved()) return '';
+  if (forParent) { const t = tgTerm(); const c = (tgTpl()[tgBand(tgAge(p))] || TG_DEFAULT[tgBand(tgAge(p))])[t.t]; const nm = id => esc(L((TG_CAT[id] || [id, id])[0], (TG_CAT[id] || [id, id])[1]));
+    return `<div class="card tgx-card"><div class="row sp"><h2 style="margin:0">${L('This term’s goals', 'أهداف هذا الفصل')}</h2><span class="tiny muted">${tgTermName(t)}</span></div><p class="tiny muted">${L('The same goals for every child of this age; each child moves from their own step. The coach and the evaluators follow them every session.', 'الأهداف نفسها لكل أطفال هذه المرحلة العمرية، ويتقدّم كل طفل من خطوته هو. يتابعها المدرب والمقيّمون في كل حصة.')}</p><div class="list">${c.cats.map(x => `<div class="drow"><div class="grow"><b>${nm(x)}</b></div></div>`).join('')}<div class="drow"><div class="grow"><b>${nm(c.char)}</b><div class="tiny muted">${L('Character: described in words', 'الشخصية: تُوصف بالكلمات')}</div></div></div></div></div>`; }
+  const g = tgFor(p); const lv = n => n ? `${n} · ${esc(levelName(n))}` : L('not yet', 'لم يبدأ');
+  const rows = g.goals.map(x => forParent
+    ? `<div class="drow"><div class="grow"><b>${esc(catName(x.cat))}</b>${x.skill ? `<div class="small">${esc(skillName(x.skill))}</div>` : ''}</div>${tgTag(x.status === 'stuck' ? 'working' : x.status)}</div>`
+    : `<div class="drow" style="align-items:flex-start"><div class="grow"><b>${esc(catName(x.cat))}</b>${x.skill ? `<div class="small">${esc(skillName(x.skill))}: ${L('term start', 'بداية الفصل')} ${lv(x.start)} → ${L('now', 'الآن')} ${lv(x.now)} → ${L('target', 'الهدف')} ${lv(x.target)}</div>` : ''}${x.status === 'stuck' ? `<div class="tiny">💡 ${L('Suggested way', 'طريقة مقترحة')}: ${esc(tgMethod(p.id))}</div>` : ''}</div>${tgTag(x.status)}</div>`).join('');
+  const ch = charById('C' + g.char) || charById(g.char);
+  return `<div class="card tgx-card"><div class="row sp"><h2 style="margin:0">${forParent ? L('This term’s goals', 'أهداف هذا الفصل') : L('Term goals', 'أهداف الفصل')}</h2><span class="tiny muted">${tgTermName(g.term)}</span></div>
+    <p class="tiny muted">${forParent ? L('The same goals for every child of this age; each child moves from their own step.', 'الأهداف نفسها لكل أطفال هذه المرحلة العمرية؛ ويتقدّم كل طفل من خطوته هو.') : L('Updated by itself every cycle from what the coach and evaluators record.', 'تُحدَّث تلقائيًا كل دورة مما يسجّله المدرب والمقيّمون.')}${g.paused ? ' · ' + L('Paused for now (away, health or low attendance); it does not count as failure.', 'متوقفة مؤقتًا (غياب أو صحة أو حضور قليل)، ولا يُعدّ ذلك تراجعًا.') : ''}</p>
+    <div class="list">${rows}${ch ? `<div class="drow"><div class="grow"><b>${esc(L(ch.en, ch.ar))}</b><div class="tiny muted">${L('Character: described in words', 'الشخصية: تُوصف بالكلمات')}</div></div></div>` : ''}</div></div>`;
+}
+function tgOwnerCard() {
+  if (isLight()) return ''; const t = tgTerm(); const tpl = tgTpl(); const kids = players().filter(p => (p.status || 'active') === 'active');
+  const tbl = TG_BANDS.map(b => { const c = (tpl[b[0]] || TG_DEFAULT[b[0]])[t.t]; const ch = charById('C' + c.char) || charById(c.char); return `<div class="drow"><div class="grow"><b>${L('Ages ', 'أعمار ')}${b[1]}</b><div class="small">${c.cats.map(x => esc(catName(x))).join(' · ')}${ch ? ' + ' + esc(L(ch.en, ch.ar)) : ''}</div></div><button class="btn small ghost" data-act="tg-edit" data-b="${b[0]}">${L('Change', 'تغيير')}</button></div>` }).join('');
+  const all = kids.map(p => ({ p, g: tgFor(p) })); const cnt = st => all.reduce((a, x) => a + x.g.goals.filter(y => y.status === st).length, 0);
+  const rows = all.map(({ p, g }) => `<div class="item" data-act="player" data-id="${esc(p.id)}"><div class="grow"><div class="nm">${esc(p.name)}</div><div class="sub">${g.goals.map(x => esc(catName(x.cat)) + ' ' + (TG_ST[x.status] ? L(TG_ST[x.status][0], TG_ST[x.status][1]).split(':')[0] : '')).join(' · ')}</div></div></div>`).join('');
+  return `<div class="card tg-owner"><div class="row sp"><h2 style="margin:0">${L('Term goals', 'أهداف الفصل')}</h2><span class="tiny muted">${tgTermName(t)}</span></div>
+    ${tgApproved() ? `<p class="small"><span class="tag ok">✓ ${L('approved', 'معتمدة')}</span> ${L('Coaches, evaluators and families see them.', 'يراها المدربون والمقيّمون والعائلات.')}</p>` : `<p class="small">${L('Not approved yet: nobody else sees them.', 'لم تُعتمد بعد: لا يراها أحد غيرك.')}</p><button class="btn" data-act="tg-approve">${L('Approve the term goals', 'اعتماد أهداف الفصل')}</button>`}
+    <div class="list">${tbl}</div>
+    <p class="small" style="margin-top:8px"><b>${L('Goals of all children', 'أهداف كل الأطفال')}</b>: <span class="tag ok">${L('moved', 'تقدّم')} ${cnt('moved')}</span> <span class="tag info">${L('working', 'يعمل')} ${cnt('working')}</span> <span class="tag warn">${L('not moving', 'لا يتقدّم')} ${cnt('stuck')}</span> <span class="tag">${L('paused', 'متوقف')} ${cnt('paused')}</span></p>
+    <details><summary class="small">${L('Each child', 'كل طفل')} (${kids.length})</summary><div class="list">${rows}</div></details></div>`;
+}
+regAction('tg-approve', async () => { await saveSettings(Object.assign(JSON.parse(JSON.stringify(SET())), { goals_ok: tgTerm().key, goal_template: tgTpl() })); S.draft = null; rerender(); });
+regAction('tg-edit', d => { const t = tgTerm(); const c = (tgTpl()[d.b] || TG_DEFAULT[d.b])[t.t];
+  const cats = (PR0().categories || []).filter(x => x.group !== 'F'), chars = (PR0().categories || []).filter(x => x.group === 'F');
+  const sel = (i) => `<select class="in" name="c${i}">${cats.map(x => `<option value="${esc(x.id)}" ${String(c.cats[i]) === String(x.id) ? 'selected' : ''}>${esc(L(x.en, x.ar))}</option>`).join('')}</select>`;
+  modal(`<h2>${L('Term goals · ages ', 'أهداف الفصل · أعمار ')}${esc((TG_BANDS.find(b => b[0] === d.b) || [])[1] || '')}</h2><form id="tgForm" data-b="${esc(d.b)}" class="grid2"><label class="f">${L('Area 1', 'المجال 1')}${sel(0)}</label><label class="f">${L('Area 2', 'المجال 2')}${sel(1)}</label><label class="f">${L('Area 3', 'المجال 3')}${sel(2)}</label><label class="f">${L('Character', 'الشخصية')}<select class="in" name="ch">${chars.map(x => `<option value="${esc(x.id)}" ${String(c.char) === String(x.id) ? 'selected' : ''}>${esc(L(x.en, x.ar))}</option>`).join('')}</select></label><div class="row" style="grid-column:1/-1"><button class="btn" type="submit">${w('save')}</button><button type="button" class="btn ghost" data-act="modal-close">${w('cancel')}</button></div></form>`); });
+regForm('tgForm', async (o, f) => { const b = f.dataset.b; const t = tgTerm().t; const tpl = JSON.parse(JSON.stringify(tgTpl())); tpl[b] = tpl[b] || JSON.parse(JSON.stringify(TG_DEFAULT[b]));
+  tpl[b][t] = { cats: [o.c0, o.c1, o.c2], char: o.ch }; modal(''); await saveSettings(Object.assign(JSON.parse(JSON.stringify(SET())), { goal_template: tpl })); S.draft = null; rerender(); });
+function tgCatsFor(kids) { if (isLight() || !tgApproved() || !kids.length) return null; const n = {}; kids.forEach(p => { const b = tgBand(tgAge(p)); n[b] = (n[b] || 0) + 1 }); const b = Object.keys(n).sort((x, y) => n[y] - n[x])[0]; return ((tgTpl()[b] || TG_DEFAULT[b])[tgTerm().t] || {}).cats || null; }
+const _renderTG = render;
+render = function () { const r = _renderTG.apply(this, arguments); try {
+  if (S.me && S.D && !isLight()) { const main = document.querySelector('main'); if (!main) return r;
+    if (isOwnerish() && S.view === 'dev' && !main.querySelector('.tg-owner')) { const h = tgOwnerCard(); const first = main.querySelector('h1, .row'); if (first) first.insertAdjacentHTML('afterend', h); else main.insertAdjacentHTML('afterbegin', h); }
+    if (!isEval() && !isParent() && S.view === 'players' && S.sel && !main.querySelector('.tgx-card')) { const p = P(S.sel); const h = p ? tgChildCard(p, false) : ''; const c = main.querySelector('.card'); if (h) { if (c) c.insertAdjacentHTML('afterend', h); else main.insertAdjacentHTML('afterbegin', h); } }
+    if (isParent() && S.view === 'child' && !main.querySelector('.tgx-card')) { const p = parentKid(); const h = p ? tgChildCard(p, true) : ''; const c = main.querySelector('[data-card="checkin"]') || main.querySelector('.card'); if (h && c) c.insertAdjacentHTML('afterend', h); }
+  } } catch (e) { } return r; };
+
 /* v4.8.1 (9 Nov): the weekly evaluator brief */
 function briefSession() {   // the next session within 7 days, with its areas (the session's plan, else the academy's current plan)
   const t = todayStr(); const n0 = (upcoming(6) || []).find(x => !x.closed && x.date >= t && x.date <= addDays(t, 7)); if (!n0) return null;
   const s = (D().sessions || []).find(x => x.date === n0.date && (!n0.group_id || x.group_id === n0.group_id)) || { id: '', kind: 'normal' };
-  const cats = catsOf(s); const kids = players().filter(p => (p.status || 'active') === 'active' && (!n0.group_id || p.group_id === n0.group_id));
+  const kids = players().filter(p => (p.status || 'active') === 'active' && (!n0.group_id || p.group_id === n0.group_id)); const own = s.id && planOf(s.id) && (planOf(s.id).cats || []).length; const cats = own ? catsOf(s) : (typeof tgCatsFor === 'function' && tgCatsFor(kids)) || catsOf(s);
   const pl = s.id ? planOf(s.id) : null;
   return { n0, s, cats, kids, deep: (pl && pl.deep) || [] };
 }
