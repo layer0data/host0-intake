@@ -720,6 +720,50 @@ function myPinForm(first) { const co = myPinCo(); const n = co ? '6,8' : '4'; co
   modal(`<h2>${first ? L('Choose your own PIN', 'اختر رقمك السري') : L('My PIN', 'رقمي السري')}</h2><p class="small muted">${first ? L(`The PIN you received was a starting PIN. Choose your own ${co ? '6 to 8' : '4'} digits now; keep them to yourself. On this phone the app stays open, so you will not type it every time.`, `الرقم الذي وصلك رقم مؤقت. اختر الآن ${co ? 'من 6 إلى 8 أرقام' : '4 أرقام'} خاصة بك ولا تعطها لأحد. التطبيق يظل مفتوحًا على هذا الموبايل، فلن تكتبه كل مرة.`) : L(`Choose your own ${co ? '6 to 8' : '4'} digits. You will use them next time you log in on a new phone.`, `اختر ${co ? 'من 6 إلى 8 أرقام' : '4 أرقام'} خاصة بك. ستستخدمها عند الدخول من هاتف جديد.`)}</p><form id="myPinForm" class="grid2"><label class="f">${L('New PIN', 'الرقم الجديد')}<input class="in" name="pin" type="password" inputmode="numeric" maxlength="${mx}" pattern="[0-9\u0660-\u0669\u06F0-\u06F9]{${n}}" required autocomplete="new-password"></label><label class="f">${L('Again', 'مرة أخرى')}<input class="in" name="pin2" type="password" inputmode="numeric" maxlength="${mx}" required autocomplete="new-password"></label><div class="row" style="grid-column:1/-1"><button class="btn" type="submit">${L('Save', 'حفظ')}</button>${first ? '' : `<button type="button" class="btn ghost" data-act="modal-close">${L('Cancel', 'إلغاء')}</button>`}</div></form>`);
   if (first) { const bg = document.querySelector('#modal .modal'); if (bg) bg.removeAttribute('data-act'); }   /* the first-login form cannot be closed */ }
 regAction('my-pin', () => myPinForm(false));
+/* ================= v4.8.1 (9 Nov) · HOST tests v1: fitness battery ================= */
+const TESTS = () => D().tests || [];
+const testRes = () => D().testresults || [];
+function testHist(pid, tid) { return testRes().filter(r => r.player_id === pid && r.test === tid && !r.not_done && r.raw !== '').sort((a, b) => String(a.date).localeCompare(String(b.date))); }
+function testBetter(t, a, b) { return t.better === 'higher' ? a > b : a < b; }
+function testGroupPlace(p, t) {   // owners: the child's place among HOST children of the same age band and sex (latest result each)
+  const band = typeof tgBand === 'function' ? tgBand(tgAge(p)) : ''; const peers = players().filter(x => (x.sex || '') === (p.sex || '') && (typeof tgBand !== 'function' || tgBand(tgAge(x)) === band));
+  const vals = peers.map(x => { const h = testHist(x.id, t.id); return h.length ? +h[h.length - 1].raw : null }).filter(v => v != null); const mine = testHist(p.id, t.id); if (!mine.length || vals.length < 3) return '';
+  const v = +mine[mine.length - 1].raw; const beaten = vals.filter(x => testBetter(t, v, x)).length; return Math.round(100 * beaten / Math.max(1, vals.length - 1)) + '%';
+}
+function testsTab(s) {
+  const ts = TESTS(); if (!ts.length) return `<p class="small muted">${L('Tests are not available for this login.', 'الاختبارات غير متاحة لهذا الحساب.')}</p>`;
+  const cur = ts.find(t => t.id === S.testSel) || ts[0]; const kids = players().filter(p => (p.status || 'active') === 'active' && (!s.group_id || p.group_id === s.group_id) && tgAge(p) >= (cur.minAge || 0)).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  const prev = pid => { const h = testHist(pid, cur.id).filter(r => r.date < s.date); return h.length ? h[h.length - 1] : null }; const today = pid => testRes().find(r => r.player_id === pid && r.test === cur.id && r.date === s.date);
+  return `<div class="tabs sm">${ts.map(t => `<button data-act="test-sel" data-v="${esc(t.id)}" aria-pressed="${t.id === cur.id}">${esc(L(t.en, t.ar))}</button>`).join('')}</div>
+    <div class="card" style="margin-top:8px"><h3 style="margin:0 0 4px">${L('How to run it', 'طريقة الاختبار')}</h3><p class="small">${esc(L(cur.how_en, cur.how_ar))}</p><p class="small"><b>${L('What to write', 'ماذا تسجّل')}</b>: ${esc(L(cur.count_en, cur.count_ar))}</p><p class="tiny muted">${L('Source', 'المصدر')}: ${esc(cur.source)}${cur.minAge > 6 ? ' · ' + L(`from age ${cur.minAge}`, `من عمر ${cur.minAge}`) : ''}</p></div>
+    <form id="testForm" data-test="${esc(cur.id)}" data-sid="${esc(s.id)}" data-date="${esc(s.date)}"><div class="list">${kids.map(p => { const t0 = today(p.id), pv = prev(p.id);
+      return `<div class="drow" style="align-items:center;gap:8px"><div class="grow"><b>${esc(p.name)}</b>${pv ? `<div class="tiny muted">${L('last time', 'المرة السابقة')}: ${esc(pv.raw)} ${esc(L(cur.unit, cur.unit_ar))} · ${esc(fmtDS(pv.date))}</div>` : ''}</div><input class="in" name="v_${esc(p.id)}" inputmode="decimal" style="width:90px" placeholder="${esc(L(cur.unit, cur.unit_ar))}" value="${t0 && !t0.not_done ? esc(t0.raw) : ''}"><select class="in" name="n_${esc(p.id)}" style="width:110px"><option value="">${L('done', 'تم')}</option>${[['absent', 'Absent', 'غائب'], ['injury', 'Injury / pain', 'إصابة أو ألم'], ['refused', 'Did not want', 'لم يرغب']].map(o => `<option value="${o[0]}" ${t0 && t0.not_done === o[0] ? 'selected' : ''}>${L(o[1], o[2])}</option>`).join('')}</select></div>` }).join('') || empty()}</div>
+    <div class="row" style="margin-top:8px"><button class="btn" type="submit">${w('save')}</button><span class="tiny muted">${L('Empty rows are skipped.', 'الصفوف الفارغة لا تُحفظ.')}</span></div></form>`;
+}
+MOD.sessionTabs.push(['tests', ['Tests', 'الاختبارات'], testsTab, () => !isParent() && !isMkt() && TESTS().length > 0]);
+regAction('test-sel', d => { S.testSel = d.v; rerender(); });
+regForm('testForm', async (o, f) => { const recs = []; Object.keys(o).forEach(k => { if (!/^v_/.test(k)) return; const pid = k.slice(2); const v = String(o[k] || '').trim(), nd = o['n_' + pid] || '';
+    if (!v && !nd) return; recs.push({ player_id: pid, test: f.dataset.test, date: f.dataset.date, raw: v, not_done: nd, session_id: f.dataset.sid }); });
+  if (!recs.length) { toast(L('Nothing to save.', 'لا يوجد ما يُحفظ.')); return }
+  try { await act('test_save', { recs }); recs.forEach(r => { const id = 'tr_' + r.player_id + '_' + r.test + '_' + r.date; const rows = S.D.testresults || (S.D.testresults = []); const i = rows.findIndex(x => x.id === id); const rec = Object.assign({ id, rater_name: S.me.name }, r, { raw: r.not_done ? '' : +String(r.raw).replace(',', '.') }); if (i >= 0) rows[i] = rec; else rows.push(rec); }); rerender(); } catch (e) { } });
+function testsChildCard(p) {
+  const ts = TESTS(); if (!ts.length) return ''; const rows = ts.map(t => { const h = testHist(p.id, t.id); if (!h.length) return ''; const last = h[h.length - 1], prev = h[h.length - 2];
+    const tr = prev ? (testBetter(t, +last.raw, +prev.raw) ? `<span class="tag ok">↗ ${L('better', 'أفضل')}</span>` : `<span class="tag info">${L('working on it', 'يعمل عليه')}</span>`) : `<span class="tag">${L('first test', 'أول قياس')}</span>`;
+    const gp = isOwnerish() ? testGroupPlace(p, t) : '';
+    return `<div class="drow"><div class="grow"><b>${esc(L(t.en, t.ar))}</b><div class="small">${esc(last.raw)} ${esc(L(t.unit, t.unit_ar))} · ${esc(fmtDS(last.date))}${prev ? ` (${L('before', 'قبلها')}: ${esc(prev.raw)})` : ''}${gp ? ` · <span class="tiny muted">${L('ahead of', 'أفضل من')} ${gp} ${L('of HOST children of the same age and sex', 'من أطفال HOST من العمر والجنس نفسيهما')}</span>` : ''}</div></div>${tr}</div>` }).join('');
+  return rows ? `<div class="card tests-card"><h2>${L('Fitness tests', 'اختبارات اللياقة')}</h2><div class="list">${rows}</div></div>` : '';
+}
+function testsParentCard(pid) {
+  const tw = (D().test_words || {})[pid] || []; if (!tw.length) return ''; const W = { better: ['better than the last test', 'أفضل من القياس السابق', 'ok'], working: ['working on it', 'يعمل عليه', 'info'], first: ['first test', 'أول قياس', ''] };
+  const focus = tw.find(x => x.word === 'working');
+  return `<div class="card tests-card"><h2>${L('Fitness', 'اللياقة')}</h2><div class="list">${tw.map(x => `<div class="drow"><div class="grow"><b>${esc(L(x.en, x.ar))}</b></div><span class="tag ${W[x.word][2]}">${L(W[x.word][0], W[x.word][1])}</span></div>`).join('')}</div>${focus ? `<p class="small">🏠 ${L('Focus at home this month', 'تركيز البيت هذا الشهر')}: <b>${esc(L(focus.en, focus.ar))}</b></p>` : ''}</div>`;
+}
+const _renderTests = render;
+render = function () { const r = _renderTests.apply(this, arguments); try {
+  if (S.me && S.D) { const main = document.querySelector('main'); if (!main) return r;
+    if (!isParent() && !isEval() && S.view === 'players' && S.sel && !main.querySelector('.tests-card')) { const p = P(S.sel); const h = p ? testsChildCard(p) : ''; const c = main.querySelector('.tgx-card') || main.querySelector('.card'); if (h && c) c.insertAdjacentHTML('afterend', h); }
+    if (isParent() && S.view === 'child' && !main.querySelector('.tests-card')) { const p = parentKid(); const h = p ? testsParentCard(p.id) : ''; const c = main.querySelector('.tgx-card') || main.querySelector('[data-card="checkin"]'); if (h && c) c.insertAdjacentHTML('afterend', h); }
+  } } catch (e) { } return r; };
 /* ================= v4.8.1 (9 Nov) · term goals (the 6-month plan) ================= */
 /* TG-CORE-START (pure; the simulation in tools/harness/goalsim.js runs this exact text) */
 const TG_DEFAULT = { b6: { t1: { cats: ['1', '6', '8'], char: '21' }, t2: { cats: ['3', '2', '7'], char: '24' } },
