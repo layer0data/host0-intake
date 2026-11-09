@@ -5,7 +5,7 @@
    - Fonts: the copy on the phone first, refreshed in the background.
    - Everything else (the academy's Google Apps Script, the intake pages, any other file of this site) is NOT touched: it goes to the network
      exactly as without this file. Saves are never cached here; unsent work lives in the app's own outbox. */
-const VERSION = 'host-egypt-sw-v4.8.1-16';
+const VERSION = 'host-egypt-sw-v4.8.1-17';
 const OURS = ['HOST_Egypt.html', 'host-egypt-settings.js', 'HOST_Egypt_test.html', 'host-egypt-test-settings.js', 'HOST_OLE.html', 'ole-settings.js'];
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 

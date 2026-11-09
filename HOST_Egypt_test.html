@@ -758,6 +758,8 @@ function testsParentCard(pid) {
   const focus = tw.find(x => x.word === 'working');
   return `<div class="card tests-card"><h2>${L('Fitness', 'اللياقة')}</h2><div class="list">${tw.map(x => `<div class="drow"><div class="grow"><b>${esc(L(x.en, x.ar))}</b></div><span class="tag ${W[x.word][2]}">${L(W[x.word][0], W[x.word][1])}</span></div>`).join('')}</div>${focus ? `<p class="small">🏠 ${L('Focus at home this month', 'تركيز البيت هذا الشهر')}: <b>${esc(L(focus.en, focus.ar))}</b></p>` : ''}</div>`;
 }
+const _renderTW = render;
+render = function () { const r = _renderTW.apply(this, arguments); try { if (S.me && S.D && !isLight() && role() === 'coach' && S.view === navItems()[0]) { const main = document.querySelector('main'); if (main && !main.querySelector('.tw-card')) { const h = twCoachCard(); if (h) { const f = main.querySelector('.card'); if (f) f.insertAdjacentHTML('beforebegin', h); else main.insertAdjacentHTML('afterbegin', h); } } } } catch (e) { } return r; };
 const _renderTests = render;
 render = function () { const r = _renderTests.apply(this, arguments); try {
   if (S.me && S.D) { const main = document.querySelector('main'); if (!main) return r;
@@ -834,7 +836,7 @@ function tgOwnerCard() {
     ${tgApproved() ? (() => { const sv = (D().termplans || []).filter(x => x.term === t.key); const last = sv.map(x => String(x.saved_at || '')).sort().pop(); const cal = (SET().term_calendar && SET().term_calendar.term === t.key ? SET().term_calendar.days : tgCalendar()) || [];
       const KN = { start: L('start of term', 'بداية الفصل'), middle: L('middle of term', 'منتصف الفصل'), end: L('end of term', 'نهاية الفصل') };
       return `<p class="small"><b>${L('Saved in the database', 'محفوظة في قاعدة البيانات')}</b>: ${sv.length ? `${sv.length} ${L('children', 'من الأطفال')} · ${esc(fmtDS(String(last).slice(0, 10)))}` : L('not yet', 'ليس بعد')} <button class="btn small ghost" data-act="tg-save">${L('Save the term plan', 'حفظ خطة الفصل')}</button></p>${cal.length ? `<p class="small"><b>${L('Skills days this term', 'أيام المهارات هذا الفصل')}</b>: ${cal.map(d => esc(fmtDS(d.date)) + ' (' + (KN[d.kind] || '') + ')').join(' · ')}</p>` : ''}` })() : ''}
-    <div class="list">${tbl}</div>
+    <div class="list">${tbl}</div>${twList()}
     <p class="small" style="margin-top:8px"><b>${L('Goals of all children', 'أهداف كل الأطفال')}</b>: <span class="tag ok">${L('moved', 'تقدّم')} ${cnt('moved')}</span> <span class="tag info">${L('working', 'يعمل')} ${cnt('working')}</span> <span class="tag warn">${L('not moving', 'لا يتقدّم')} ${cnt('stuck')}</span> <span class="tag">${L('paused', 'متوقف')} ${cnt('paused')}</span></p>
     <details><summary class="small">${L('Each child', 'كل طفل')} (${kids.length})</summary><div class="list">${rows}</div></details></div>`;
 }
@@ -847,10 +849,29 @@ async function tgSavePlans() {
   const t = tgTerm(); const recs = players().filter(p => (p.status || 'active') === 'active').map(p => { const g = tgFor(p); const old = tgSaved(p.id);
     return { player_id: p.id, band: g.band, char: g.char, goals: g.goals.map(x => { const o = old && (old.goals || []).find(y => y.cat === x.cat && y.skill === x.skill); return { cat: x.cat, skill: x.skill || '', start: o ? o.start : (x.start || 0), now: x.now || 0, target: x.target || 0, status: x.status } }) } });
   try { const r = await api('termplan_save', { term: t.key, recs, calendar: tgCalendar() }); S.D.termplans = (S.D.termplans || []).filter(x => x.term !== t.key).concat(recs.map(x => Object.assign({ id: 'tp_' + x.player_id + '_' + t.key, term: t.key, saved_at: new Date().toISOString(), saved_by: S.me.name }, x)));
-    SET().term_calendar = { term: t.key, days: tgCalendar() }; toast('✓ ' + L(`Term plan saved for ${r.saved} children`, `حُفظت خطة الفصل لعدد ${r.saved} من الأطفال`)); } catch (e) { alertBox('⚠ ' + e.message); }
+    SET().term_calendar = { term: t.key, days: tgCalendar() }; const nw = await twSave(); toast('✓ ' + L(`Term plan saved for ${r.saved} children · ${nw} practices scheduled`, `حُفظت خطة الفصل لعدد ${r.saved} من الأطفال · وجُدول ${nw} تمرين`)); } catch (e) { alertBox('⚠ ' + e.message); }
 }
 const tgSaved = pid => (D().termplans || []).find(x => x.player_id === pid && x.term === tgTerm().key) || null;
 regAction('tg-save', async () => { await tgSavePlans(); rerender(); });
+/* v4.8.1: the 6-month schedule (this term and the next), week by week */
+function twTerms() { const t1 = tgTerm(); const nxDate = addDays(t1.to, 1); let t2 = tgTermOf(nxDate); if (t2.summer || t2.key === t1.key) t2 = tgTermOf(addDays(t2.to, 1)); return [t1, t2]; }
+function twSlots(d) { const s = slotsOn(d); if (s.length || seasonOn(d)) return { slots: s, expected: false }; const ss = (SET().seasons || []).slice().sort((a, b) => String(b.from).localeCompare(String(a.from)))[0]; if (!ss) return { slots: [], expected: true }; const wd = parseD(d).getDay(); return { slots: (ss.slots || []).filter(x => +x.day === wd), expected: true }; }
+function twBuild() {
+  const out = []; const kidsOf = gid => players().filter(p => (p.status || 'active') === 'active' && (!gid || p.group_id === gid));
+  twTerms().forEach(t => { const dates = []; for (let d = (t.key === tgTerm().key ? todayStr() : t.from); d <= t.to; d = addDays(d, 1)) { const r = twSlots(d); r.slots.forEach(sl => dates.push({ d, gid: sl.group_id || '', expected: r.expected })); }
+    const all = dates.map(x => x.d); const allT = []; for (let d = t.from; d <= t.to; d = addDays(d, 1)) if (twSlots(d).slots.length) allT.push(d);
+    const pick = f => allT.length ? allT[Math.min(allT.length - 1, Math.max(0, Math.round((allT.length - 1) * f)))] : ''; const skills = [pick(0), pick(0.5), pick(1)];
+    dates.forEach(x => { const kids = kidsOf(x.gid); const n = {}; kids.forEach(p => { const b = tgBand(tgAge(p)); n[b] = (n[b] || 0) + 1 }); const band = Object.keys(n).sort((a, b) => n[b] - n[a])[0] || 'b9';
+      const cfg = ((tgTpl()[band] || TG_DEFAULT[band])[t.t]) || TG_DEFAULT[band].t1; const isSk = skills.indexOf(x.d) >= 0;
+      out.push({ term: t.key, date: x.d, group_id: x.gid, kind: isSk ? 'skills' : 'normal', areas: cfg.cats, tests: isSk ? (TESTS().filter(z => !z.optional).map(z => z.id)) : [], char: cfg.char, expected: x.expected }); }); });
+  return out;
+}
+async function twSave() { const recs = twBuild(); if (!recs.length) return 0; try { const r = await api('termweeks_save', { recs }); S.D.termweeks = (S.D.termweeks || []).filter(x => recs.every(y => !(y.date === x.date && (y.group_id || '') === (x.group_id || '')))).concat(recs); return r.saved } catch (e) { alertBox('⚠ ' + e.message); return 0 } }
+const twNext = gid => (D().termweeks || []).filter(x => x.date >= todayStr() && (!gid || !x.group_id || x.group_id === gid)).sort((a, b) => String(a.date).localeCompare(String(b.date)))[0] || null;
+function twList() { const ws = (D().termweeks || []).slice().sort((a, b) => String(a.date).localeCompare(String(b.date))); if (!ws.length) return '';
+  return `<details><summary class="small"><b>${L('6-month schedule', 'جدول الأشهر الستة')}</b> (${ws.length} ${L('practices', 'تمرين')})</summary><div class="list">${ws.map(x => `<div class="drow" style="align-items:flex-start"><div class="grow"><b>${esc(fmtDS(x.date))}</b>${x.group_id ? ' · ' + esc(groupName(x.group_id) || '') : ''}${x.expected === 'yes' || x.expected === true ? ` <span class="tiny muted">(${L('expected', 'متوقّع')})</span>` : ''}<div class="small">${(x.areas || []).map(c => esc(catName(c))).join(' · ')}</div>${(x.tests || []).length ? `<div class="tiny">🧪 ${(x.tests || []).map(id => esc(L(((TESTS().find(z => z.id === id) || {}).en) || id, ((TESTS().find(z => z.id === id) || {}).ar) || id))).join('، ')}</div>` : ''}</div>${x.kind === 'skills' ? `<span class="tag warn">${L('skills day', 'يوم المهارات')}</span>` : ''}</div>`).join('')}</div></details>`; }
+function twCoachCard() { const w0 = twNext(); if (!w0) return ''; const isSk = w0.kind === 'skills';
+  return `<div class="card tw-card"><div class="row sp"><h2 style="margin:0">${L('This week', 'هذا الأسبوع')}</h2><span class="tiny muted">${esc(fmtDL(w0.date))}</span></div><p class="small"><b>${L('Areas of the term plan', 'مجالات خطة الفصل')}</b>: ${(w0.areas || []).map(c => esc(catName(c))).join('، ')}</p>${isSk ? `<p class="small">🧪 <b>${L('Skills day: fitness tests', 'يوم المهارات: اختبارات اللياقة')}</b>: ${(w0.tests || []).map(id => esc(L(((TESTS().find(z => z.id === id) || {}).en) || id, ((TESTS().find(z => z.id === id) || {}).ar) || id))).join('، ')}. ${L('Open the session → «Tests» for how to run each one.', 'افتح الحصة ← «الاختبارات» لترى طريقة كل اختبار.')}</p>` : ''}</div>`; }
 regAction('tg-edit', d => { const t = tgTerm(); const c = (tgTpl()[d.b] || TG_DEFAULT[d.b])[t.t];
   const cats = (PR0().categories || []).filter(x => x.group !== 'F'), chars = (PR0().categories || []).filter(x => x.group === 'F');
   const sel = (i) => `<select class="in" name="c${i}">${cats.map(x => `<option value="${esc(x.id)}" ${String(c.cats[i]) === String(x.id) ? 'selected' : ''}>${esc(L(x.en, x.ar))}</option>`).join('')}</select>`;
@@ -870,9 +891,9 @@ render = function () { const r = _renderTG.apply(this, arguments); try {
 function briefSession() {   // the next session within 7 days, with its areas (the session's plan, else the academy's current plan)
   const t = todayStr(); const n0 = (upcoming(6) || []).find(x => !x.closed && x.date >= t && x.date <= addDays(t, 7)); if (!n0) return null;
   const s = (D().sessions || []).find(x => x.date === n0.date && (!n0.group_id || x.group_id === n0.group_id)) || { id: '', kind: 'normal' };
-  const kids = players().filter(p => (p.status || 'active') === 'active' && (!n0.group_id || p.group_id === n0.group_id)); const own = s.id && planOf(s.id) && (planOf(s.id).cats || []).length; const cats = own ? catsOf(s) : (typeof tgCatsFor === 'function' && tgCatsFor(kids)) || catsOf(s);
+  const kids = players().filter(p => (p.status || 'active') === 'active' && (!n0.group_id || p.group_id === n0.group_id)); const own = s.id && planOf(s.id) && (planOf(s.id).cats || []).length; const wk = (D().termweeks || []).find(x => x.date === n0.date && (!x.group_id || !n0.group_id || x.group_id === n0.group_id)); const cats = own ? catsOf(s) : (wk && (wk.areas || []).length ? wk.areas.map(String) : null) || (typeof tgCatsFor === 'function' && tgCatsFor(kids)) || catsOf(s);
   const pl = s.id ? planOf(s.id) : null;
-  return { n0, s, cats, kids, deep: (pl && pl.deep) || [] };
+  return { n0, s, cats, kids, deep: (pl && pl.deep) || [], week: wk || null };
 }
 function briefSkills(cats) { return skills().filter(k => cats.indexOf(String(k.cat)) >= 0 && (k.core || +k.phase <= 2)).slice(0, 12); }
 function briefCard() {
@@ -881,6 +902,7 @@ function briefCard() {
   return `<div class="card hp-brief"><div class="row sp"><h2 style="margin:0">${L('This week’s evaluation brief', 'موجز التقييم لهذا الأسبوع')}</h2><span class="tiny muted">${esc(fmtDL(b.n0.date))} · ${fmtT(b.n0.start)}</span></div>
     <p class="small muted">${esc(groupName(b.n0.group_id) || '')} · ${L('children', 'الأطفال')}: ${b.kids.length}</p>
     <p class="small"><b>${L('Areas to check', 'المجالات المطلوب تقييمها')}</b>: ${b.cats.map(c => esc(catName(c))).join('، ') || '–'}</p>
+    ${b.week && b.week.kind === 'skills' ? `<p class="small">🧪 <b>${L('Skills day: run the fitness tests', 'يوم المهارات: نفّذ اختبارات اللياقة')}</b>: ${(b.week.tests || []).map(id => esc(L(((TESTS().find(z => z.id === id) || {}).en) || id, ((TESTS().find(z => z.id === id) || {}).ar) || id))).join('، ')}. ${L('In the session → «Tests» you see how to run each one.', 'في الحصة ← «الاختبارات» ترى طريقة كل اختبار.')}</p>` : ''}
     ${b.deep.length ? `<p class="small"><b>${L('Watch closely', 'مراقبة عن قرب')}</b>: ${b.deep.map(id => esc((P(id) || {}).name || '')).join('، ')}</p>` : ''}
     ${(() => { const c = SET().term_calendar; const nx = c && (c.days || []).find(d => d.date >= todayStr()); return nx ? `<p class="small"><b>${L('Next skills day', 'يوم المهارات القادم')}</b>: ${esc(fmtDL(nx.date))}</p>` : '' })()}
     <p class="tiny muted">${L('Record what you see on the day, alone. Children’s current levels are not shown here on purpose.', 'سجّل ما تراه يوم الحصة وحدك. لا تظهر مستويات الأطفال الحالية هنا عن قصد.')}</p>
