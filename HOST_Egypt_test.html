@@ -3608,7 +3608,7 @@ playersScreen = function () { if (S.sel === '__new') return `<button class="link
 
 /* ================= start ================= */
 /* v4.1: the offline helper (host-egypt-sw.js, next to this page) keeps the page, its settings and the fonts on the phone */
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || /^(127\.0\.0\.1|localhost)$/.test(location.hostname))) { try { navigator.serviceWorker.register('host-egypt-sw.js').catch(() => { }) } catch (e) { } }
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || /^(127\.0\.0\.1|localhost)$/.test(location.hostname))) { try { navigator.serviceWorker.register('host-egypt-sw.js', { updateViaCache: 'none' }).then(r => { try { r.update() } catch (e) { } }).catch(() => { }) } catch (e) { } }
 if (window.HOST_EGYPT_TEST) { try { document.title = 'TEST · ' + document.title; document.body.classList.add('is-test') } catch (e) { } }
 setTimeout(async function start() {   // v4.1: after every module has loaded (login tiles, child page), never before
   if (location.hash === '#register') { render(); return }
