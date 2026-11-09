@@ -753,10 +753,10 @@ const tgApproved = () => SET().goals_ok === tgTerm().key;
 function tgAge(p) { const d = String(p.dob || ''); if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return 10; const t = todayStr(); let a = +t.slice(0, 4) - +d.slice(0, 4); if (t.slice(5) < d.slice(5)) a--; return a; }
 function tgAttend(pid) { const ses = sessionsDone().slice(0, 8); const mine = ses.filter(s => attOf(s.id).some(a => a.player_id === pid)); if (mine.length < 3) return null; return mine.filter(s => attOf(s.id).some(a => a.player_id === pid && isHere(a))).length / mine.length; }
 function tgFor(p) {
-  const term = tgTerm();
+  const term = tgTerm(); const saved = (D().termplans || []).find(x => x.player_id === p.id && x.term === term.key);
   return tgCore({ age: tgAge(p), term, tpl: tgTpl(), skills: (PR0().skills || skills()),
     levelOf: sk => ((st(p.id, sk) || {}).level) || 0,
-    startOf: (sk, from) => { const h = ((st(p.id, sk) || {}).hist || []).filter(x => String(x.date) < from); return h.length ? +h[h.length - 1].to || 0 : 0 },
+    startOf: (sk, from) => { const sv = saved && (saved.goals || []).find(y => y.skill === sk); if (sv) return +sv.start || 0; const h = ((st(p.id, sk) || {}).hist || []).filter(x => String(x.date) < from); return h.length ? +h[h.length - 1].to || 0 : 0 },
     plateauOf: sk => !!((st(p.id, sk) || {}).plateau), attend: tgAttend(p.id), hold: holdOn(p.id, todayStr()) });
 }
 function tgMethod(pid) {   // another way of teaching than the one the coaches used most with this child
@@ -787,11 +787,26 @@ function tgOwnerCard() {
   const rows = all.map(({ p, g }) => `<div class="item" data-act="player" data-id="${esc(p.id)}"><div class="grow"><div class="nm">${esc(p.name)}</div><div class="sub">${g.goals.map(x => esc(catName(x.cat)) + ' ' + (TG_ST[x.status] ? L(TG_ST[x.status][0], TG_ST[x.status][1]).split(':')[0] : '')).join(' · ')}</div></div></div>`).join('');
   return `<div class="card tg-owner"><div class="row sp"><h2 style="margin:0">${L('Term goals', 'أهداف الفصل')}</h2><span class="tiny muted">${tgTermName(t)}</span></div>
     ${tgApproved() ? `<p class="small"><span class="tag ok">✓ ${L('approved', 'معتمدة')}</span> ${L('Coaches, evaluators and families see them.', 'يراها المدربون والمقيّمون والعائلات.')}</p>` : `<p class="small">${L('Not approved yet: nobody else sees them.', 'لم تُعتمد بعد: لا يراها أحد غيرك.')}</p><button class="btn" data-act="tg-approve">${L('Approve the term goals', 'اعتماد أهداف الفصل')}</button>`}
+    ${tgApproved() ? (() => { const sv = (D().termplans || []).filter(x => x.term === t.key); const last = sv.map(x => String(x.saved_at || '')).sort().pop(); const cal = (SET().term_calendar && SET().term_calendar.term === t.key ? SET().term_calendar.days : tgCalendar()) || [];
+      const KN = { start: L('start of term', 'بداية الفصل'), middle: L('middle of term', 'منتصف الفصل'), end: L('end of term', 'نهاية الفصل') };
+      return `<p class="small"><b>${L('Saved in the database', 'محفوظة في قاعدة البيانات')}</b>: ${sv.length ? `${sv.length} ${L('children', 'من الأطفال')} · ${esc(fmtDS(String(last).slice(0, 10)))}` : L('not yet', 'ليس بعد')} <button class="btn small ghost" data-act="tg-save">${L('Save the term plan', 'حفظ خطة الفصل')}</button></p>${cal.length ? `<p class="small"><b>${L('Skills days this term', 'أيام المهارات هذا الفصل')}</b>: ${cal.map(d => esc(fmtDS(d.date)) + ' (' + (KN[d.kind] || '') + ')').join(' · ')}</p>` : ''}` })() : ''}
     <div class="list">${tbl}</div>
     <p class="small" style="margin-top:8px"><b>${L('Goals of all children', 'أهداف كل الأطفال')}</b>: <span class="tag ok">${L('moved', 'تقدّم')} ${cnt('moved')}</span> <span class="tag info">${L('working', 'يعمل')} ${cnt('working')}</span> <span class="tag warn">${L('not moving', 'لا يتقدّم')} ${cnt('stuck')}</span> <span class="tag">${L('paused', 'متوقف')} ${cnt('paused')}</span></p>
     <details><summary class="small">${L('Each child', 'كل طفل')} (${kids.length})</summary><div class="list">${rows}</div></details></div>`;
 }
-regAction('tg-approve', async () => { await saveSettings(Object.assign(JSON.parse(JSON.stringify(SET())), { goals_ok: tgTerm().key, goal_template: tgTpl() })); S.draft = null; rerender(); });
+regAction('tg-approve', async () => { await saveSettings(Object.assign(JSON.parse(JSON.stringify(SET())), { goals_ok: tgTerm().key, goal_template: tgTpl() })); S.draft = null; await tgSavePlans(); rerender(); });
+/* v4.8.1: keep every child's term plan in the sheet, and the term's skills days */
+function tgCalendar() { const t = tgTerm(); const ses = (upcoming(80, t.from) || []).filter(x => !x.closed && x.date >= t.from && x.date <= t.to).map(x => x.date);
+  const days = [...new Set(ses)]; if (!days.length) return []; const pick = f => days[Math.min(days.length - 1, Math.max(0, Math.round((days.length - 1) * f)))];
+  return [{ date: pick(0), kind: 'start' }, { date: pick(0.5), kind: 'middle' }, { date: pick(1), kind: 'end' }].filter((d, i, a) => a.findIndex(x => x.date === d.date) === i); }
+async function tgSavePlans() {
+  const t = tgTerm(); const recs = players().filter(p => (p.status || 'active') === 'active').map(p => { const g = tgFor(p); const old = tgSaved(p.id);
+    return { player_id: p.id, band: g.band, char: g.char, goals: g.goals.map(x => { const o = old && (old.goals || []).find(y => y.cat === x.cat && y.skill === x.skill); return { cat: x.cat, skill: x.skill || '', start: o ? o.start : (x.start || 0), now: x.now || 0, target: x.target || 0, status: x.status } }) } });
+  try { const r = await api('termplan_save', { term: t.key, recs, calendar: tgCalendar() }); S.D.termplans = (S.D.termplans || []).filter(x => x.term !== t.key).concat(recs.map(x => Object.assign({ id: 'tp_' + x.player_id + '_' + t.key, term: t.key, saved_at: new Date().toISOString(), saved_by: S.me.name }, x)));
+    SET().term_calendar = { term: t.key, days: tgCalendar() }; toast('✓ ' + L(`Term plan saved for ${r.saved} children`, `حُفظت خطة الفصل لعدد ${r.saved} من الأطفال`)); } catch (e) { alertBox('⚠ ' + e.message); }
+}
+const tgSaved = pid => (D().termplans || []).find(x => x.player_id === pid && x.term === tgTerm().key) || null;
+regAction('tg-save', async () => { await tgSavePlans(); rerender(); });
 regAction('tg-edit', d => { const t = tgTerm(); const c = (tgTpl()[d.b] || TG_DEFAULT[d.b])[t.t];
   const cats = (PR0().categories || []).filter(x => x.group !== 'F'), chars = (PR0().categories || []).filter(x => x.group === 'F');
   const sel = (i) => `<select class="in" name="c${i}">${cats.map(x => `<option value="${esc(x.id)}" ${String(c.cats[i]) === String(x.id) ? 'selected' : ''}>${esc(L(x.en, x.ar))}</option>`).join('')}</select>`;
@@ -823,6 +838,7 @@ function briefCard() {
     <p class="small muted">${esc(groupName(b.n0.group_id) || '')} · ${L('children', 'الأطفال')}: ${b.kids.length}</p>
     <p class="small"><b>${L('Areas to check', 'المجالات المطلوب تقييمها')}</b>: ${b.cats.map(c => esc(catName(c))).join('، ') || '–'}</p>
     ${b.deep.length ? `<p class="small"><b>${L('Watch closely', 'مراقبة عن قرب')}</b>: ${b.deep.map(id => esc((P(id) || {}).name || '')).join('، ')}</p>` : ''}
+    ${(() => { const c = SET().term_calendar; const nx = c && (c.days || []).find(d => d.date >= todayStr()); return nx ? `<p class="small"><b>${L('Next skills day', 'يوم المهارات القادم')}</b>: ${esc(fmtDL(nx.date))}</p>` : '' })()}
     <p class="tiny muted">${L('Record what you see on the day, alone. Children’s current levels are not shown here on purpose.', 'سجّل ما تراه يوم الحصة وحدك. لا تظهر مستويات الأطفال الحالية هنا عن قصد.')}</p>
     ${sk.map(k => `<details style="margin:4px 0"><summary class="small"><b>${esc(skillName(k.id))}</b></summary><div class="small" style="padding:4px 8px">${[1, 2, 3, 4].map(n => k.crit && k.crit[n] ? `<div><b>${n} · ${esc(levelName(n))}</b>: ${esc(LL(k.crit[n]))}</div>` : '').join('')}${k.error ? `<div class="tiny muted">⚠ ${L('Common error', 'خطأ شائع')}: ${esc(LL(k.error))}</div>` : ''}</div></details>`).join('')}
     <details style="margin:4px 0"><summary class="small"><b>${L('Children', 'الأطفال')} (${b.kids.length})</b></summary><p class="small">${b.kids.map(p => esc(p.name)).join('، ')}</p></details></div>`;
