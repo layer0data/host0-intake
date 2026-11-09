@@ -644,6 +644,11 @@ details.v47-slot>summary{cursor:pointer;font-size:14px;line-height:1.45}
 .hp-tile.hp-more{border-style:dashed;justify-items:start;color:var(--accent)}
 .hp-tile.hp-more .hp-v{font-size:22px}
 .fee-chips{margin:6px 0 2px}
+
+/* v4.8.1 (9 Nov): a short screen never stretches its rows (the tab buttons stayed tall ovals on Records / Photos) */
+main{align-content:start}
+.tabs{align-items:flex-start;align-content:start}
+.tabs button{align-self:flex-start}
 </style>
 <script src="ole-settings.js"></script>
 </head>
@@ -715,6 +720,107 @@ function myPinForm(first) { const co = myPinCo(); const n = co ? '6,8' : '4'; co
   modal(`<h2>${first ? L('Choose your own PIN', 'اختر رقمك السري') : L('My PIN', 'رقمي السري')}</h2><p class="small muted">${first ? L(`The PIN you received was a starting PIN. Choose your own ${co ? '6 to 8' : '4'} digits now; keep them to yourself. On this phone the app stays open, so you will not type it every time.`, `الرقم الذي وصلك رقم مؤقت. اختر الآن ${co ? 'من 6 إلى 8 أرقام' : '4 أرقام'} خاصة بك ولا تعطها لأحد. التطبيق يظل مفتوحًا على هذا الموبايل، فلن تكتبه كل مرة.`) : L(`Choose your own ${co ? '6 to 8' : '4'} digits. You will use them next time you log in on a new phone.`, `اختر ${co ? 'من 6 إلى 8 أرقام' : '4 أرقام'} خاصة بك. ستستخدمها عند الدخول من هاتف جديد.`)}</p><form id="myPinForm" class="grid2"><label class="f">${L('New PIN', 'الرقم الجديد')}<input class="in" name="pin" type="password" inputmode="numeric" maxlength="${mx}" pattern="[0-9\u0660-\u0669\u06F0-\u06F9]{${n}}" required autocomplete="new-password"></label><label class="f">${L('Again', 'مرة أخرى')}<input class="in" name="pin2" type="password" inputmode="numeric" maxlength="${mx}" required autocomplete="new-password"></label><div class="row" style="grid-column:1/-1"><button class="btn" type="submit">${L('Save', 'حفظ')}</button>${first ? '' : `<button type="button" class="btn ghost" data-act="modal-close">${L('Cancel', 'إلغاء')}</button>`}</div></form>`);
   if (first) { const bg = document.querySelector('#modal .modal'); if (bg) bg.removeAttribute('data-act'); }   /* the first-login form cannot be closed */ }
 regAction('my-pin', () => myPinForm(false));
+/* v4.8.1 (9 Nov): the weekly evaluator brief */
+function briefSession() {   // the next session within 7 days, with its areas (the session's plan, else the academy's current plan)
+  const t = todayStr(); const n0 = (upcoming(6) || []).find(x => !x.closed && x.date >= t && x.date <= addDays(t, 7)); if (!n0) return null;
+  const s = (D().sessions || []).find(x => x.date === n0.date && (!n0.group_id || x.group_id === n0.group_id)) || { id: '', kind: 'normal' };
+  const cats = catsOf(s); const kids = players().filter(p => (p.status || 'active') === 'active' && (!n0.group_id || p.group_id === n0.group_id));
+  const pl = s.id ? planOf(s.id) : null;
+  return { n0, s, cats, kids, deep: (pl && pl.deep) || [] };
+}
+function briefSkills(cats) { return skills().filter(k => cats.indexOf(String(k.cat)) >= 0 && (k.core || +k.phase <= 2)).slice(0, 12); }
+function briefCard() {
+  const b = briefSession(); if (!b) return '';
+  const sk = briefSkills(b.cats);
+  return `<div class="card hp-brief"><div class="row sp"><h2 style="margin:0">${L('This week’s evaluation brief', 'موجز التقييم لهذا الأسبوع')}</h2><span class="tiny muted">${esc(fmtDL(b.n0.date))} · ${fmtT(b.n0.start)}</span></div>
+    <p class="small muted">${esc(groupName(b.n0.group_id) || '')} · ${L('children', 'الأطفال')}: ${b.kids.length}</p>
+    <p class="small"><b>${L('Areas to check', 'المجالات المطلوب تقييمها')}</b>: ${b.cats.map(c => esc(catName(c))).join('، ') || '–'}</p>
+    ${b.deep.length ? `<p class="small"><b>${L('Watch closely', 'مراقبة عن قرب')}</b>: ${b.deep.map(id => esc((P(id) || {}).name || '')).join('، ')}</p>` : ''}
+    <p class="tiny muted">${L('Record what you see on the day, alone. Children’s current levels are not shown here on purpose.', 'سجّل ما تراه يوم الحصة وحدك. لا تظهر مستويات الأطفال الحالية هنا عن قصد.')}</p>
+    ${sk.map(k => `<details style="margin:4px 0"><summary class="small"><b>${esc(skillName(k.id))}</b></summary><div class="small" style="padding:4px 8px">${[1, 2, 3, 4].map(n => k.crit && k.crit[n] ? `<div><b>${n} · ${esc(levelName(n))}</b>: ${esc(LL(k.crit[n]))}</div>` : '').join('')}${k.error ? `<div class="tiny muted">⚠ ${L('Common error', 'خطأ شائع')}: ${esc(LL(k.error))}</div>` : ''}</div></details>`).join('')}
+    <details style="margin:4px 0"><summary class="small"><b>${L('Children', 'الأطفال')} (${b.kids.length})</b></summary><p class="small">${b.kids.map(p => esc(p.name)).join('، ')}</p></details></div>`;
+}
+function briefSendBox() {   // owner: per evaluator, sent / opened, and a WhatsApp send
+  if (isLight()) return ''; const b = briefSession(); if (!b) return '';
+  const evs = (D().users || []).filter(u => u.role === 'evaluator' && String(u.active) !== 'false'); if (!evs.length) return '';
+  const fl = u => { let f = u.flags; if (typeof f === 'string') { try { f = JSON.parse(f) } catch (e) { f = {} } } return f || {} };
+  return `<div class="hp-briefs" style="margin-top:8px;border-top:1px solid var(--line);padding-top:8px"><p class="small"><b>${L('Evaluator brief for this session', 'موجز المقيّمين لهذه الحصة')}</b></p>${evs.map(u => { const f = fl(u); const seen = f.brief_seen === b.n0.date, sent = f.brief_sent === b.n0.date;
+    return `<div class="row wrap" style="align-items:center;gap:6px"><span class="small"><bdi>${esc(u.name)}</bdi></span>${seen ? `<span class="tag ok">✓ ${L('opened', 'فُتح')}</span>` : sent ? `<span class="tag info">${L('sent, not opened', 'أُرسل ولم يُفتح')}</span>` : `<span class="tag">${L('not sent', 'لم يُرسل')}</span>`}<button class="btn small ghost" data-act="brief-send" data-uid="${esc(u.id)}" data-date="${esc(b.n0.date)}">📲 ${L('Send', 'أرسل')}</button></div>` }).join('')}</div>`;
+}
+regAction('brief-send', async d => {
+  const u = (D().users || []).find(x => x.id === d.uid); const b = briefSession(); if (!u || !b) return;
+  if (String(u.phone || '').replace(/\D/g, '').length < 8) { toast('⚠ ' + L('Add this evaluator’s phone in Team first.', 'أضف رقم هاتف هذا المقيّم في الفريق أولًا.')); return }
+  const app = SET().app_url || (location.origin + location.pathname);
+  const areas = b.cats.map(c => catName(c)).join('، ');
+  const txt = isAr() ? `مرحبًا ${u.name} 👋\nموجز التقييم لحصة ${fmtDL(b.n0.date)} الساعة ${fmtT(b.n0.start)} (${groupName(b.n0.group_id) || ''}).\nالمجالات المطلوب تقييمها: ${areas}.\nالأطفال: ${b.kids.length}.\nافتح التطبيق لترى المهارات ومعنى كل مستوى: ${app}`
+    : `Hello ${u.name} 👋\nEvaluation brief for ${fmtDL(b.n0.date)} at ${fmtT(b.n0.start)} (${groupName(b.n0.group_id) || ''}).\nAreas to check: ${areas}.\nChildren: ${b.kids.length}.\nOpen the app for the skills and what each level means: ${app}`;
+  window.open(waLink(u.phone, txt), '_blank', 'noopener');
+  try { const r = await api('brief_mark', { what: 'sent', uid: u.id, date: b.n0.date }); u.flags = r.flags; rerender(); } catch (e) { }
+});
+const _renderBrief = render;
+render = function () { const r = _renderBrief.apply(this, arguments); try {
+  if (S.me && S.D && !isLight()) {
+    const main = document.querySelector('main');
+    if (isEval() && main && S.view === navItems()[0] && !main.querySelector('.hp-brief')) { const h = briefCard(); if (h) { main.insertAdjacentHTML('afterbegin', h);
+      const b = briefSession(); const k = 'brief_seen_' + b.n0.date; if (!store.get(k)) { store.set(k, '1'); api('brief_mark', { what: 'seen', date: b.n0.date }).catch(() => store.set(k, '')); } } }
+    if (isOwnerish() && S.view === 'home' && !S.hp) { const nx = main && main.querySelector('.hp-next'); if (nx && !nx.querySelector('.hp-briefs')) { const h = briefSendBox(); if (h) nx.insertAdjacentHTML('beforeend', h); } }
+  }
+} catch (e) { } return r; };
+/* v4.8.1 (9 Nov): the evaluators' work in one session, for the owner */
+function evalView(s) {
+  const pl = planOf(s.id); const cats = (pl && pl.cats) || [];
+  const obs = (D().obs || []).filter(o => o.session_id === s.id && o.state === 'observed' && o.source !== 'coach' && !o.supersedes);
+  const evs = (D().users || []).filter(u => u.role === 'evaluator' && String(u.active) !== 'false');
+  const raters = [...new Set(obs.map(o => o.rater))]; const rName = id => esc(((D().users || []).find(u => u.id === id) || {}).name || (obs.find(o => o.rater === id) || {}).rater_name || id);
+  const lv = n => n ? `${n} · ${esc(levelName(n))}` : '–';
+  const head = `<p class="small"><b>${L('Areas the evaluators were asked to check', 'المجالات المطلوب تقييمها')}</b>: ${cats.length ? cats.map(c => esc(catName(c))).join('، ') : `<span class="muted">${L('no plan set', 'لم تُحدَّد خطة')}</span>`}${pl && (pl.deep || []).length ? ` · <b>${L('watched closely', 'مراقبة عن قرب')}</b>: ${(pl.deep || []).map(id => esc((P(id) || {}).name || '')).join('، ')}` : ''}</p>
+    <p class="small"><b>${L('Evaluators', 'المقيّمون')}</b> (${L('needed', 'المطلوب')} ${nEv()}): ${(evs.length ? evs.map(u => u.id) : raters).map(id => { const n = obs.filter(o => o.rater === id).length; return n ? `<span class="tag ok">✓ ${rName(id)} · ${n}</span>` : `<span class="tag attn">✗ ${rName(id)}</span>` }).join(' ')}</p>`;
+  if (!obs.length) return head + `<p class="small muted">${L('No evaluator has recorded this session yet.', 'لم يسجّل أي مقيّم هذه الحصة بعد.')}</p>`;
+  const kids = [...new Set(obs.map(o => o.player_id))].map(id => P(id)).filter(Boolean).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  const ids = raters.slice(0, 4);
+  const rows = kids.map(p => {
+    const mine = obs.filter(o => o.player_id === p.id); const sks = [...new Set(mine.map(o => o.skill))].sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+    let gaps = 0;
+    const body = sks.map(sk => { const per = ids.map(id => { const o = mine.find(x => x.rater === id && x.skill === sk); return o ? +o.level : 0 }); const got = per.filter(Boolean);
+      const gap = got.length > 1 && Math.max(...got) - Math.min(...got) >= 2; if (gap) gaps++;
+      const def = skillById(sk) || {}; const notes = mine.filter(x => x.skill === sk && x.note).map(x => `<div class="tiny muted">📝 ${rName(x.rater)}: ${esc(x.note)}</div>`).join('');
+      const mean = [...new Set(got)].map(n => def.crit && def.crit[n] ? `<div class="tiny muted">${n} = ${esc(LL(def.crit[n]))}</div>` : '').join('');
+      return `<tr${gap ? ' style="background:var(--warn-bg,#fff7e6)"' : ''}><td class="small"><b>${esc(skillName(sk))}</b>${gap ? ` <span class="tag warn">⚠ ${L('2+ levels apart', 'فرق مستويين أو أكثر')}</span>` : ''}${mean}${notes}</td>${per.map(n => `<td class="small" style="white-space:nowrap">${lv(n)}</td>`).join('')}</tr>` }).join('');
+    const sum = ids.map(id => { const n = mine.filter(o => o.rater === id).length; return n ? `✓ ${rName(id)} (${n})` : `✗ ${rName(id)}` }).join(' · ');
+    return `<details class="card" style="margin:6px 0;padding:10px"><summary class="small"><b>${esc(p.name)}</b> · ${sum}${gaps ? ` · <span class="tag warn">⚠ ${gaps}</span>` : ''}</summary>
+      <div style="overflow-x:auto"><table class="small" style="width:100%;border-collapse:collapse;margin-top:6px"><thead><tr><th style="text-align:start">${L('Skill and what the level means', 'المهارة ومعنى المستوى')}</th>${ids.map(id => `<th style="text-align:start">${rName(id)}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div></details>` }).join('');
+  return head + `<p class="tiny muted">${L('Each evaluator records alone. Open a child to see every level given, what it means, and where the evaluators disagree.', 'يسجّل كل مقيّم وحده. افتح اسم الطفل لترى كل مستوى أُعطي ومعناه، وأين اختلف المقيّمون.')}</p>${rows}`;
+}
+/* v4.8.1 (9 Nov): coming / not coming for the next practice, and the owner's view of the replies */
+const COME_KEEN = ['looking_forward', 'neutral', 'reluctant', 'coming'];
+function holdOn(pid, date) { return (D().holds || []).find(h => h.player_id === pid && h.from <= date && (h.to || h.from) >= date) || null }
+function comeState(pid, date) { const c = ctxOn(pid, date); if (holdOn(pid, date) || (c && c.forward === 'not_coming')) return 'no'; if (c && COME_KEEN.indexOf(c.forward) >= 0) return 'yes'; return '' }
+function comeRow(pid, date) { const st = comeState(pid, date);
+  return `<div class="row wrap" style="align-items:center;margin:6px 0"><b class="small">${L('Confirm attendance for the next practice:', 'تأكيد الحضور للتمرين القادم:')}</b><button class="btn small ${st === 'yes' ? '' : 'ghost'}" data-act="come" data-pid="${esc(pid)}" data-date="${esc(date)}" data-v="yes">✓ ${L('Yes', 'نعم')}</button><button class="btn small ${st === 'no' ? '' : 'ghost'}" data-act="come" data-pid="${esc(pid)}" data-date="${esc(date)}" data-v="no">✗ ${L('No', 'لا')}</button></div>` }
+regAction('come', d => { const c = ctxOn(d.pid, d.date) || {}; const fwd = d.v === 'no' ? 'not_coming' : (COME_KEEN.indexOf(c.forward) >= 0 ? c.forward : 'coming');
+  const rec = { id: 'cx_' + d.pid + '_' + d.date, player_id: d.pid, date: d.date, sleep: c.sleep || '', mood: c.mood || '', exam: c.exam || '', pain: c.pain || '', note: c.note || '', forward: fwd, today: c.today || '', home_done: c.home_done === undefined ? '' : c.home_done };
+  queueFam('context', rec, [['context', rec]]); rerender(); });
+function nextReplies() {
+  const n0 = (upcoming(3) || []).find(x => !x.closed); if (!n0) return null;
+  const kids = players().filter(p => (p.status || 'active') === 'active' && (!n0.group_id || p.group_id === n0.group_id));
+  const yes = [], no = [], none = [], flags = [];
+  kids.forEach(p => { const st = comeState(p.id, n0.date); (st === 'yes' ? yes : st === 'no' ? no : none).push(p);
+    const c = ctxOn(p.id, n0.date); if (c && (c.pain === 'yes' || c.exam === 'yes' || c.sleep === 'bad' || c.sleep === 'poor')) flags.push(p); });
+  return { n0, kids, yes, no, none, flags };
+}
+function nextRepliesBox() {
+  const r = nextReplies(); if (!r || !r.kids.length) return '';
+  const nm = p => esc(String(p.name || '').split(/\s+/)[0]); const list = a => a.slice(0, 10).map(nm).join('، ') + (a.length > 10 ? ' …' : '');
+  return `<div class="hp-come" style="margin-top:8px;border-top:1px solid var(--line);padding-top:8px">
+    <p class="small"><b>${L('Family replies', 'ردود العائلات')}</b>: <span class="tag ok">✓ ${L('coming', 'سيحضرون')} ${r.yes.length}</span> <span class="tag attn">✗ ${L('not coming', 'لن يحضروا')} ${r.no.length}</span> <span class="tag">${L('no reply', 'لم يردّوا')} ${r.none.length}</span></p>
+    ${r.no.length ? `<p class="small"><b>${L('Not coming', 'لن يحضروا')}</b>: ${list(r.no)}</p>` : ''}
+    ${r.flags.length ? `<p class="small">⚑ <b>${L('Check-in flags (pain, exams, sleep)', 'تنبيهات التحديث (ألم، امتحانات، نوم)')}</b>: ${list(r.flags)}</p>` : ''}
+    ${r.none.length ? `<p class="small"><b>${L('No reply yet', 'لم يردّوا بعد')}</b>: ${list(r.none)}</p><button class="btn small ghost" data-act="compose" data-tpl="checkin">${L('Remind the families', 'ذكّر العائلات')}</button>` : ''}</div>`;
+}
+const _renderCome = render;
+render = function () { const r = _renderCome.apply(this, arguments); try {
+  if (S.me && S.D && isOwnerish() && S.view === 'home' && !S.hp) { const nx = document.querySelector('main .hp-next'); if (nx && !nx.querySelector('.hp-come')) { const h = nextRepliesBox(); if (h) nx.insertAdjacentHTML('beforeend', h); } }
+} catch (e) { } return r; };
 /* v4.8.1 (8 Nov): the last session at a glance, on the owner's home */
 function lastSessionCard() {
   const now = todayStr() + ' ' + new Date().toTimeString().slice(0, 5);
@@ -1669,7 +1775,7 @@ function sessionView(s) {
   else if (tab === 'eval') body = evalBox(s);
   else if (tab === 'taps') body = tapsBox(s);
   else if (tab === 'old') body = notebookGrid(s);
-  else if (tab === 'rec') body = recordsBox(s);
+  else if (tab === 'rec') body = isOwnerish() ? evalView(s) : recordsBox(s);
   else if ((MOD.sessionTabs || []).some(t => t[0] === tab)) body = (MOD.sessionTabs.find(t => t[0] === tab))[2](s);
   else body = sessionForm(s);
   const pl = planOf(s.id); const done = pl && pl.done ? pl.done.length : 0;
@@ -2097,9 +2203,9 @@ function parentScreen() {
     ${v.range ? `<p class="tiny muted">${L('Guidance for age ', 'استرشاد لعمر ')}${v.age}: ${esc(LL(v.range))} ${L('A child outside this is not ahead or behind; the next level is the same for everyone.', 'الطفل خارج هذا النطاق ليس متقدمًا ولا متأخرًا؛ المستوى التالي واحد للجميع.')}</p>` : ''}
     <h3>${L('Who your child is becoming', 'من يصبح طفلك')}</h3><div class="list">${(v.character || []).map(c => `<div class="drow" style="align-items:flex-start"><div class="grow"><b>${esc(L(c.en, c.ar))}</b><div class="small">${c.text ? esc(LL(c.text)) : `<span class="muted">${L('Being observed.', 'قيد الملاحظة.')}</span>`}</div></div></div>`).join('')}</div><p class="tiny muted">${L('Described in words, never graded.', 'يُوصف بالكلمات ولا يُعطى درجة.')}</p></div>
   <div class="card" data-card="noticed"><h2>${L('What the coach noticed', 'ما لاحظه المدرب')}</h2>${pend.length ? `<div class="notice"><b>${L('Share with your child?', 'مشاركة مع طفلك؟')}</b><p class="tiny muted">${L('Nothing reaches your child without your approval.', 'لا يصل شيء لطفلك دون موافقتك.')}</p>${pend.map(n => `<div class="item" style="cursor:default;flex-wrap:wrap"><div class="grow">${esc(n.text)}<div class="sub">${fmtDS(n.date || String(n.at || '').slice(0, 10))}</div></div><button class="btn small" data-act="share" data-id="${esc(n.id)}" data-v="approve">${L('Share', 'شارك')}</button><button class="link small" data-act="share" data-id="${esc(n.id)}" data-v="decline">${L('Not now', 'ليس الآن')}</button></div>`).join('')}</div>` : ''}${notes.length ? `<div class="list">${notes.slice(0, 8).map(n => `<div class="item" style="cursor:default;align-items:flex-start"><div class="grow"><div class="sub">${fmtDS(n.date || String(n.at || '').slice(0, 10))} · ${esc(n.by || '')}</div><div>${esc(n.text)}</div></div></div>`).join('')}</div>` : empty()}</div>
-  ${nx.length ? `<div class="card" data-card="checkin"><span class="tag info">${L('Next sessions', 'الحصص القادمة')}</span>${nx.map(x => `<div class="row sp"><b>${fmtDL(x.date)}</b><span class="muted">${fmtT(x.start)} – ${fmtT(x.end)}</span></div>`).join('')}
+  ${nx.length ? `<div class="card" data-card="checkin"><span class="tag info">${L('Next sessions', 'التمارين القادمة')}</span>${nx.map(x => `<div class="row sp"><b>${fmtDL(x.date)}</b><span class="muted">${fmtT(x.start)} – ${fmtT(x.end)}</span></div>`).join('')}
     <p class="small muted">${esc(placeName())} · ${esc(L(SET().address, SET().address_ar) || '')}</p>
-    <div class="row wrap"><button class="btn small" data-act="ctx-open" data-pid="${esc(p.id)}" data-date="${nx[0].date}">${sentNext ? '✓ ' + L('Check-in sent · change', 'أُرسل إلى المدرب · تعديل') : L('Before the session: send a check-in', 'قبل التمرين: أبلغوا المدرب')}</button><button class="btn ghost small" data-act="hold-open" data-pid="${esc(p.id)}">${L('Will be away? Tell us', 'غياب؟ أبلغونا')}</button></div>
+    ${comeRow(p.id, nx[0].date)}<div class="row wrap"><button class="btn small" data-act="ctx-open" data-pid="${esc(p.id)}" data-date="${nx[0].date}">${sentNext ? '✓ ' + L('Check-in sent · change', 'أُرسل إلى المدرب · تعديل') : L('Before the session: send a check-in', 'قبل التمرين: أبلغوا المدرب')}</button><button class="btn ghost small" data-act="hold-open" data-pid="${esc(p.id)}">${L('Will be away? Tell us', 'غياب؟ أبلغونا')}</button></div>
     <p class="tiny muted">${L('Sleep, mood, exams, pain, and whether your child is looking forward to it: the coach sees it before the session starts.', 'النوم والمزاج والامتحانات وأي ألم، والحماس للتمرين: يطّلع عليها المدرب قبل التمرين.')}</p></div>` : ''}
   <div class="card" data-card="feedback"><h2>${L('Monthly feedback', 'تقييم الشهر')}</h2>${surveyDue(p.id, 'parent_monthly', 28) ? `<p class="small muted">${L('Six quick questions, taps only (more only if you have time). Only the academy owners read it; coaches never see it by name.', 'ستة أسئلة سريعة، بالضغط فقط (والباقي إن كان لديكم وقت). لا يقرؤه إلا أصحاب الأكاديمية؛ ولا يراه المدربون بالاسم.')}</p><button class="btn small" data-act="psurvey-open" data-pid="${esc(p.id)}">${L('Start', 'ابدأ')}</button>` : `<p class="small">✓ ${L('Thank you, your feedback for this month reached the owners.', 'شكرًا، وصل تقييمكم لهذا الشهر إلى أصحاب الأكاديمية.')}</p>`}
     <div class="row sp" style="margin-top:8px"><span class="small">${L('Your family’s focus this month', 'تركيز العائلة هذا الشهر')}: <b>${pr ? lab(PRIO, pr.focus) : L('not set', 'غير محدد')}</b>${pr && pr.note ? ` · ${esc(pr.note)}` : ''}</span><button class="btn ghost small" data-act="prio-open" data-pid="${esc(p.id)}">${pr ? w('edit') : L('Tell us', 'أخبرونا')}</button></div></div>
